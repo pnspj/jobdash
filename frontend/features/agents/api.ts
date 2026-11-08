@@ -21,6 +21,10 @@ export const agentApi = {
 
 const collator = new Intl.Collator('ja');
 
+/** "MA（○○エージェント）", or just the short name when the name is the same. */
+export const agentDisplayName = (a: Pick<Agent, 'name' | 'shortName'>) =>
+  a.name === a.shortName ? a.shortName : `${a.shortName}（${a.name}）`;
+
 /** All agents sorted by short name. */
 export const useAgents = () =>
   useQuery({

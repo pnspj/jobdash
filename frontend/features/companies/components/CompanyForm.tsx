@@ -13,7 +13,7 @@ import {
 } from '@jobdash/shared';
 import Link from 'next/link';
 import TimeSelect from '@/components/ui/TimeSelect';
-import { useAgents } from '@/features/agents/api';
+import { agentDisplayName, useAgents } from '@/features/agents/api';
 import { errorMessage } from '@/lib/apiClient';
 
 /** Form state: every field is a string; next action is edited as separate date and time. */
@@ -121,7 +121,7 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
             <option value="">（なし・直接応募）</option>
             {agents.map((a) => (
               <option key={a.id} value={a.id}>
-                {a.shortName}（{a.name}）
+                {agentDisplayName(a)}
               </option>
             ))}
             {/* Keep an unknown id selectable so editing does not silently drop it */}

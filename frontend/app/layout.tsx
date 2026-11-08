@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { href: '/', label: '企業一覧' },
   { href: '/calendar', label: 'カレンダー' },
   { href: '/agents', label: 'エージェント' },
+  { href: '/reports', label: '連絡用テキスト' },
+  { href: '/stats', label: '集計' },
   { href: '/settings', label: 'データ管理' },
 ];
 

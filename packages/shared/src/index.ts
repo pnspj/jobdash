@@ -6,3 +6,5 @@ export * from './research';
 export * from './schedule';
 export * from './sort';
 export * from './backup';
+export * from './reports';
+export * from './stats';

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import Link from 'next/link';
 import { formatLocalDateTime, type ActionStatus, type SelectionPhase } from '@jobdash/shared';
 import { errorMessage } from '@/lib/apiClient';
-import { useAgentLookup } from '@/features/agents/api';
+import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useImportCompanies } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
 import { parseCsv } from '../lib/csv';
@@ -322,7 +322,7 @@ export default function CsvImportWizard() {
                         <option value={NO_AGENT}>紐づけない</option>
                         {agents.map((a) => (
                           <option key={a.id} value={a.id}>
-                            {a.shortName}（{a.name}）
+                            {agentDisplayName(a)}
                           </option>
                         ))}
                       </select>

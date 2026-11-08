@@ -14,7 +14,7 @@ import {
 import { ApiError, errorMessage } from '@/lib/apiClient';
 import { returnLabel, useReturnTo } from '@/lib/returnTo';
 import ExternalLink from '@/components/ui/ExternalLink';
-import { useAgentLookup } from '@/features/agents/api';
+import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
 import CompanyForm from '@/features/companies/components/CompanyForm';
@@ -209,7 +209,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
               <dd>
                 {agent ? (
                   <Link href={`/agents/${agent.id}`} className="text-blue-700 hover:underline">
-                    {agent.name}（{agent.shortName}）
+                    {agentDisplayName(agent)}
                   </Link>
                 ) : company.agentId ? (
                   '（不明なエージェント）'
