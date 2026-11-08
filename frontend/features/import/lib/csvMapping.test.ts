@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { parseCsv, toCsv } from './csv';
 import {
@@ -76,7 +76,8 @@ test('guessEnumValue normalizes spacing and width', () => {
   assert.equal(guessEnumValue('一次面接', SELECTION_PHASES), '一次面接');
   assert.equal(guessEnumValue('内定', SELECTION_PHASES), 'オファー/内定');
   assert.equal(guessEnumValue('面接', SELECTION_PHASES), null); // ambiguous
-  assert.equal(guessEnumValue('辞退', ACTION_STATUSES), '辞退/不通過');
+  assert.equal(guessEnumValue('辞退', ACTION_STATUSES), '辞退');
+  assert.equal(guessEnumValue('辞退/不通過', ACTION_STATUSES), null); // ambiguous: user must choose
 });
 
 test('convertRow converts a Notion row end to end', () => {
@@ -95,8 +96,7 @@ test('convertRow converts a Notion row end to end', () => {
   assert.equal(r1.input.companyName, '株式会社S');
   assert.equal(r1.input.agent, '○○エージェント');
   assert.equal(r1.input.agentJobUrl, 'https://agent-ma.example.com/jobs/1001');
-  assert.equal(r1.input.nextActionDate, '2026-11-09');
-  assert.equal(r1.input.nextActionTime, '15:00');
+  assert.equal(r1.input.nextActionAt, '2026-11-09T15:00');
   assert.equal(r1.input.phase, '一次面接');
   assert.equal(r1.input.action, '要本番準備');
 
@@ -106,8 +106,7 @@ test('convertRow converts a Notion row end to end', () => {
   const r3 = convertRow(data[2], 3, mapping, values, defaults);
   assert.deepEqual(r3.errors, []);
   assert.equal(r3.input.phase, 'オファー/内定');
-  assert.equal(r3.input.nextActionDate, '');
-  assert.equal(r3.input.nextActionTime, undefined);
+  assert.equal(r3.input.nextActionAt, undefined);
 });
 
 test('convertRow reports unmapped enum values and empty company name', () => {

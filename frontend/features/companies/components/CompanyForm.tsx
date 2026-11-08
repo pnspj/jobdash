@@ -1,25 +1,57 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import TimeSelect from './TimeSelect';
-import { ACTION_STATUSES, SELECTION_PHASES, type CompanyInput } from '@/lib/types';
+import {
+  ACTION_STATUSES,
+  SELECTION_PHASES,
+  joinLocalDateTime,
+  splitLocalDateTime,
+  type ActionStatus,
+  type Company,
+  type CompanyInput,
+  type SelectionPhase,
+} from '@jobdash/shared';
+import TimeSelect from '@/components/ui/TimeSelect';
+import { errorMessage } from '@/lib/apiClient';
 
-export const EMPTY_INPUT: CompanyInput = {
-  companyName: '',
-  companyUrl: '',
-  agent: '',
-  agentJobUrl: '',
-  phase: '書類選考',
-  action: '選考結果待ち',
-  nextActionDate: '',
-  nextActionTime: '',
-  details: '',
-};
+/** Form state: every field is a string; next action is edited as separate date and time. */
+interface FormValues {
+  companyName: string;
+  companyUrl: string;
+  agent: string;
+  agentJobUrl: string;
+  phase: SelectionPhase;
+  action: ActionStatus;
+  nextActionDate: string;
+  nextActionTime: string;
+  details: string;
+}
+
+function toFormValues(c?: Company): FormValues {
+  const { date, time } = splitLocalDateTime(c?.nextActionAt);
+  return {
+    companyName: c?.companyName ?? '',
+    companyUrl: c?.companyUrl ?? '',
+    agent: c?.agent ?? '',
+    agentJobUrl: c?.agentJobUrl ?? '',
+    phase: c?.phase ?? '書類選考',
+    action: c?.action ?? '選考結果待ち',
+    nextActionDate: date,
+    nextActionTime: time,
+    details: c?.details ?? '',
+  };
+}
+
+/** Empty strings are kept so that a PATCH clears the corresponding fields. */
+function toInput({ nextActionDate, nextActionTime, ...rest }: FormValues): CompanyInput {
+  return { ...rest, nextActionAt: joinLocalDateTime(nextActionDate, nextActionTime) ?? '' };
+}
 
 interface Props {
-  initialValue?: CompanyInput;
+  /** Existing company to edit; omit to create a new one. */
+  company?: Company;
   submitLabel: string;
-  onSubmit: (input: CompanyInput) => Promise<void>;
+  onSubmit: (input: CompanyInput) => Promise<unknown>;
   onCancel?: () => void;
 }
 
@@ -27,12 +59,12 @@ const inputClass =
   'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200';
 const labelClass = 'mb-1 block text-sm font-medium text-slate-700';
 
-export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, onSubmit, onCancel }: Props) {
-  const [value, setValue] = useState<CompanyInput>({ ...EMPTY_INPUT, ...initialValue });
+export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }: Props) {
+  const [value, setValue] = useState<FormValues>(() => toFormValues(company));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const set = <K extends keyof CompanyInput>(key: K, v: CompanyInput[K]) =>
+  const set = <K extends keyof FormValues>(key: K, v: FormValues[K]) =>
     setValue((prev) => ({ ...prev, [key]: v }));
 
   const handleSubmit = async (e: FormEvent) => {
@@ -40,9 +72,9 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(value);
+      await onSubmit(toInput(value));
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存に失敗しました');
+      setError(errorMessage(err, '保存に失敗しました'));
     } finally {
       setSubmitting(false);
     }
@@ -73,7 +105,7 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
             type="url"
             className={inputClass}
             placeholder="https://"
-            value={value.companyUrl ?? ''}
+            value={value.companyUrl}
             onChange={(e) => set('companyUrl', e.target.value)}
           />
         </div>
@@ -94,7 +126,7 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
             type="url"
             className={inputClass}
             placeholder="https://"
-            value={value.agentJobUrl ?? ''}
+            value={value.agentJobUrl}
             onChange={(e) => set('agentJobUrl', e.target.value)}
           />
         </div>
@@ -107,7 +139,7 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
             id="phase"
             className={inputClass}
             value={value.phase}
-            onChange={(e) => set('phase', e.target.value as CompanyInput['phase'])}
+            onChange={(e) => set('phase', e.target.value as SelectionPhase)}
           >
             {SELECTION_PHASES.map((p) => (
               <option key={p} value={p}>
@@ -125,7 +157,7 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
             id="action"
             className={inputClass}
             value={value.action}
-            onChange={(e) => set('action', e.target.value as CompanyInput['action'])}
+            onChange={(e) => set('action', e.target.value as ActionStatus)}
           >
             {ACTION_STATUSES.map((a) => (
               <option key={a} value={a}>
@@ -151,7 +183,7 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
               id="nextActionTime"
               className={`${inputClass} w-28 shrink-0`}
               disabled={!value.nextActionDate}
-              value={value.nextActionTime ?? ''}
+              value={value.nextActionTime}
               onChange={(v) => set('nextActionTime', v)}
             />
           </div>

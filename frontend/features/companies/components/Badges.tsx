@@ -1,4 +1,4 @@
-import type { ActionStatus, SelectionPhase } from '@/lib/types';
+import type { ActionStatus, SelectionPhase } from '@jobdash/shared';
 
 const PHASE_STYLES: Record<SelectionPhase, string> = {
   書類選考: 'bg-slate-100 text-slate-700 ring-slate-300',
@@ -15,7 +15,8 @@ const ACTION_STYLES: Record<ActionStatus, string> = {
   要対応: 'bg-red-50 text-red-700 ring-red-300',
   日程調整待ち: 'bg-slate-50 text-slate-600 ring-slate-200',
   選考結果待ち: 'bg-slate-50 text-slate-600 ring-slate-200',
-  '辞退/不通過': 'bg-zinc-100 text-zinc-500 ring-zinc-300 line-through',
+  辞退: 'bg-zinc-100 text-zinc-500 ring-zinc-300',
+  不通過: 'bg-zinc-100 text-zinc-500 ring-zinc-300 line-through',
 };
 
 const base = 'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset';
@@ -27,6 +28,3 @@ export function PhaseBadge({ phase }: { phase: SelectionPhase }) {
 export function ActionBadge({ action }: { action: ActionStatus }) {
   return <span className={`${base} ${ACTION_STYLES[action] ?? ''}`}>{action}</span>;
 }
-
-/** Actions starting with "要" require the user's attention. */
-export const isActionRequired = (action: ActionStatus) => action.startsWith('要');

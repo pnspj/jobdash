@@ -1,74 +1,33 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ApiError, deleteCompany, fetchCompany, toInput, updateCompany } from '@/lib/api';
-import { ACTION_STATUSES, SELECTION_PHASES, type CompanyInput, type CompanyRecord } from '@/lib/types';
-import { ActionBadge, PhaseBadge } from '@/components/Badges';
-import CompanyForm from '@/components/CompanyForm';
-import TimeSelect from '@/components/TimeSelect';
-import { formatNextAction } from '@/lib/sort';
+import {
+  ACTION_STATUSES,
+  SELECTION_PHASES,
+  formatLocalDateTime,
+  type ActionStatus,
+  type Company,
+  type SelectionPhase,
+} from '@jobdash/shared';
+import { ApiError, errorMessage } from '@/lib/apiClient';
+import ExternalLink from '@/components/ui/ExternalLink';
+import { useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
+import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
+import CompanyForm from '@/features/companies/components/CompanyForm';
+import NextActionEditor from '@/features/companies/components/NextActionEditor';
+
+const sectionClass = 'rounded-lg border border-slate-200 bg-white p-6 shadow-sm';
+const selectClass = 'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm';
 
 export default function CompanyDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-  const [company, setCompany] = useState<CompanyRecord | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { data: company, isPending, error, refetch } = useCompany(id);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setCompany(await fetchCompany(id));
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 404) setNotFound(true);
-      else setError(err instanceof Error ? err.message : '取得に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  if (isPending) return <p className="py-12 text-center text-slate-500">読み込み中...</p>;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const save = async (input: CompanyInput) => {
-    const updated = await updateCompany(id, input);
-    setCompany(updated);
-  };
-
-  /** Quick update of a single field (phase / action / nextActionDate). */
-  const quickUpdate = async (patch: Partial<CompanyInput>) => {
-    if (!company) return;
-    setSaving(true);
-    setError(null);
-    try {
-      await save({ ...toInput(company), ...patch });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '更新に失敗しました');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!company || !window.confirm(`「${company.companyName}」を削除しますか？この操作は取り消せません。`)) return;
-    try {
-      await deleteCompany(id);
-      router.push('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '削除に失敗しました');
-    }
-  };
-
-  if (loading) return <p className="py-12 text-center text-slate-500">読み込み中...</p>;
-
-  if (notFound) {
+  if (error instanceof ApiError && error.status === 404) {
     return (
       <div className="py-12 text-center">
         <p className="mb-4 text-slate-600">企業が見つかりませんでした。</p>
@@ -82,21 +41,35 @@ export default function CompanyDetailPage() {
   if (!company) {
     return (
       <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-        {error}
-        <button onClick={load} className="ml-3 underline">
+        {errorMessage(error, '取得に失敗しました')}
+        <button onClick={() => refetch()} className="ml-3 underline">
           再読み込み
         </button>
       </div>
     );
   }
 
+  return <CompanyDetail company={company} />;
+}
+
+function CompanyDetail({ company }: { company: Company }) {
+  const router = useRouter();
+  const update = useUpdateCompany(company);
+  const remove = useDeleteCompany();
+  const [editing, setEditing] = useState(false);
+  const busy = update.isPending || remove.isPending;
+  const error = update.error ?? remove.error;
+
+  const handleDelete = () => {
+    if (!window.confirm(`「${company.companyName}」を削除しますか？この操作は取り消せません。`)) return;
+    remove.mutate(company.id, { onSuccess: () => router.push('/') });
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
-          ← 一覧へ戻る
-        </Link>
-      </div>
+      <Link href="/" className="text-sm text-blue-600 hover:underline">
+        ← 一覧へ戻る
+      </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -117,23 +90,26 @@ export default function CompanyDetailPage() {
           )}
           <button
             onClick={handleDelete}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            disabled={busy}
+            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
           >
             削除
           </button>
         </div>
       </div>
 
-      {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {error && !editing && (
+        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage(error, '更新に失敗しました')}</div>
+      )}
 
       {editing ? (
-        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <section className={sectionClass}>
           <h2 className="mb-4 text-lg font-semibold">企業情報を編集</h2>
           <CompanyForm
-            initialValue={toInput(company)}
+            company={company}
             submitLabel="保存する"
             onSubmit={async (input) => {
-              await save(input);
+              await update.mutateAsync(input);
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
@@ -141,20 +117,19 @@ export default function CompanyDetailPage() {
         </section>
       ) : (
         <>
-          {/* Quick status update */}
-          <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <section className={sectionClass}>
             <h2 className="mb-4 text-lg font-semibold">
               選考状況の更新
-              {saving && <span className="ml-3 text-sm font-normal text-slate-400">保存中...</span>}
+              {update.isPending && <span className="ml-3 text-sm font-normal text-slate-400">保存中...</span>}
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_minmax(22rem,1.5fr)]">
               <label className="block">
                 <span className="mb-1 block text-sm font-medium text-slate-700">選考フェーズ</span>
                 <select
-                  disabled={saving}
+                  disabled={busy}
                   value={company.phase}
-                  onChange={(e) => quickUpdate({ phase: e.target.value as CompanyInput['phase'] })}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  onChange={(e) => update.mutate({ phase: e.target.value as SelectionPhase })}
+                  className={selectClass}
                 >
                   {SELECTION_PHASES.map((p) => (
                     <option key={p}>{p}</option>
@@ -164,10 +139,10 @@ export default function CompanyDetailPage() {
               <label className="block">
                 <span className="mb-1 block text-sm font-medium text-slate-700">アクション</span>
                 <select
-                  disabled={saving}
+                  disabled={busy}
                   value={company.action}
-                  onChange={(e) => quickUpdate({ action: e.target.value as CompanyInput['action'] })}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  onChange={(e) => update.mutate({ action: e.target.value as ActionStatus })}
+                  className={selectClass}
                 >
                   {ACTION_STATUSES.map((a) => (
                     <option key={a}>{a}</option>
@@ -175,33 +150,31 @@ export default function CompanyDetailPage() {
                 </select>
               </label>
               <NextActionEditor
-                key={`${company.nextActionDate}|${company.nextActionTime ?? ""}`}
-                date={company.nextActionDate}
-                time={company.nextActionTime ?? ''}
-                disabled={saving}
-                onSave={(nextActionDate, nextActionTime) => quickUpdate({ nextActionDate, nextActionTime })}
+                key={company.nextActionAt ?? ''}
+                value={company.nextActionAt}
+                disabled={busy}
+                onSave={(nextActionAt) => update.mutate({ nextActionAt })}
               />
             </div>
           </section>
 
-          {/* All fields */}
-          <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <section className={sectionClass}>
             <h2 className="mb-4 text-lg font-semibold">企業情報</h2>
             <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-[10rem_1fr]">
               <dt className="font-medium text-slate-500">会社名</dt>
               <dd>{company.companyName}</dd>
 
               <dt className="font-medium text-slate-500">会社URL</dt>
-              <dd>
-                <ExternalLink url={company.companyUrl} />
+              <dd className="break-all">
+                <ExternalLink href={company.companyUrl} />
               </dd>
 
               <dt className="font-medium text-slate-500">担当エージェント</dt>
               <dd>{company.agent || '-'}</dd>
 
               <dt className="font-medium text-slate-500">エージェント求人URL</dt>
-              <dd>
-                <ExternalLink url={company.agentJobUrl} />
+              <dd className="break-all">
+                <ExternalLink href={company.agentJobUrl} />
               </dd>
 
               <dt className="font-medium text-slate-500">選考フェーズ</dt>
@@ -211,7 +184,7 @@ export default function CompanyDetailPage() {
               <dd>{company.action}</dd>
 
               <dt className="font-medium text-slate-500">次回アクション日時</dt>
-              <dd className="tabular-nums">{formatNextAction(company) || '-'}</dd>
+              <dd className="tabular-nums">{formatLocalDateTime(company.nextActionAt) || '-'}</dd>
 
               <dt className="font-medium text-slate-500">詳細</dt>
               <dd className="whitespace-pre-wrap break-words">{company.details || '-'}</dd>
@@ -226,89 +199,5 @@ export default function CompanyDetailPage() {
         </>
       )}
     </div>
-  );
-}
-
-/** Date + time editor with an explicit save, so partially typed values are never persisted. */
-function NextActionEditor({
-  date,
-  time,
-  disabled,
-  onSave,
-}: {
-  date: string;
-  time: string;
-  disabled: boolean;
-  onSave: (date: string, time: string) => void;
-}) {
-  const [draftDate, setDraftDate] = useState(date);
-  const [draftTime, setDraftTime] = useState(time);
-  const effectiveTime = draftDate ? draftTime : '';
-  const dirty = draftDate !== date || effectiveTime !== time;
-
-  const save = () => {
-    if (dirty && !disabled) onSave(draftDate, effectiveTime);
-  };
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      save();
-    }
-  };
-  const inputClass = 'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-400';
-
-  return (
-    <div>
-      <span className="mb-1 block text-sm font-medium text-slate-700">次回アクション日時</span>
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          type="date"
-          aria-label="次回アクション日"
-          disabled={disabled}
-          value={draftDate}
-          onChange={(e) => setDraftDate(e.target.value)}
-          onKeyDown={onKeyDown}
-          className={`${inputClass} w-40`}
-        />
-        <TimeSelect
-          disabled={disabled || !draftDate}
-          value={effectiveTime}
-          onChange={setDraftTime}
-          onKeyDown={onKeyDown}
-          className={`${inputClass} w-28`}
-        />
-        <button
-          type="button"
-          onClick={save}
-          disabled={!dirty || disabled}
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40"
-        >
-          保存
-        </button>
-        {(draftDate || draftTime) && (
-          <button
-            type="button"
-            onClick={() => {
-              setDraftDate('');
-              setDraftTime('');
-            }}
-            disabled={disabled}
-            className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
-          >
-            クリア
-          </button>
-        )}
-      </div>
-      {dirty && <p className="mt-1 text-xs text-amber-600">未保存の変更があります</p>}
-    </div>
-  );
-}
-
-function ExternalLink({ url }: { url?: string }) {
-  if (!url) return <>-</>;
-  return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="break-all text-blue-600 hover:underline">
-      {url}
-    </a>
   );
 }

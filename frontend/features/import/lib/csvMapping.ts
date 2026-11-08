@@ -2,10 +2,12 @@ import {
   ACTION_STATUSES,
   SELECTION_PHASES,
   type ActionStatus,
-  type CompanyInput,
-  type CompanyRecord,
+  joinLocalDateTime,
+  splitLocalDateTime,
+  type Company,
+  type CompanyInputParsed,
   type SelectionPhase,
-} from './types';
+} from '@jobdash/shared';
 
 // ---------- target fields ----------
 
@@ -190,7 +192,7 @@ export interface ImportDefaults {
 
 export interface ConvertedRow {
   rowNumber: number; // 1-based line number in the CSV data (excluding header)
-  input: CompanyInput;
+  input: CompanyInputParsed;
   errors: string[];
 }
 
@@ -230,7 +232,6 @@ export function convertRow(
     if (typeof t === 'object') errors.push(t.error);
     else nextActionTime = t;
   }
-  if (!nextActionDate) nextActionTime = undefined;
 
   const rawAgent = cell(row, mapping.agent);
   const agent = rawAgent ? (values.agent[rawAgent]?.trim() || rawAgent) : '';
@@ -245,8 +246,7 @@ export function convertRow(
       agentJobUrl: cell(row, mapping.agentJobUrl) || undefined,
       phase: phase ?? defaults.phase,
       action: action ?? defaults.action,
-      nextActionDate,
-      nextActionTime,
+      nextActionAt: joinLocalDateTime(nextActionDate, nextActionTime ?? ''),
       details: mapping.details === null ? '' : (row[mapping.details] ?? ''),
     },
   };
@@ -268,11 +268,30 @@ export const autoMapEnum = <T extends string>(raws: string[], options: readonly 
 
 export { ACTION_STATUSES, SELECTION_PHASES };
 
+/** CSV column values of a company for each target field (next action split into date and time). */
+function exportValues(c: Company): Record<TargetField, string> {
+  const { date, time } = splitLocalDateTime(c.nextActionAt);
+  return {
+    companyName: c.companyName,
+    companyUrl: c.companyUrl ?? '',
+    agent: c.agent,
+    agentJobUrl: c.agentJobUrl ?? '',
+    phase: c.phase,
+    action: c.action,
+    nextActionDate: date,
+    nextActionTime: time,
+    details: c.details,
+  };
+}
+
 // ---------- export ----------
 
-export function companiesToCsvRows(companies: CompanyRecord[]): string[][] {
+export function companiesToCsvRows(companies: Company[]): string[][] {
   const fields = TARGET_FIELDS.map((f) => f.key);
   const header = [...fields.map((f) => EXPORT_HEADERS[f]), '更新日時', 'ID'];
-  const body = companies.map((c) => [...fields.map((f) => c[f] ?? ''), c.updatedAt, c.id]);
+  const body = companies.map((c) => {
+    const values = exportValues(c);
+    return [...fields.map((f) => values[f]), c.updatedAt, c.id];
+  });
   return [header, ...body];
 }

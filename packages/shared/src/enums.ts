@@ -13,24 +13,17 @@ export const ACTION_STATUSES = [
   '要対応',
   '日程調整待ち',
   '選考結果待ち',
-  '辞退/不通過',
+  '辞退',
+  '不通過',
 ] as const;
 
 export type SelectionPhase = (typeof SELECTION_PHASES)[number];
 export type ActionStatus = (typeof ACTION_STATUSES)[number];
 
-export interface CompanyRecord {
-  id: string;
-  companyName: string;
-  companyUrl?: string;
-  agent: string;
-  agentJobUrl?: string;
-  phase: SelectionPhase;
-  action: ActionStatus;
-  nextActionDate: string; // YYYY-MM-DD
-  nextActionTime?: string; // HH:mm (optional)
-  details: string;
-  updatedAt: string; // ISO string
-}
+/** Actions that end the selection process for a company. */
+export const CLOSED_ACTIONS: readonly ActionStatus[] = ['辞退', '不通過'];
 
-export type CompanyInput = Omit<CompanyRecord, 'id' | 'updatedAt'>;
+export const isClosedAction = (action: ActionStatus) => CLOSED_ACTIONS.includes(action);
+
+/** Actions starting with "要" require the user's attention. */
+export const isActionRequired = (action: ActionStatus) => action.startsWith('要');

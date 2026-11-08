@@ -1,13 +1,13 @@
 {
-  "name": "jobdash-backend",
+  "name": "backend",
   "version": "1.0.0",
-  "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "init-table": "tsx src/init-table.ts",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "init-table": "tsx src/db/init-table.ts",
     "typecheck": "tsc --noEmit",
-    "smoke": "tsx scripts/smoke-test.ts"
+    "test": "vitest run",
+    "migrate:v2": "tsx scripts/migrate-v2.ts"
   },
   "license": "ISC",
   "type": "module",
@@ -15,11 +15,14 @@
     "@aws-sdk/client-dynamodb": "^3.1164.0",
     "@aws-sdk/lib-dynamodb": "^3.1164.0",
     "@hono/node-server": "^2.1.6",
+    "@hono/zod-validator": "^0.9.1",
+    "@jobdash/shared": "^0.1.0",
     "hono": "^4.13.17"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
     "tsx": "^4.23.15",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12"
   }
 }

@@ -1,80 +1,31 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { createCompany, fetchCompanies } from '@/lib/api';
-import { downloadCsv } from '@/lib/csv';
-import { companiesToCsvRows } from '@/lib/csvMapping';
-import { compareCompanies, formatNextAction } from '@/lib/sort';
-import type { CompanyInput, CompanyRecord } from '@/lib/types';
-import { ActionBadge, PhaseBadge, isActionRequired } from '@/components/Badges';
-import CompanyForm from '@/components/CompanyForm';
-import Modal from '@/components/Modal';
+import { compareCompanies, isClosedAction, todayLocalDate } from '@jobdash/shared';
+import { errorMessage } from '@/lib/apiClient';
+import Modal from '@/components/ui/Modal';
+import { useCompanies, useCreateCompany } from '@/features/companies/api';
+import CompanyForm from '@/features/companies/components/CompanyForm';
+import CompanyTable from '@/features/companies/components/CompanyTable';
+import { downloadCsv } from '@/features/import/lib/csv';
+import { companiesToCsvRows } from '@/features/import/lib/csvMapping';
 
-const today = () => new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local time
-
-/** External link that does not trigger the row's navigation to the detail page. */
-function RowLink({ href, children }: { href?: string; children: React.ReactNode }) {
-  if (!href) return <>{children}</>;
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="text-blue-700 hover:underline"
-    >
-      {children}
-      <span className="ml-0.5 text-xs text-slate-400" aria-hidden>
-        ↗
-      </span>
-    </a>
-  );
-}
+const secondaryButton =
+  'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50';
 
 export default function CompanyListPage() {
-  const router = useRouter();
-  const [companies, setCompanies] = useState<CompanyRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: companies = [], isPending, error, refetch } = useCompanies();
+  const create = useCreateCompany();
   const [showClosed, setShowClosed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setCompanies(await fetchCompanies());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '一覧の取得に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const sorted = useMemo(() => [...companies].sort(compareCompanies), [companies]);
+  const visible = showClosed ? sorted : sorted.filter((c) => !isClosedAction(c.action));
+  const closedCount = companies.length - sorted.filter((c) => !isClosedAction(c.action)).length;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const visible = useMemo(
-    () => companies.filter((c) => showClosed || c.action !== '辞退/不通過').sort(compareCompanies),
-    [companies, showClosed],
-  );
-  const closedCount = companies.filter((c) => c.action === '辞退/不通過').length;
-
-  const handleCreate = async (input: CompanyInput) => {
-    await createCompany(input);
-    setModalOpen(false);
-    await load();
-  };
-
-  const todayStr = today();
-
-  const handleExport = () => {
-    const sorted = [...companies].sort(compareCompanies);
-    downloadCsv(`jobdash-${todayStr.replaceAll('-', '')}.csv`, companiesToCsvRows(sorted));
-  };
+  const handleExport = () =>
+    downloadCsv(`jobdash-${todayLocalDate().replaceAll('-', '')}.csv`, companiesToCsvRows(sorted));
 
   return (
     <div>
@@ -88,19 +39,12 @@ export default function CompanyListPage() {
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input type="checkbox" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} />
-            辞退/不通過も表示 ({closedCount})
+            辞退・不通過も表示 ({closedCount})
           </label>
-          <Link
-            href="/import"
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-          >
+          <Link href="/import" className={secondaryButton}>
             CSVインポート
           </Link>
-          <button
-            onClick={handleExport}
-            disabled={companies.length === 0}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
-          >
+          <button onClick={handleExport} disabled={companies.length === 0} className={secondaryButton}>
             CSVエクスポート
           </button>
           <button
@@ -114,75 +58,32 @@ export default function CompanyListPage() {
 
       {error && (
         <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-          <button onClick={load} className="ml-3 underline">
+          {errorMessage(error, '一覧の取得に失敗しました')}
+          <button onClick={() => refetch()} className="ml-3 underline">
             再読み込み
           </button>
         </div>
       )}
 
-      {loading ? (
+      {isPending ? (
         <p className="py-12 text-center text-slate-500">読み込み中...</p>
       ) : visible.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white py-12 text-center text-slate-500">
           企業が登録されていません。「＋ 企業を追加」から登録してください。
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3">会社名</th>
-                <th className="px-4 py-3">エージェント</th>
-                <th className="px-4 py-3">選考フェーズ</th>
-                <th className="px-4 py-3">アクション</th>
-                <th className="px-4 py-3">次回アクション日時</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {visible.map((c) => {
-                const overdue = c.nextActionDate !== '' && c.nextActionDate < todayStr && c.action !== '辞退/不通過';
-                const isToday = c.nextActionDate === todayStr;
-                return (
-                  <tr
-                    key={c.id}
-                    onClick={() => router.push(`/companies/${c.id}`)}
-                    className={`cursor-pointer hover:bg-blue-50/50 ${c.action === '辞退/不通過' ? 'opacity-60' : ''}`}
-                  >
-                    <td className="px-4 py-3 font-medium text-slate-900">
-                      <RowLink href={c.companyUrl}>{c.companyName}</RowLink>
-                      {isActionRequired(c.action) && (
-                        <span className="ml-2 inline-block h-2 w-2 rounded-full bg-red-500" title="要対応" />
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {c.agent ? <RowLink href={c.agentJobUrl}>{c.agent}</RowLink> : c.agentJobUrl ? <RowLink href={c.agentJobUrl}>求人</RowLink> : '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <PhaseBadge phase={c.phase} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <ActionBadge action={c.action} />
-                    </td>
-                    <td
-                      className={`px-4 py-3 tabular-nums ${
-                        overdue ? 'font-semibold text-red-600' : isToday ? 'font-semibold text-amber-600' : 'text-slate-700'
-                      }`}
-                    >
-                      {formatNextAction(c) || '-'}
-                      {overdue && <span className="ml-1 text-xs">(期限切れ)</span>}
-                      {isToday && <span className="ml-1 text-xs">(今日)</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <CompanyTable companies={visible} />
       )}
 
       <Modal open={modalOpen} title="企業を追加" onClose={() => setModalOpen(false)}>
-        <CompanyForm submitLabel="登録する" onSubmit={handleCreate} onCancel={() => setModalOpen(false)} />
+        <CompanyForm
+          submitLabel="登録する"
+          onSubmit={async (input) => {
+            await create.mutateAsync(input);
+            setModalOpen(false);
+          }}
+          onCancel={() => setModalOpen(false)}
+        />
       </Modal>
     </div>
   );

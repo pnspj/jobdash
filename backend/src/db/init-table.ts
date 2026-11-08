@@ -5,7 +5,7 @@ import {
   waitUntilTableExists,
 } from '@aws-sdk/client-dynamodb';
 import { pathToFileURL } from 'node:url';
-import { ddbClient, TABLE_NAME } from './db.js';
+import { ddbClient, TABLE_NAME } from './client';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
