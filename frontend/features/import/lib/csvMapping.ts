@@ -46,8 +46,8 @@ const RESEARCH_TEXT_FIELDS: ResearchTextField[] = [
 ];
 
 export const TARGET_FIELDS: { key: TargetField; label: string; required?: boolean; hint?: string }[] = [
-  { key: 'companyName', label: '会社名', required: true },
-  { key: 'companyUrl', label: '会社URL' },
+  { key: 'companyName', label: '企業名', required: true },
+  { key: 'companyUrl', label: '企業URL' },
   { key: 'agent', label: '担当エージェント' },
   { key: 'agentJobUrl', label: 'エージェント求人URL' },
   { key: 'phase', label: '選考フェーズ', hint: '値の対応付けが必要' },
@@ -67,8 +67,8 @@ export const TARGET_FIELDS: { key: TargetField; label: string; required?: boolea
 
 /** Column header labels used by export (and recognized on import for round-tripping). */
 export const EXPORT_HEADERS: Record<TargetField, string> = {
-  companyName: '会社名',
-  companyUrl: '会社URL',
+  companyName: '企業名',
+  companyUrl: '企業URL',
   agent: '担当エージェント',
   agentJobUrl: 'エージェント求人URL',
   phase: '選考フェーズ',
@@ -99,8 +99,8 @@ export const normalizeKey = (s: string) =>
     .replace(/[\s_\-・/／]/g, '');
 
 const HEADER_ALIASES: Record<TargetField, string[]> = {
-  companyName: ['会社名', '企業名', '会社', '企業', 'company', 'companyname', 'name', '名前'],
-  companyUrl: ['会社url', '企業url', '会社hp', '企業hp', 'companyurl', 'hp', 'website', 'ホームページ'],
+  companyName: ['企業名', '会社名', '企業', '会社', 'company', 'companyname', 'name', '名前'],
+  companyUrl: ['企業url', '会社url', '企業hp', '会社hp', 'companyurl', 'hp', 'website', 'ホームページ'],
   agent: ['担当エージェント', 'エージェント', 'agent', '経由', '媒体'],
   agentJobUrl: ['エージェント求人url', '求人url', 'url', 'agentjoburl', 'joburl', 'link', 'リンク'],
   phase: ['選考フェーズ', 'フェーズ', '選考状況', 'ステータス', 'phase', 'status'],
@@ -310,7 +310,7 @@ export function convertRow(
   const errors: string[] = [];
 
   const companyName = cell(row, mapping.companyName);
-  if (!companyName) errors.push('会社名が空です');
+  if (!companyName) errors.push('企業名が空です');
 
   const rawPhase = cell(row, mapping.phase);
   const phase = rawPhase ? values.phase[rawPhase] : defaults.phase;
@@ -342,7 +342,7 @@ export function convertRow(
     if (value && !isHttpUrl(value)) errors.push(`${label}は http:// または https:// で始まる必要があります: ${value}`);
     return value || undefined;
   };
-  const companyUrl = url(mapping.companyUrl, '会社URL');
+  const companyUrl = url(mapping.companyUrl, '企業URL');
   const agentJobUrl = url(mapping.agentJobUrl, 'エージェント求人URL');
 
   const rawAgent = cell(row, mapping.agent);

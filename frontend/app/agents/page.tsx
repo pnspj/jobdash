@@ -4,6 +4,8 @@ import { isClosedAction } from '@jobdash/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import ExternalLink from '@/components/ui/ExternalLink';
 import Modal from '@/components/ui/Modal';
 import { errorBox, primaryButton } from '@/components/ui/styles';
@@ -36,7 +38,7 @@ export default function AgentListPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">エージェント</h1>
+          <PageTitle icon={PAGE_ICONS.agents}>エージェント</PageTitle>
           <p className="text-sm text-slate-500">{agents.length} 件</p>
         </div>
         <button type="button" onClick={() => setModalOpen(true)} className={primaryButton}>

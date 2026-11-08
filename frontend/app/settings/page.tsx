@@ -2,7 +2,16 @@
 
 import { sampleBackup } from '@jobdash/shared/sample';
 import { type ChangeEvent, useState } from 'react';
-import { dangerButton, inputClass, primaryButton, secondaryButton, sectionClass } from '@/components/ui/styles';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
+import {
+  dangerButton,
+  inputBaseClass,
+  inputClass,
+  primaryButton,
+  secondaryButton,
+  sectionClass,
+} from '@/components/ui/styles';
 import { backupApi, useDeleteAllData, useRestoreBackup } from '@/features/backup/api';
 import { errorMessage } from '@/lib/apiClient';
 
@@ -78,7 +87,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">データ管理</h1>
+      <PageTitle icon={PAGE_ICONS.settings}>データ管理</PageTitle>
 
       <section className={sectionClass}>
         <h2 className="mb-1 text-lg font-semibold">バックアップ</h2>
@@ -150,7 +159,7 @@ export default function SettingsPage() {
             id="delete-confirm"
             value={confirmWord}
             onChange={(e) => setConfirmWord(e.target.value)}
-            className={`${inputClass} w-28`}
+            className={`${inputBaseClass} w-28`}
             autoComplete="off"
           />
           <button

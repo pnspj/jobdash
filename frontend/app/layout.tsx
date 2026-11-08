@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { NAV_ITEMS } from '@/components/layout/nav';
 import Providers from './providers';
 import './globals.css';
 
@@ -7,17 +8,6 @@ export const metadata: Metadata = {
   title: 'JobDash - 選考状況管理',
   description: '転職活動の選考状況を管理するダッシュボード',
 };
-
-const NAV_ITEMS = [
-  { href: '/', label: 'ダッシュボード' },
-  { href: '/companies', label: '企業一覧' },
-  { href: '/calendar', label: 'カレンダー' },
-  { href: '/agents', label: 'エージェント' },
-  { href: '/reports', label: '連絡用テキスト' },
-  { href: '/resume', label: '職務経歴書' },
-  { href: '/stats', label: '集計' },
-  { href: '/settings', label: 'データ管理' },
-];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,10 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="text-lg font-bold text-slate-900">
               JobDash
             </Link>
-            <nav className="flex gap-4 text-sm">
-              {NAV_ITEMS.map((item) => (
-                <Link key={item.href} href={item.href} className="text-slate-600 hover:text-slate-900">
-                  {item.label}
+            <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href} className="flex items-center gap-1 text-slate-600 hover:text-slate-900">
+                  <Icon className="h-4 w-4" aria-hidden />
+                  {label}
                 </Link>
               ))}
             </nav>

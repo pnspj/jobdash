@@ -2,6 +2,8 @@
 
 import { groupByAgent, maxPhaseTotal, type PhaseCount, phaseCounts, selectionSummary } from '@jobdash/shared';
 import { useMemo } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import { errorBox, sectionClass } from '@/components/ui/styles';
 import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import { useCompanies } from '@/features/companies/api';
@@ -109,7 +111,7 @@ export default function StatsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">集計</h1>
+          <PageTitle icon={PAGE_ICONS.stats}>集計</PageTitle>
           <p className="text-sm text-slate-500">選考フェーズ別の企業数です。辞退した企業は集計に含めません。</p>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-600">

@@ -3,6 +3,8 @@
 import { companyComparator, isClosedAction, todayLocalDate } from '@jobdash/shared';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import Modal from '@/components/ui/Modal';
 import { useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useCreateCompany } from '@/features/companies/api';
@@ -33,7 +35,7 @@ export default function CompanyListPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">企業一覧</h1>
+          <PageTitle icon={PAGE_ICONS.companies}>企業一覧</PageTitle>
           <p className="text-sm text-slate-500">
             {visible.length} 件表示 / 全 {companies.length} 件
           </p>

@@ -9,8 +9,10 @@ import {
   unratedForMotivation,
 } from '@jobdash/shared';
 import { useMemo } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import CopyButton from '@/components/ui/CopyButton';
-import { errorBox, inputClass, sectionClass } from '@/components/ui/styles';
+import { errorBox, inputBaseClass, inputClass, sectionClass } from '@/components/ui/styles';
 import { agentDisplayName, useAgents } from '@/features/agents/api';
 import { useCompanies } from '@/features/companies/api';
 import { errorMessage } from '@/lib/apiClient';
@@ -22,16 +24,26 @@ const DIRECT = '__direct__';
 interface ReportSettings {
   agentFilter: string; // ALL | DIRECT | agent id
   includeDeclined: boolean;
-  schedule: { stage: boolean; tag: boolean; interviewCount: boolean };
-  status: { tag: boolean; interviewCount: boolean };
+  schedule: { stage: boolean; tag: boolean; interviewCount: boolean; honorific: boolean };
+  status: { tag: boolean; interviewCount: boolean; honorific: boolean };
+  motivation: { honorific: boolean };
 }
 
 const DEFAULT_SETTINGS: ReportSettings = {
   agentFilter: ALL,
   includeDeclined: false,
-  schedule: { stage: false, tag: true, interviewCount: true },
-  status: { tag: true, interviewCount: true },
+  schedule: { stage: false, tag: true, interviewCount: true, honorific: false },
+  status: { tag: true, interviewCount: true, honorific: false },
+  motivation: { honorific: false },
 };
+
+/** Settings saved by an older version may lack newer keys: fill them from the defaults. */
+const withDefaults = (s: ReportSettings): ReportSettings => ({
+  ...s,
+  schedule: { ...DEFAULT_SETTINGS.schedule, ...s.schedule },
+  status: { ...DEFAULT_SETTINGS.status, ...s.status },
+  motivation: { ...DEFAULT_SETTINGS.motivation, ...s.motivation },
+});
 
 /** A row of checkboxes switching parts of the output on and off. */
 function Toggles<K extends string>({
@@ -98,7 +110,8 @@ function ReportBlock({
 export default function ReportsPage() {
   const { data: companies = [], isPending, error } = useCompanies();
   const { data: agents = [] } = useAgents();
-  const [settings, setSettings] = usePersistentState<ReportSettings>('jobdash.reportSettings', DEFAULT_SETTINGS);
+  const [stored, setSettings] = usePersistentState<ReportSettings>('jobdash.reportSettings', DEFAULT_SETTINGS);
+  const settings = withDefaults(stored);
 
   const filtered = useMemo<Company[]>(() => {
     if (settings.agentFilter === ALL) return companies;
@@ -109,14 +122,14 @@ export default function ReportsPage() {
   const today = todayLocalDate();
   const schedule = interviewScheduleText(filtered, today, settings.schedule);
   const status = selectionStatusText(filtered, { includeDeclined: settings.includeDeclined, ...settings.status });
-  const motivation = motivationText(filtered);
+  const motivation = motivationText(filtered, settings.motivation);
   const unrated = unratedForMotivation(filtered);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">連絡用テキスト</h1>
+          <PageTitle icon={PAGE_ICONS.reports}>連絡用テキスト</PageTitle>
           <p className="text-sm text-slate-500">エージェントへの連絡にそのまま貼り付けられるテキストです。</p>
         </div>
         <label className="flex items-center gap-2 whitespace-nowrap text-sm text-slate-600">
@@ -124,7 +137,7 @@ export default function ReportsPage() {
           <select
             value={settings.agentFilter}
             onChange={(e) => setSettings((s) => ({ ...s, agentFilter: e.target.value }))}
-            className={`${inputClass} w-auto`}
+            className={`${inputBaseClass} w-auto`}
           >
             <option value={ALL}>すべての企業</option>
             {agents.map((a) => (
@@ -144,7 +157,7 @@ export default function ReportsPage() {
         <>
           <ReportBlock
             title="面接予定"
-            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）は先頭のタグ、「面接N回」は会社研究の面接回数です。チェックで出力する項目を切り替えられます。"
+            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）は先頭のタグ、「面接N回」は企業研究の面接回数です。チェックで出力する項目を切り替えられます。"
             text={schedule}
             empty="今日以降の面接予定はありません"
           >
@@ -154,6 +167,7 @@ export default function ReportsPage() {
                 ['stage', '選考段階（一次面接など）'],
                 ['tag', 'タグ'],
                 ['interviewCount', '面接回数'],
+                ['honorific', '企業名に「様」を付ける'],
               ]}
               onChange={(schedule) => setSettings((s) => ({ ...s, schedule }))}
             />
@@ -166,14 +180,11 @@ export default function ReportsPage() {
             empty="出力対象の企業がありません"
           >
             <Toggles
-              value={{
-                tag: settings.status.tag,
-                interviewCount: settings.status.interviewCount,
-                declined: settings.includeDeclined,
-              }}
+              value={{ ...settings.status, declined: settings.includeDeclined }}
               labels={[
                 ['tag', 'タグ'],
                 ['interviewCount', '面接回数'],
+                ['honorific', '企業名に「様」を付ける'],
                 ['declined', '辞退した企業の件数'],
               ]}
               onChange={({ declined, ...status }) => setSettings((s) => ({ ...s, includeDeclined: declined, status }))}
@@ -186,6 +197,11 @@ export default function ReportsPage() {
             text={motivation}
             empty="総合評価が入力された企業がありません"
           >
+            <Toggles
+              value={settings.motivation}
+              labels={[['honorific', '企業名に「様」を付ける']]}
+              onChange={(motivation) => setSettings((s) => ({ ...s, motivation }))}
+            />
             {unrated.length > 0 && (
               <p className="text-xs text-amber-700">
                 総合評価が未入力のため出力されていない企業: {unrated.map((c) => c.companyName).join('、')}

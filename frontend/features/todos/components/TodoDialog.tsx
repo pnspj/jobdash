@@ -3,7 +3,14 @@
 import { joinLocalDateTime, splitLocalDateTime, type Todo, type TodoInput } from '@jobdash/shared';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import Modal from '@/components/ui/Modal';
-import { dangerButton, inputClass, labelClass, primaryButton, secondaryButton } from '@/components/ui/styles';
+import {
+  dangerButton,
+  inputBaseClass,
+  inputClass,
+  labelClass,
+  primaryButton,
+  secondaryButton,
+} from '@/components/ui/styles';
 import TimeSelect from '@/components/ui/TimeSelect';
 import { errorMessage } from '@/lib/apiClient';
 import { useTodoMutations } from '../api';
@@ -107,15 +114,20 @@ export function TodoForm({ todo, agentId, onDone, onCancel }: FormProps) {
       </div>
       <div>
         <span className={labelClass}>次回アクション日時</span>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <input
             type="date"
             aria-label="次回アクション日"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className={`${inputClass} w-40`}
+            className={`${inputBaseClass} w-44`}
           />
-          <TimeSelect value={date ? time : ''} onChange={setTime} disabled={!date} className={`${inputClass} w-28`} />
+          <TimeSelect
+            value={date ? time : ''}
+            onChange={setTime}
+            disabled={!date}
+            className={`${inputBaseClass} w-28 shrink-0`}
+          />
           {(date || time) && (
             <button
               type="button"

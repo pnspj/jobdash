@@ -39,7 +39,7 @@ export default function DashboardTable({ rows, onEditTodo }: Props) {
             <th className="w-10 px-3 py-3">
               <span className="sr-only">完了</span>
             </th>
-            <th className="px-4 py-3">会社名／項目名</th>
+            <th className="px-4 py-3">企業名／項目名</th>
             <th className="px-4 py-3">エージェント</th>
             <th className="px-4 py-3">選考フェーズ</th>
             <th className="px-4 py-3">アクション</th>

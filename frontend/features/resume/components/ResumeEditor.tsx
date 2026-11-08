@@ -163,7 +163,7 @@ function CareerEditor({ career, index, onChange }: { career: Career; index: numb
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_auto]">
         <div>
           <label className={labelClass} htmlFor={`${id}-name`}>
-            会社名 <span className="text-red-500">*</span>
+            企業名 <span className="text-red-500">*</span>
           </label>
           <input
             id={`${id}-name`}
@@ -280,7 +280,7 @@ export default function ResumeEditor({ value, update }: { value: ResumeContent; 
         {value.careers.map((c, ci) => (
           <div key={ci} className="rounded-lg border border-slate-300 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600">{c.companyName || `会社 ${ci + 1}`}</span>
+              <span className="text-sm font-semibold text-slate-600">{c.companyName || `企業 ${ci + 1}`}</span>
               <OrderButtons
                 index={ci}
                 count={value.careers.length}

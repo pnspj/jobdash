@@ -2,6 +2,8 @@
 
 import { dashboardRows, isEmptyWorkspace, type Todo } from '@jobdash/shared';
 import { useMemo, useState } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import { errorBox, primaryButton, secondaryButton } from '@/components/ui/styles';
 import { useAgents } from '@/features/agents/api';
 import { useCompanies } from '@/features/companies/api';
@@ -35,7 +37,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">ダッシュボード</h1>
+        <PageTitle icon={PAGE_ICONS.dashboard}>ダッシュボード</PageTitle>
         <div className="flex gap-2">
           <button type="button" onClick={() => setListOpen(true)} className={secondaryButton}>
             ToDo一覧

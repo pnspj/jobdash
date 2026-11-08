@@ -212,3 +212,31 @@ describe('label options', () => {
     );
   });
 });
+
+describe('honorific (様)', () => {
+  const gyoza = make(
+    '餃子ソリューションズ株式会社',
+    '一次面接',
+    '要本番準備',
+    { tags: ['SES'], interviewCount: 2, rating: 3, attractions: '技術が合う' },
+    {
+      interviews: [{ stage: '一次面接', start: '2026-11-10T16:00', end: '2026-11-10T17:00' }],
+    },
+  );
+
+  test('interview schedule and selection status put 様 right after the name', () => {
+    expect(interviewScheduleText([gyoza], '2026-11-10', { honorific: true, stage: true })).toBe(
+      '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社様（SES）面接2回',
+    );
+    expect(selectionStatusText([gyoza], { honorific: true, tag: false, interviewCount: false })).toBe(
+      '◇一次面接待ち\n餃子ソリューションズ株式会社様',
+    );
+  });
+
+  test('motivation', () => {
+    expect(motivationText([gyoza], { honorific: true })).toBe(
+      '志望度★★★\n◇餃子ソリューションズ株式会社様\n魅力的な点\n・技術が合う',
+    );
+    expect(motivationText([gyoza])).toContain('◇餃子ソリューションズ株式会社\n');
+  });
+});

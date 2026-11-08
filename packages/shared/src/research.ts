@@ -17,7 +17,7 @@ const tagsSchema = z
 const interviewCountSchema = z.number().int().min(1).max(MAX_INTERVIEW_COUNT);
 const ratingSchema = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 
-/** Company research ("会社研究"). Stored as `company.research`. */
+/** Company research ("企業研究"). Stored as `company.research`. */
 export const researchSchema = z.object({
   motivation: text, // 志望理由
   futureVision: text, // 入社後の将来像

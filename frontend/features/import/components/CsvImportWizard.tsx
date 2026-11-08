@@ -1,8 +1,10 @@
 'use client';
 
 import { type ActionStatus, formatLocalDateTime, type SelectionPhase } from '@jobdash/shared';
+import { FileUp } from 'lucide-react';
 import Link from 'next/link';
 import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
+import PageTitle from '@/components/layout/PageTitle';
 import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useImportCompanies } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
@@ -190,7 +192,9 @@ export default function CsvImportWizard() {
         <Link href="/companies" className="text-sm text-blue-600 hover:underline">
           ← 一覧へ戻る
         </Link>
-        <h1 className="mt-2 text-2xl font-bold">CSVインポート</h1>
+        <div className="mt-2">
+          <PageTitle icon={FileUp}>CSVインポート</PageTitle>
+        </div>
         <p className="text-sm text-slate-500">
           1行目をヘッダーとして読み込みます。Notion のデータベースからエクスポートしたCSVや、JobDash
           でエクスポートしたCSVを取り込めます。
@@ -367,7 +371,7 @@ export default function CsvImportWizard() {
                   既存と同名の企業 {duplicateCount} 行をスキップ
                 </label>
               )}
-              {mapping.companyName === null && <span className="text-red-600">「会社名」の列を割り当ててください</span>}
+              {mapping.companyName === null && <span className="text-red-600">「企業名」の列を割り当ててください</span>}
               {unmappedValues > 0 && (
                 <span className="text-red-600">対応先が未設定の値が {unmappedValues} 個あります</span>
               )}
@@ -379,7 +383,7 @@ export default function CsvImportWizard() {
                   <tr>
                     <th className="px-3 py-2">取込</th>
                     <th className="px-3 py-2">行</th>
-                    <th className="px-3 py-2">会社名</th>
+                    <th className="px-3 py-2">企業名</th>
                     <th className="px-3 py-2">エージェント</th>
                     <th className="px-3 py-2">フェーズ</th>
                     <th className="px-3 py-2">アクション</th>

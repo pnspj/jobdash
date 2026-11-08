@@ -7,7 +7,7 @@ import { optionalHttpUrl } from './url';
 
 /** Fields the user can edit. */
 export const companyInputSchema = z.object({
-  companyName: z.string().trim().min(1, '会社名は必須です'),
+  companyName: z.string().trim().min(1, '企業名は必須です'),
   companyUrl: optionalHttpUrl,
   /** Agent id; empty = direct application. */
   agentId: optionalText,

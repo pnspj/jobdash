@@ -2,7 +2,7 @@
 
 import { formatSlots, SLOT_FORMAT_PRESETS, type TimeSlot } from '@jobdash/shared';
 import CopyButton from '@/components/ui/CopyButton';
-import { inputClass } from '@/components/ui/styles';
+import { inputBaseClass, inputClass } from '@/components/ui/styles';
 import { usePersistentState } from '@/lib/usePersistentState';
 
 const CUSTOM = 'custom';
@@ -33,7 +33,7 @@ export default function SlotTextExport({ slots }: { slots: TimeSlot[] }) {
           aria-label="書式"
           value={preset ? preset.id : CUSTOM}
           onChange={(e) => setSettings((s) => ({ ...s, presetId: e.target.value }))}
-          className={`${inputClass} w-auto flex-1`}
+          className={`${inputBaseClass} w-auto flex-1`}
         >
           {SLOT_FORMAT_PRESETS.map((p) => (
             <option key={p.id} value={p.id}>
@@ -46,7 +46,7 @@ export default function SlotTextExport({ slots }: { slots: TimeSlot[] }) {
           aria-label="行頭記号"
           value={settings.bullet}
           onChange={(e) => setSettings((s) => ({ ...s, bullet: e.target.value }))}
-          className={`${inputClass} w-auto`}
+          className={`${inputBaseClass} w-auto`}
         >
           <option value="">行頭なし</option>
           <option value="・">・</option>

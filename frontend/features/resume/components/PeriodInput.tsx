@@ -1,7 +1,7 @@
 'use client';
 
 import type { Period } from '@jobdash/shared';
-import { inputClass } from '@/components/ui/styles';
+import { inputBaseClass, inputClass } from '@/components/ui/styles';
 
 interface Props {
   value: Period;
@@ -20,7 +20,7 @@ export default function PeriodInput({ value, onChange, idPrefix }: Props) {
         aria-label="開始年月"
         value={value.from}
         onChange={(e) => onChange({ ...value, from: e.target.value })}
-        className={`${inputClass} w-40`}
+        className={`${inputBaseClass} w-40`}
       />
       <span className="text-slate-500">～</span>
       <input
@@ -30,7 +30,7 @@ export default function PeriodInput({ value, onChange, idPrefix }: Props) {
         value={value.to ?? ''}
         min={value.from}
         onChange={(e) => onChange({ ...value, to: e.target.value || undefined })}
-        className={`${inputClass} w-40`}
+        className={`${inputBaseClass} w-40`}
       />
       <label className="flex items-center gap-1 whitespace-nowrap text-sm text-slate-600">
         <input

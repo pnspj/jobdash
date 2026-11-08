@@ -4,6 +4,8 @@ import type { DatesSetArg, EventClickArg } from '@fullcalendar/core';
 import { DATE_RE, INTERVIEW_STAGES, todayLocalDate } from '@jobdash/shared';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useRef } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import { errorBox } from '@/components/ui/styles';
 import BaseCalendar from '@/features/calendar/components/BaseCalendar';
 import WeekStartToggle from '@/features/calendar/components/WeekStartToggle';
@@ -71,7 +73,7 @@ function CalendarScreen() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">面接カレンダー</h1>
+          <PageTitle icon={PAGE_ICONS.calendar}>面接カレンダー</PageTitle>
           <p className="text-sm text-slate-500">
             予定の登録・変更は企業の詳細画面から行います。予定をクリックすると企業の詳細へ移動します。
           </p>

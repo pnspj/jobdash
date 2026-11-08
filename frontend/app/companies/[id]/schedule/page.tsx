@@ -1,9 +1,11 @@
 'use client';
 
 import { isInterviewStageKey } from '@jobdash/shared';
+import { CalendarPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import PageTitle from '@/components/layout/PageTitle';
 import { errorBox } from '@/components/ui/styles';
 import ScheduleEditor, { type ScheduleMode } from '@/features/calendar/components/ScheduleEditor';
 import { useCompanies, useCompany } from '@/features/companies/api';
@@ -44,7 +46,7 @@ function ScheduleScreen() {
           </Link>
         )}
       </div>
-      <h1 className="text-2xl font-bold">{company.companyName} の日程登録</h1>
+      <PageTitle icon={CalendarPlus}>{company.companyName} の日程登録</PageTitle>
       <ScheduleEditor
         key={`${company.id}:${mode}`}
         company={company}

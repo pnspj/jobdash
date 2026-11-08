@@ -23,7 +23,7 @@ export const projectSchema = z.object({
 });
 
 export const careerSchema = z.object({
-  companyName: z.string().trim().min(1, '会社名は必須です'),
+  companyName: z.string().trim().min(1, '企業名は必須です'),
   period: periodSchema,
   employees: text, // 従業員数 (free text, e.g. "約300名")
   employmentType: text, // 雇用形態

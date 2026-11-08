@@ -11,7 +11,7 @@ import {
 } from '@jobdash/shared';
 import { useMemo, useState } from 'react';
 import StarRating from '@/components/ui/StarRating';
-import { inputClass, labelClass, primaryButton } from '@/components/ui/styles';
+import { inputBaseClass, inputClass, labelClass, primaryButton } from '@/components/ui/styles';
 import TagInput from '@/components/ui/TagInput';
 import { errorMessage } from '@/lib/apiClient';
 
@@ -93,7 +93,7 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
               disabled={saving}
               value={draft.interviewCount ?? ''}
               onChange={(e) => set('interviewCount', e.target.value === '' ? undefined : Number(e.target.value))}
-              className={`${inputClass} w-20`}
+              className={`${inputBaseClass} w-20`}
             />
             <span className="text-sm text-slate-500">回</span>
           </div>
@@ -139,7 +139,7 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
           </button>
         )}
         <button type="button" onClick={handleSave} disabled={!dirty || saving} className={primaryButton}>
-          {saving ? '保存中...' : '会社研究を保存'}
+          {saving ? '保存中...' : '企業研究を保存'}
         </button>
       </div>
     </div>

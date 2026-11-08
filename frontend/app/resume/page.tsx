@@ -10,6 +10,8 @@ import {
 } from '@jobdash/shared';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import CopyButton from '@/components/ui/CopyButton';
 import { errorBox, primaryButton, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { useResume, useSaveResume } from '@/features/resume/api';
@@ -75,7 +77,7 @@ function ResumeScreen({ saved }: { saved: Resume }) {
     <div className="space-y-4 pb-24">
       <div className="flex flex-wrap items-end justify-between gap-3 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold">職務経歴書</h1>
+          <PageTitle icon={PAGE_ICONS.resume}>職務経歴書</PageTitle>
           <p className="text-sm text-slate-500">
             {saved.version > 0
               ? `最終保存: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`

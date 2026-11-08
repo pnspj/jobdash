@@ -21,7 +21,7 @@ export default function CompanyTable({ companies, returnTo }: { companies: Compa
       <table className="min-w-full divide-y divide-slate-200 text-sm">
         <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
           <tr>
-            <th className="px-4 py-3">会社名</th>
+            <th className="px-4 py-3">企業名</th>
             <th className="px-4 py-3">エージェント</th>
             <th className="px-4 py-3">選考フェーズ</th>
             <th className="px-4 py-3">アクション</th>

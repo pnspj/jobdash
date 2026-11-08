@@ -12,6 +12,7 @@ import {
 } from '@jobdash/shared';
 import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
+import { inputBaseClass, inputClass, labelClass } from '@/components/ui/styles';
 import TimeSelect from '@/components/ui/TimeSelect';
 import { agentDisplayName, useAgents } from '@/features/agents/api';
 import { errorMessage } from '@/lib/apiClient';
@@ -57,10 +58,6 @@ interface Props {
   onCancel?: () => void;
 }
 
-const inputClass =
-  'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200';
-const labelClass = 'mb-1 block text-sm font-medium text-slate-700';
-
 export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }: Props) {
   const [value, setValue] = useState<FormValues>(() => toFormValues(company));
   const { data: agents = [] } = useAgents();
@@ -87,7 +84,7 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className={labelClass} htmlFor="companyName">
-            会社名 <span className="text-red-500">*</span>
+            企業名 <span className="text-red-500">*</span>
           </label>
           <input
             id="companyName"
@@ -100,7 +97,7 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
 
         <div className="sm:col-span-2">
           <label className={labelClass} htmlFor="companyUrl">
-            会社URL
+            企業URL
           </label>
           <input
             id="companyUrl"
@@ -202,7 +199,7 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
             />
             <TimeSelect
               id="nextActionTime"
-              className={`${inputClass} w-28 shrink-0`}
+              className={`${inputBaseClass} w-28 shrink-0`}
               disabled={!value.nextActionDate}
               value={value.nextActionTime}
               onChange={(v) => set('nextActionTime', v)}

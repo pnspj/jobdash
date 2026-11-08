@@ -11,6 +11,8 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import InterviewSchedule from '@/features/calendar/components/InterviewSchedule';
@@ -94,7 +96,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{company.companyName}</h1>
+          <PageTitle icon={PAGE_ICONS.companies}>{company.companyName}</PageTitle>
           <div className="mt-2 flex gap-2">
             <PhaseBadge phase={company.phase} />
             <ActionBadge action={company.action} />
@@ -189,7 +191,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
           </section>
 
           <section className={sectionClass}>
-            <h2 className="mb-4 text-lg font-semibold">会社研究</h2>
+            <h2 className="mb-4 text-lg font-semibold">企業研究</h2>
             <ResearchEditor
               key={company.id}
               company={company}
@@ -201,10 +203,10 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
           <section className={sectionClass}>
             <h2 className="mb-4 text-lg font-semibold">企業情報</h2>
             <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-[10rem_1fr]">
-              <dt className="font-medium text-slate-500">会社名</dt>
+              <dt className="font-medium text-slate-500">企業名</dt>
               <dd>{company.companyName}</dd>
 
-              <dt className="font-medium text-slate-500">会社URL</dt>
+              <dt className="font-medium text-slate-500">企業URL</dt>
               <dd className="break-all">
                 <ExternalLink href={company.companyUrl} />
               </dd>

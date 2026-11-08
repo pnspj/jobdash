@@ -1,6 +1,9 @@
 /** Shared Tailwind class strings for form controls and layout blocks. */
-export const inputClass =
-  'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-slate-50 disabled:text-slate-400';
+/** Input styling without a width: combine with an explicit width (e.g. inline date + time). */
+export const inputBaseClass =
+  'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-slate-50 disabled:text-slate-400';
+/** Full-width input. */
+export const inputClass = `w-full ${inputBaseClass}`;
 export const labelClass = 'mb-1 block text-sm font-medium text-slate-700';
 export const sectionClass = 'rounded-lg border border-slate-200 bg-white p-6 shadow-sm';
 

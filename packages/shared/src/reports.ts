@@ -22,17 +22,21 @@ export interface LabelOptions {
   tag?: boolean;
   /** "面接2回": the interview count from the research, when known */
   interviewCount?: boolean;
+  /** "A社様": add the honorific after the company name (off by default) */
+  honorific?: boolean;
 }
 
-/** "A社（SI）面接2回": first tag in parentheses, interview count when known. */
+const nameOf = (c: Pick<Company, 'companyName'>, honorific = false) => `${c.companyName}${honorific ? '様' : ''}`;
+
+/** "A社（SI）面接2回": first tag in parentheses, interview count when known; "A社様（SI）…" with honorific. */
 export function companyLabel(
   c: Pick<Company, 'companyName' | 'research'>,
-  { tag = true, interviewCount = true }: LabelOptions = {},
+  { tag = true, interviewCount = true, honorific = false }: LabelOptions = {},
 ): string {
   const r = researchOf(c);
   const tagText = tag && r.tags[0] ? `（${r.tags[0]}）` : '';
   const countText = interviewCount && r.interviewCount ? `面接${r.interviewCount}回` : '';
-  return `${c.companyName}${tagText}${countText}`;
+  return `${nameOf(c, honorific)}${tagText}${countText}`;
 }
 
 // ---------- interview schedule ----------
@@ -156,7 +160,10 @@ export function selectionStatusText(companies: ReportCompany[], options: Selecti
  *   不安な点
  *   ・残業が多そう
  */
-export function motivationText(companies: ReportCompany[]): string {
+export function motivationText(
+  companies: ReportCompany[],
+  { honorific = false }: Pick<LabelOptions, 'honorific'> = {},
+): string {
   const eligible = [...companies].filter((c) => c.phase !== '書類選考' && !isClosedAction(c.action)).sort(byListOrder);
   return [...RATINGS]
     .reverse()
@@ -169,9 +176,11 @@ export function motivationText(companies: ReportCompany[]): string {
           const lines = splitLines(text);
           return lines.length > 0 ? [title, ...lines.map((l) => `・${l}`)] : [];
         };
-        return [`◇${c.companyName}`, ...section('魅力的な点', r.attractions), ...section('不安な点', r.concerns)].join(
-          '\n',
-        );
+        return [
+          `◇${nameOf(c, honorific)}`,
+          ...section('魅力的な点', r.attractions),
+          ...section('不安な点', r.concerns),
+        ].join('\n');
       });
       return [`志望度${formatRating(rating)}`, ...blocks].join('\n');
     })

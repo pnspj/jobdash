@@ -4,6 +4,8 @@ import { type Agent, companyComparator, type Todo } from '@jobdash/shared';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
+import { PAGE_ICONS } from '@/components/layout/nav';
+import PageTitle from '@/components/layout/PageTitle';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { dangerButton, errorBox, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { useAgent, useDeleteAgent, useUpdateAgent } from '@/features/agents/api';
@@ -75,7 +77,7 @@ function AgentDetail({ agent, returnTo }: { agent: Agent; returnTo: string }) {
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{agent.name}</h1>
+          <PageTitle icon={PAGE_ICONS.agents}>{agent.name}</PageTitle>
           <p className="mt-1 font-mono text-sm text-slate-500">{agent.shortName}</p>
         </div>
         <div className="flex gap-2">

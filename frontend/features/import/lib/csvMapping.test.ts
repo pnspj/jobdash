@@ -269,5 +269,5 @@ test('non-http URLs in CSV are reported as row errors', () => {
     { phase: '書類選考', action: '要対応' },
   );
   expect(r.errors).toHaveLength(1);
-  expect(r.errors[0]).toMatch(/会社URL/);
+  expect(r.errors[0]).toMatch(/企業URL/); // old "会社URL" header is still recognized
 });
