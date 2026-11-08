@@ -78,6 +78,8 @@ export function useDeleteAgent() {
     onSuccess: (_data, id) => {
       qc.removeQueries({ queryKey: agentKeys.detail(id) });
       void qc.invalidateQueries({ queryKey: agentKeys.all, exact: true });
+      // The agent's to-dos are deleted with it
+      void qc.invalidateQueries({ queryKey: ['todos'] });
     },
   });
 }

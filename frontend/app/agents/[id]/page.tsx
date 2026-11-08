@@ -1,6 +1,6 @@
 'use client';
 
-import { type Agent, companyComparator } from '@jobdash/shared';
+import { type Agent, companyComparator, type Todo } from '@jobdash/shared';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
@@ -10,6 +10,9 @@ import { useAgent, useDeleteAgent, useUpdateAgent } from '@/features/agents/api'
 import AgentForm from '@/features/agents/components/AgentForm';
 import { useCompanies } from '@/features/companies/api';
 import CompanyTable from '@/features/companies/components/CompanyTable';
+import { useTodos } from '@/features/todos/api';
+import TodoDialog from '@/features/todos/components/TodoDialog';
+import TodoList from '@/features/todos/components/TodoList';
 import { ApiError, errorMessage } from '@/lib/apiClient';
 
 export default function AgentDetailPage() {
@@ -37,6 +40,10 @@ function AgentDetail({ agent }: { agent: Agent }) {
   const remove = useDeleteAgent();
   const { data: companies = [] } = useCompanies();
   const [editing, setEditing] = useState(false);
+  const { data: allTodos = [] } = useTodos();
+  const todos = useMemo(() => allTodos.filter((t) => t.agentId === agent.id), [allTodos, agent.id]);
+  // undefined = closed, null = adding, Todo = editing
+  const [dialogTodo, setDialogTodo] = useState<Todo | null | undefined>(undefined);
 
   const linked = useMemo(
     () => companies.filter((c) => c.agentId === agent.id).sort(companyComparator(() => agent.shortName)),
@@ -44,7 +51,8 @@ function AgentDetail({ agent }: { agent: Agent }) {
   );
 
   const handleDelete = () => {
-    if (!window.confirm(`「${agent.name}」を削除しますか？`)) return;
+    const note = todos.length > 0 ? `\nこのエージェントのToDo ${todos.length}件も削除されます。` : '';
+    if (!window.confirm(`「${agent.name}」を削除しますか？${note}`)) return;
     remove.mutate(agent.id, { onSuccess: () => router.push('/agents') });
   };
 
@@ -122,6 +130,22 @@ function AgentDetail({ agent }: { agent: Agent }) {
           </dl>
         </section>
       )}
+
+      <section className={sectionClass}>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">ToDo（未完了 {todos.filter((t) => t.status === 'open').length}）</h2>
+          <button type="button" onClick={() => setDialogTodo(null)} className={secondaryButton}>
+            ＋ ToDoを追加
+          </button>
+        </div>
+        <TodoList todos={todos} onEdit={setDialogTodo} emptyMessage="未完了のToDoはありません。" />
+        <TodoDialog
+          open={dialogTodo !== undefined}
+          todo={dialogTodo ?? undefined}
+          agentId={agent.id}
+          onClose={() => setDialogTodo(undefined)}
+        />
+      </section>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">紐づく企業（{linked.length}）</h2>
