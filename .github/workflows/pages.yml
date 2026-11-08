@@ -21,6 +21,8 @@ concurrency:
 jobs:
   build:
     name: Upload site
+    # Pages is not available for this private repository on the current plan; deploy is skipped with it
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
