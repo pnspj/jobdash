@@ -5,6 +5,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 (native compiler) is not yet supported by Next.js' type checking
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # FullCalendar v7 restructured its React adapter; core and plugins must move together (deferred)
+      - dependency-name: "@fullcalendar/*"
+        update-types: [version-update:semver-major]
     groups:
       # Batch minor/patch updates into one PR; majors come separately for review
       minor-and-patch:
