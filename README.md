@@ -42,6 +42,8 @@ npm run format              # Biome で自動整形・自動修正
 npm run sample:check        # サンプル JSON が生成スクリプトの出力と一致するか
 ```
 
+コミット時には、ステージしたファイルを Biome で自動チェックします（`.githooks/pre-commit`）。`npm install` 時に `prepare` スクリプトが `git config core.hooksPath .githooks` を設定します。チェックで止まったら `npm run format` で整形し、内容を確認してからステージし直してください。
+
 - `packages/shared`: スキーマ・並び順の単体テスト
 - `backend`: API の結合テスト。DynamoDB Local 上のテスト用テーブル `JobHuntingTable_test` を使う（本番データには触れない）
 - `frontend`: CSV 変換ロジックなどの単体テスト

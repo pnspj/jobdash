@@ -1,0 +1,17 @@
+#!/bin/sh
+# Check staged files with Biome (lint + format). Enabled via `git config core.hooksPath .githooks`,
+# which `npm install` sets up through the root "prepare" script.
+# Files are only checked, never rewritten here: run `npm run format` to fix, then stage again.
+# Bypass in an emergency with `git commit --no-verify`.
+
+biome="$(git rev-parse --show-toplevel)/node_modules/.bin/biome"
+if [ ! -x "$biome" ]; then
+  echo "pre-commit: Biome is not installed. Run 'npm install' first." >&2
+  exit 1
+fi
+
+if ! "$biome" check --staged --no-errors-on-unmatched --files-ignore-unknown=true; then
+  echo "" >&2
+  echo "pre-commit: Biome found problems in staged files. Run 'npm run format', review, and stage again." >&2
+  exit 1
+fi
