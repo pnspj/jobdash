@@ -1,10 +1,13 @@
 import { expect, test } from 'vitest';
 import type { Company } from './company';
-import { compareCompanies } from './sort';
+import { companyComparator } from './sort';
 
-type Sortable = Pick<Company, 'nextActionAt' | 'action' | 'phase' | 'agent' | 'companyName'> & { id: string };
+// In tests agentId doubles as the display name
+const compareCompanies = companyComparator((id) => id ?? '');
 
-const base: Omit<Sortable, 'id'> = { companyName: 'A社', agent: 'RA', phase: '一次面接', action: '要対応' };
+type Sortable = Pick<Company, 'nextActionAt' | 'action' | 'phase' | 'agentId' | 'companyName'> & { id: string };
+
+const base: Omit<Sortable, 'id'> = { companyName: 'A社', agentId: 'MA', phase: '一次面接', action: '要対応' };
 const make = (id: string, patch: Partial<Sortable> = {}): Sortable => ({ ...base, id, ...patch });
 const order = (list: Sortable[]) => [...list].sort(compareCompanies).map((c) => c.id);
 
@@ -27,12 +30,12 @@ test('ties broken by action asc, phase desc, agent asc, company asc', () => {
       make('wait', { ...at, action: '選考結果待ち' }),
       make('schedule', { ...at, action: '要日程調整' }),
       make('final', { ...at, phase: '最終面接' }),
-      make('agentWP', { ...at, agent: 'WP' }),
-      make('agentDD', { ...at, agent: 'dd', companyName: 'Z社' }),
+      make('agentSA', { ...at, agentId: 'SA' }),
+      make('agentBA', { ...at, agentId: 'ba', companyName: 'Z社' }), // lower case: ordering is case-insensitive
       make('companyB', { ...at, companyName: 'B社' }),
       make('companyA', { ...at }),
     ]),
-  ).toEqual(['schedule', 'final', 'agentDD', 'companyA', 'companyB', 'agentWP', 'wait']);
+  ).toEqual(['schedule', 'final', 'agentBA', 'companyA', 'companyB', 'agentSA', 'wait']);
 });
 
 test('closed actions sort after open ones when dates tie', () => {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import Link from 'next/link';
 import { formatLocalDateTime, type ActionStatus, type SelectionPhase } from '@jobdash/shared';
 import { errorMessage } from '@/lib/apiClient';
+import { useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useImportCompanies } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
 import { parseCsv } from '../lib/csv';
@@ -11,7 +12,11 @@ import {
   ACTION_STATUSES,
   SELECTION_PHASES,
   TARGET_FIELDS,
+  NEW_AGENT,
+  NO_AGENT,
+  autoMapAgents,
   autoMapEnum,
+  type AgentChoice,
   convertRow,
   distinctValues,
   guessMapping,
@@ -41,7 +46,8 @@ export default function CsvImportWizard() {
   const [mapping, setMapping] = useState<ColumnMapping | null>(null);
   const [phaseOverrides, setPhaseOverrides] = useState<Record<string, SelectionPhase>>({});
   const [actionOverrides, setActionOverrides] = useState<Record<string, ActionStatus>>({});
-  const [agentNames, setAgentNames] = useState<Record<string, string>>({});
+  const [agentOverrides, setAgentOverrides] = useState<Record<string, AgentChoice>>({});
+  const { agents, shortName: agentShortName } = useAgentLookup();
   const [defaults, setDefaults] = useState<ImportDefaults>({ phase: '書類選考', action: '要対応' });
 
   const [skipDuplicates, setSkipDuplicates] = useState(true);
@@ -71,7 +77,7 @@ export default function CsvImportWizard() {
         setMapping(guessMapping(headers));
         setPhaseOverrides({});
         setActionOverrides({});
-        setAgentNames({});
+        setAgentOverrides({});
         setExcluded(new Set());
         setParseError(null);
       })
@@ -96,6 +102,7 @@ export default function CsvImportWizard() {
   const phaseRaw = useMemo(() => (csv && mapping ? distinctValues(csv.rows, mapping.phase) : []), [csv, mapping]);
   const actionRaw = useMemo(() => (csv && mapping ? distinctValues(csv.rows, mapping.action) : []), [csv, mapping]);
   const agentRaw = useMemo(() => (csv && mapping ? distinctValues(csv.rows, mapping.agent) : []), [csv, mapping]);
+  const agentMap = useMemo(() => autoMapAgents(agentRaw, agents, agentOverrides), [agentRaw, agents, agentOverrides]);
 
   const phaseMap = useMemo(() => autoMapEnum(phaseRaw, SELECTION_PHASES, phaseOverrides), [phaseRaw, phaseOverrides]);
   const actionMap = useMemo(() => autoMapEnum(actionRaw, ACTION_STATUSES, actionOverrides), [actionRaw, actionOverrides]);
@@ -109,11 +116,11 @@ export default function CsvImportWizard() {
   const converted = useMemo(() => {
     if (!csv || !mapping) return [];
     return csv.rows.map((row, i) => {
-      const result = convertRow(row, i + 1, mapping, { phase: phaseMap, action: actionMap, agent: agentNames }, defaults);
+      const result = convertRow(row, i + 1, mapping, { phase: phaseMap, action: actionMap, agent: agentMap }, defaults);
       const duplicate = existingNames.has(normalizeKey(result.input.companyName));
       return { ...result, duplicate };
     });
-  }, [csv, mapping, phaseMap, actionMap, agentNames, defaults, existingNames]);
+  }, [csv, mapping, phaseMap, actionMap, agentMap, defaults, existingNames]);
 
   const isIncluded = (r: (typeof converted)[number]) =>
     r.errors.length === 0 && !(skipDuplicates && r.duplicate) && !excluded.has(r.rowNumber);
@@ -295,8 +302,10 @@ export default function CsvImportWizard() {
 
             {agentRaw.length > 0 && (
               <div className="mt-6">
-                <h3 className="mb-1 font-medium">担当エージェント（表示名）</h3>
-                <p className="mb-2 text-xs text-slate-500">略称を正式名に置き換えられます。空欄ならCSVの値をそのまま使います。</p>
+                <h3 className="mb-1 font-medium">担当エージェント</h3>
+                <p className="mb-2 text-xs text-slate-500">
+                  登録済みのエージェントに紐づけます。「新規作成」を選ぶと、CSVの値を略称・名前としてエージェントを作成します（名前は後から編集できます）。
+                </p>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {agentRaw.map((raw) => (
                     <label key={raw} className="flex items-center gap-2 text-sm">
@@ -304,12 +313,19 @@ export default function CsvImportWizard() {
                         {raw}
                       </span>
                       <span className="text-slate-400">→</span>
-                      <input
-                        value={agentNames[raw] ?? ''}
-                        placeholder={raw}
-                        onChange={(e) => setAgentNames((p) => ({ ...p, [raw]: e.target.value }))}
-                        className={selectClass}
-                      />
+                      <select
+                        value={agentMap[raw]}
+                        onChange={(e) => setAgentOverrides((p) => ({ ...p, [raw]: e.target.value }))}
+                        className={`${selectClass} ${agentMap[raw] === NEW_AGENT ? 'border-amber-400 bg-amber-50' : ''}`}
+                      >
+                        <option value={NEW_AGENT}>新規作成（略称: {raw}）</option>
+                        <option value={NO_AGENT}>紐づけない</option>
+                        {agents.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.shortName}（{a.name}）
+                          </option>
+                        ))}
+                      </select>
                       <span className="shrink-0 text-xs text-slate-400">{countBy(mapping.agent).get(raw)}件</span>
                     </label>
                   ))}
@@ -374,7 +390,18 @@ export default function CsvImportWizard() {
                             r.input.companyName || '(空)'
                           )}
                         </td>
-                        <td className="px-3 py-2">{r.input.agent || '-'}</td>
+                        <td className="px-3 py-2">
+                          {r.input.agentId ? (
+                            agentShortName(r.input.agentId)
+                          ) : r.input.agentShortName ? (
+                            <span>
+                              {r.input.agentShortName}
+                              <span className="ml-1 text-xs text-amber-700">(新規)</span>
+                            </span>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         <td className="px-3 py-2">
                           <PhaseBadge phase={r.input.phase} />
                         </td>

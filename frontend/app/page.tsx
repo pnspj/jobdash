@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { compareCompanies, isClosedAction, todayLocalDate } from '@jobdash/shared';
+import { companyComparator, isClosedAction, todayLocalDate } from '@jobdash/shared';
 import { errorMessage } from '@/lib/apiClient';
 import Modal from '@/components/ui/Modal';
+import { useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useCreateCompany } from '@/features/companies/api';
 import CompanyForm from '@/features/companies/components/CompanyForm';
 import CompanyTable from '@/features/companies/components/CompanyTable';
@@ -20,12 +21,13 @@ export default function CompanyListPage() {
   const [showClosed, setShowClosed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const sorted = useMemo(() => [...companies].sort(compareCompanies), [companies]);
+  const { shortName: agentShortName } = useAgentLookup();
+  const sorted = useMemo(() => [...companies].sort(companyComparator(agentShortName)), [companies, agentShortName]);
   const visible = showClosed ? sorted : sorted.filter((c) => !isClosedAction(c.action));
   const closedCount = companies.length - sorted.filter((c) => !isClosedAction(c.action)).length;
 
   const handleExport = () =>
-    downloadCsv(`jobdash-${todayLocalDate().replaceAll('-', '')}.csv`, companiesToCsvRows(sorted));
+    downloadCsv(`jobdash-${todayLocalDate().replaceAll('-', '')}.csv`, companiesToCsvRows(sorted, agentShortName));
 
   return (
     <div>

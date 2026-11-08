@@ -4,7 +4,7 @@ import { companyImportSchema, companyInputSchema, companyPatchSchema } from './c
 const valid = {
   companyName: '  株式会社A  ',
   companyUrl: '',
-  agent: ' RA ',
+  agentId: ' agent-1 ',
   phase: '一次面接',
   action: '選考結果待ち',
   nextActionAt: '2026-11-09T15:00',
@@ -16,7 +16,7 @@ describe('companyInputSchema', () => {
     expect(parsed).toEqual({
       companyName: '株式会社A',
       companyUrl: undefined,
-      agent: 'RA',
+      agentId: 'agent-1',
       agentJobUrl: undefined,
       phase: '一次面接',
       action: '選考結果待ち',

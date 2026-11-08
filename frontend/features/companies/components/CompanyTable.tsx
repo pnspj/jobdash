@@ -3,12 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { formatLocalDateTime, isActionRequired, isClosedAction, todayLocalDate, type Company } from '@jobdash/shared';
 import ExternalLink from '@/components/ui/ExternalLink';
+import { useAgentLookup } from '@/features/agents/api';
 import { ActionBadge, PhaseBadge } from './Badges';
 
 /** Company list table. Rows navigate to the detail page; name/agent cells link to external URLs. */
 export default function CompanyTable({ companies }: { companies: Company[] }) {
   const router = useRouter();
   const today = todayLocalDate();
+  const { shortName: agentShortName } = useAgentLookup();
 
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -44,7 +46,7 @@ export default function CompanyTable({ companies }: { companies: Company[] }) {
                 </td>
                 <td className="px-4 py-3 text-slate-600">
                   <ExternalLink href={c.agentJobUrl} marker stopPropagation>
-                    {c.agent || (c.agentJobUrl ? '求人' : '-')}
+                    {agentShortName(c.agentId) || (c.agentJobUrl ? '求人' : '-')}
                   </ExternalLink>
                 </td>
                 <td className="px-4 py-3">

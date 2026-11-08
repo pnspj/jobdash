@@ -4,8 +4,10 @@ import {
   type ActionStatus,
   joinLocalDateTime,
   splitLocalDateTime,
+  normalizeShortName,
+  type Agent,
   type Company,
-  type CompanyInputParsed,
+  type CompanyImportRecordParsed,
   type SelectionPhase,
 } from '@jobdash/shared';
 
@@ -182,7 +184,32 @@ export function parseTime(raw: string): string | undefined | { error: string } {
 export interface ValueMappings {
   phase: Record<string, SelectionPhase>; // raw (trimmed) CSV value -> phase
   action: Record<string, ActionStatus>;
-  agent: Record<string, string>; // raw agent label -> display name
+  agent: Record<string, AgentChoice>; // raw agent label -> how to link it
+}
+
+/** How a raw CSV agent label is linked: an existing agent id, a new agent, or no agent. */
+export type AgentChoice = string;
+export const NEW_AGENT: AgentChoice = '__new__';
+export const NO_AGENT: AgentChoice = '__none__';
+
+/**
+ * Default agent choice per raw label: an existing agent whose short name or name matches
+ * (case/width-insensitive), otherwise create a new agent. `overrides` (user choices) win.
+ */
+export function autoMapAgents(
+  raws: string[],
+  agents: Pick<Agent, 'id' | 'name' | 'shortName'>[],
+  overrides: Record<string, AgentChoice> = {},
+): Record<string, AgentChoice> {
+  return Object.fromEntries(
+    raws.map((raw) => {
+      if (overrides[raw]) return [raw, overrides[raw]];
+      const key = normalizeShortName(raw);
+      const match =
+        agents.find((a) => normalizeShortName(a.shortName) === key) ?? agents.find((a) => normalizeShortName(a.name) === key);
+      return [raw, match ? match.id : NEW_AGENT];
+    }),
+  );
 }
 
 export interface ImportDefaults {
@@ -192,7 +219,7 @@ export interface ImportDefaults {
 
 export interface ConvertedRow {
   rowNumber: number; // 1-based line number in the CSV data (excluding header)
-  input: CompanyInputParsed;
+  input: CompanyImportRecordParsed;
   errors: string[];
 }
 
@@ -234,7 +261,9 @@ export function convertRow(
   }
 
   const rawAgent = cell(row, mapping.agent);
-  const agent = rawAgent ? (values.agent[rawAgent]?.trim() || rawAgent) : '';
+  const choice = rawAgent ? (values.agent[rawAgent] ?? NEW_AGENT) : NO_AGENT;
+  const agentLink =
+    choice === NO_AGENT ? {} : choice === NEW_AGENT ? { agentShortName: rawAgent } : { agentId: choice };
 
   return {
     rowNumber,
@@ -242,7 +271,7 @@ export function convertRow(
     input: {
       companyName,
       companyUrl: cell(row, mapping.companyUrl) || undefined,
-      agent,
+      ...agentLink,
       agentJobUrl: cell(row, mapping.agentJobUrl) || undefined,
       phase: phase ?? defaults.phase,
       action: action ?? defaults.action,
@@ -269,12 +298,12 @@ export const autoMapEnum = <T extends string>(raws: string[], options: readonly 
 export { ACTION_STATUSES, SELECTION_PHASES };
 
 /** CSV column values of a company for each target field (next action split into date and time). */
-function exportValues(c: Company): Record<TargetField, string> {
+function exportValues(c: Company, agentShortName: (id: string | undefined) => string): Record<TargetField, string> {
   const { date, time } = splitLocalDateTime(c.nextActionAt);
   return {
     companyName: c.companyName,
     companyUrl: c.companyUrl ?? '',
-    agent: c.agent,
+    agent: agentShortName(c.agentId),
     agentJobUrl: c.agentJobUrl ?? '',
     phase: c.phase,
     action: c.action,
@@ -286,11 +315,11 @@ function exportValues(c: Company): Record<TargetField, string> {
 
 // ---------- export ----------
 
-export function companiesToCsvRows(companies: Company[]): string[][] {
+export function companiesToCsvRows(companies: Company[], agentShortName: (id: string | undefined) => string): string[][] {
   const fields = TARGET_FIELDS.map((f) => f.key);
   const header = [...fields.map((f) => EXPORT_HEADERS[f]), '更新日時', 'ID'];
   const body = companies.map((c) => {
-    const values = exportValues(c);
+    const values = exportValues(c, agentShortName);
     return [...fields.map((f) => values[f]), c.updatedAt, c.id];
   });
   return [header, ...body];

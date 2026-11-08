@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import type { Company } from '@jobdash/shared';
 import { call, clearTable } from './helpers';
+import type { Agent } from '@jobdash/shared';
 
 const BASE = '/api/companies';
 
 const valid = {
   companyName: 'テスト株式会社',
   companyUrl: 'https://example.com',
-  agent: '山田',
   agentJobUrl: '',
   phase: '書類選考',
   action: '選考結果待ち',
@@ -89,9 +89,9 @@ describe('companies API', () => {
 
   test('bulk import spanning multiple BatchWrite chunks', async () => {
     const records = Array.from({ length: 60 }, (_, i) => ({ ...valid, companyName: `インポート${i}` }));
-    const res = await call<{ imported: number }>('POST', `${BASE}/import`, { records });
+    const res = await call<{ imported: number; agentsCreated: number }>('POST', `${BASE}/import`, { records });
     expect(res.status).toBe(201);
-    expect(res.body.imported).toBe(60);
+    expect(res.body).toMatchObject({ imported: 60, agentsCreated: 0 });
     expect((await call<Company[]>('GET', BASE)).body).toHaveLength(60);
   });
 
@@ -101,6 +101,37 @@ describe('companies API', () => {
     expect(res.body.errors[0]).toMatch(/^records\.1\.phase/);
     expect((await call<Company[]>('GET', BASE)).body).toHaveLength(0);
     expect((await call('POST', `${BASE}/import`, { records: [] })).status).toBe(400);
+  });
+
+  test('agentId must reference an existing agent; it can be set and cleared', async () => {
+    expect((await call('POST', BASE, { ...valid, agentId: 'nope' })).status).toBe(400);
+
+    const { body: agent } = await call<Agent>('POST', '/api/agents', { name: '○○エージェント', shortName: 'MA' });
+    const { body: c } = await call<Company>('POST', BASE, { ...valid, agentId: agent.id });
+    expect(c.agentId).toBe(agent.id);
+
+    expect((await call('PATCH', `${BASE}/${c.id}`, { version: 1, agentId: 'nope' })).status).toBe(400);
+    const cleared = await call<Company>('PATCH', `${BASE}/${c.id}`, { version: 1, agentId: '' });
+    expect('agentId' in cleared.body).toBe(false);
+  });
+
+  test('import links agents by short name and creates missing ones', async () => {
+    const { body: ma } = await call<Agent>('POST', '/api/agents', { name: '○○エージェント', shortName: 'MA' });
+    const res = await call<{ imported: number; agentsCreated: number }>('POST', `${BASE}/import`, {
+      records: [
+        { ...valid, companyName: 'A', agentShortName: 'ma' }, // case-insensitive match
+        { ...valid, companyName: 'B', agentShortName: 'SA' },
+        { ...valid, companyName: 'C', agentShortName: 'ＳＡ' }, // full-width matches the new SA agent
+        { ...valid, companyName: 'D' },
+      ],
+    });
+    expect(res.body).toEqual({ imported: 4, agentsCreated: 1 });
+
+    const agents = (await call<Agent[]>('GET', '/api/agents')).body;
+    const sa = agents.find((a) => a.shortName === 'SA');
+    expect(sa).toMatchObject({ name: 'SA', shortName: 'SA' });
+    const byName = Object.fromEntries((await call<Company[]>('GET', BASE)).body.map((c) => [c.companyName, c.agentId]));
+    expect(byName).toEqual({ A: ma.id, B: sa!.id, C: sa!.id, D: undefined });
   });
 
   test('CORS allows the frontend origin', async () => {

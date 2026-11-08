@@ -81,7 +81,7 @@ export default function SettingsPage() {
         {restore.isPending && <p className="mt-3 text-sm text-slate-500">復元中...</p>}
         {restore.isSuccess && (
           <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-            復元しました（企業 {restore.data.restored.companies ?? 0} 件）。
+            復元しました（企業 {restore.data.restored.companies ?? 0} 件、エージェント {restore.data.restored.agents ?? 0} 件）。
           </p>
         )}
         {restore.error && (

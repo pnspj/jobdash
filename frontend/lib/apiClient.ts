@@ -23,14 +23,15 @@ export async function apiRequest<T>(path: string, init?: Omit<RequestInit, 'body
     let message = `Request failed with status ${res.status}`;
     let errors: string[] = [];
     try {
-      const body = (await res.json()) as { message?: string; errors?: string[] };
+      const body = (await res.json()) as { message?: string; errors?: string[]; code?: string };
       message = body.message ?? message;
       errors = body.errors ?? [];
+      // Only optimistic-lock failures get the "reload" message; other 409s (duplicate, in use) keep the server message
+      if (body.code === 'VERSION_CONFLICT') message = '他の画面で更新されています。再読み込みしてからやり直してください。';
     } catch {
       // non-JSON error body
     }
-    if (res.status === 409) message = '他の画面で更新されています。再読み込みしてからやり直してください。';
-    else if (errors.length) message = `${message}: ${errors.slice(0, 5).join(' / ')}`;
+    if (errors.length) message = `${message}: ${errors.slice(0, 5).join(' / ')}`;
     throw new ApiError(res.status, message, errors);
   }
 

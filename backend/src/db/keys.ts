@@ -1,7 +1,7 @@
 /** Single-table key design. All items share one partition (single local user). */
 export const USER_PK = 'USER#me';
 
-export const ENTITY_TYPES = ['COMPANY'] as const;
+export const ENTITY_TYPES = ['COMPANY', 'AGENT'] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
 export const skPrefix = (type: EntityType) => `${type}#`;

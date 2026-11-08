@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { parseCsv, toCsv } from './csv';
 import {
   ACTION_STATUSES,
+  NO_AGENT,
   SELECTION_PHASES,
+  autoMapAgents,
   autoMapEnum,
   companiesToCsvRows,
   convertRow,
@@ -50,7 +52,7 @@ test('guessMapping maps the Notion export headers', () => {
 });
 
 test('guessMapping recognizes JobDash export headers (round trip)', () => {
-  const header = companiesToCsvRows([])[0];
+  const header = companiesToCsvRows([], () => '')[0];
   const m = guessMapping(header);
   assert.equal(m.companyUrl, 1);
   assert.equal(m.agentJobUrl, 3);
@@ -87,21 +89,26 @@ test('convertRow converts a Notion row end to end', () => {
   const values = {
     phase: autoMapEnum(distinctValues(data, mapping.phase), SELECTION_PHASES),
     action: autoMapEnum(distinctValues(data, mapping.action), ACTION_STATUSES),
-    agent: { MA: '○○エージェント' },
+    agent: autoMapAgents(distinctValues(data, mapping.agent), [{ id: 'agent-ma', name: '○○エージェント', shortName: 'ma' }]),
   };
   const defaults = { phase: '書類選考', action: '要対応' } as const;
 
   const r1 = convertRow(data[0], 1, mapping, values, defaults);
   assert.deepEqual(r1.errors, []);
   assert.equal(r1.input.companyName, '株式会社S');
-  assert.equal(r1.input.agent, '○○エージェント');
+  assert.equal(r1.input.agentId, 'agent-ma'); // matched case-insensitively
+  assert.equal(r1.input.agentShortName, undefined);
   assert.equal(r1.input.agentJobUrl, 'https://agent-ma.example.com/jobs/1001');
   assert.equal(r1.input.nextActionAt, '2026-11-09T15:00');
   assert.equal(r1.input.phase, '一次面接');
   assert.equal(r1.input.action, '要本番準備');
 
   const r2 = convertRow(data[1], 2, mapping, values, defaults);
-  assert.equal(r2.input.agent, 'SA'); // unmapped agent keeps raw label
+  assert.equal(r2.input.agentShortName, 'SA'); // unknown agent -> created on import
+  assert.equal(r2.input.agentId, undefined);
+
+  const none = convertRow(data[1], 2, mapping, { ...values, agent: { SA: NO_AGENT } }, defaults);
+  assert.equal(none.input.agentId ?? none.input.agentShortName, undefined);
 
   const r3 = convertRow(data[2], 3, mapping, values, defaults);
   assert.deepEqual(r3.errors, []);
@@ -113,4 +120,17 @@ test('convertRow reports unmapped enum values and empty company name', () => {
   const mapping = guessMapping(['会社名', '選考フェーズ']);
   const r = convertRow(['', '謎'], 1, mapping, { phase: {}, action: {}, agent: {} }, { phase: '書類選考', action: '要対応' });
   assert.equal(r.errors.length, 2);
+});
+
+test('autoMapAgents prefers short name, then name, else new; overrides win', () => {
+  const agents = [
+    { id: 'a1', name: '○○エージェント', shortName: 'MA' },
+    { id: 'a2', name: '××エージェント', shortName: 'BA' },
+  ];
+  assert.deepEqual(autoMapAgents(['ｍａ', '××エージェント', 'XA', 'SA'], agents, { SA: NO_AGENT }), {
+    ｍａ: 'a1',
+    '××エージェント': 'a2',
+    XA: '__new__',
+    SA: NO_AGENT,
+  });
 });
