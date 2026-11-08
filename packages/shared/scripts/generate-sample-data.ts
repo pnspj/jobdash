@@ -17,6 +17,7 @@ import type { ActionStatus, SelectionPhase } from '../src/enums';
 import { EMPTY_RESEARCH, type Research } from '../src/research';
 import { type Resume, resumeContentSchema } from '../src/resume';
 import type { Interview, TimeSlot } from '../src/schedule';
+import type { Todo } from '../src/todo';
 
 const iso = (date: string, time = '09:00') => new Date(`${date}T${time}:00+09:00`).toISOString();
 
@@ -295,6 +296,62 @@ const companies: Company[] = defs.map((d, i) => {
   };
 });
 
+// ---------- to-dos ----------
+// Open to-dos are dated Tuesday of the base week or later (or undated), so they stay in the future when loaded.
+
+interface TodoDef {
+  title: string;
+  details?: string;
+  nextActionAt?: string;
+  done?: string; // completion date (YYYY-MM-DD)
+  agent?: AgentKey; // undefined = dashboard to-do
+}
+
+const todoDefs: TodoDef[] = [
+  // Agent to-dos
+  { agent: 'ma', title: 'エージェント登録', done: '2026-09-20' },
+  { agent: 'ma', title: '面談', details: 'オンライン。希望条件と職務経歴をすり合わせ', done: '2026-09-24' },
+  { agent: 'ma', title: '履歴書・職務経歴書提出', done: '2026-09-28' },
+  {
+    agent: 'ma',
+    title: '面接対策',
+    details: 'ラーメンプラットフォームの最終面接に向けた模擬面接',
+    nextActionAt: '2026-11-11T19:00',
+  },
+  { agent: 'ma', title: '進捗連絡・相談', details: 'オファーの回答期限について相談', nextActionAt: '2026-11-12' },
+  { agent: 'sa', title: 'エージェント登録', done: '2026-09-21' },
+  { agent: 'sa', title: '面談', done: '2026-09-25' },
+  {
+    agent: 'sa',
+    title: '求人確認・応募依頼',
+    details: '紹介された 5 件を確認して、応募するものを返信する',
+    nextActionAt: '2026-11-13T12:00',
+  },
+  { agent: 'ba', title: 'エージェント登録', done: '2026-09-22' },
+  { agent: 'ba', title: '進捗連絡・相談', details: '他社の選考状況を共有する' },
+  // Dashboard to-dos
+  { title: 'エージェントに登録する', done: '2026-09-20' },
+  { title: '職務経歴書に現在の業務を書く', done: '2026-09-27' },
+  { title: '現職の有給休暇の残りを確認する', details: '面接日程の調整に使う', nextActionAt: '2026-11-10T12:00' },
+  { title: '個人開発の Web サービスの README を整える', details: 'ポートフォリオとして面接で見せられるように' },
+];
+
+const todos: Todo[] = todoDefs.map((d, i) => {
+  const created = d.done ?? `2026-10-${String(10 + (i % 15)).padStart(2, '0')}`;
+  return {
+    id: `sample-todo-${String(i + 1).padStart(2, '0')}`,
+    title: d.title,
+    details: d.details ?? '',
+    ...(d.nextActionAt && { nextActionAt: d.nextActionAt }),
+    status: d.done ? 'done' : 'open',
+    ...(d.done && { completedAt: iso(d.done, '18:00') }),
+    ...(d.agent && { agentId: `sample-agent-${d.agent}` }),
+    version: 1,
+    createdAt: iso(created),
+    updatedAt: iso(d.done ?? created, '18:00'),
+  };
+});
+
 // ---------- resume (persona: docs/sample-persona.md) ----------
 
 const resume: Resume = {
@@ -407,10 +464,11 @@ const backup: Backup = backupSchema.parse({
   companies,
   agents,
   resume,
+  todos,
 });
 
 const out = new URL('../samples/sample-data.json', import.meta.url);
 writeFileSync(out, `${JSON.stringify(backup, null, 2)}\n`);
 console.log(
-  `Wrote ${out.pathname}: ${backup.companies.length} companies, ${backup.agents.length} agents, resume: ${backup.resume ? 'yes' : 'no'}`,
+  `Wrote ${out.pathname}: ${backup.companies.length} companies, ${backup.agents.length} agents, ${backup.todos?.length ?? 0} todos, resume: ${backup.resume ? 'yes' : 'no'}`,
 );

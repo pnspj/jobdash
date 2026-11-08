@@ -1,6 +1,7 @@
 import { type Agent, type AgentInputParsed, type AgentPatchParsed, normalizeShortName } from '@jobdash/shared';
 import { ConflictError } from '../errors';
 import { agentRepository, companyRepository } from '../repositories';
+import { todoService } from './todoService';
 
 async function assertShortNameAvailable(shortName: string, exceptId?: string) {
   const key = normalizeShortName(shortName);
@@ -23,8 +24,8 @@ export const agentService = {
     return agentRepository.update(id, patch);
   },
 
-  /** Agents referenced by companies cannot be deleted. */
-  async delete(id: string): Promise<void> {
+  /** Agents referenced by companies cannot be deleted; their to-dos are deleted with them. */
+  async delete(id: string): Promise<{ todosDeleted: number }> {
     await agentRepository.getOrThrow(id);
     const linked = (await companyRepository.list()).filter((c) => c.agentId === id);
     if (linked.length > 0) {
@@ -37,6 +38,7 @@ export const agentService = {
       );
     }
     await agentRepository.delete(id);
+    return { todosDeleted: await todoService.deleteByAgent(id) };
   },
 
   /**

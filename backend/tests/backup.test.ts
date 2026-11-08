@@ -24,7 +24,7 @@ test('export then restore replaces all data with the backup', async () => {
 
   const restored = await call<{ restored: Record<string, number> }>('POST', '/api/backup/restore', backup);
   expect(restored.status).toBe(200);
-  expect(restored.body.restored).toEqual({ companies: 1, agents: 1, resume: 0 });
+  expect(restored.body.restored).toEqual({ companies: 1, agents: 1, todos: 0, resume: 0 });
   expect((await call<Company[]>('GET', '/api/companies')).body).toEqual([a]);
   expect((await call<Agent[]>('GET', '/api/agents')).body).toEqual([agent]);
 });
@@ -49,7 +49,7 @@ test('the bundled sample can be restored', async () => {
   const { sampleBackup } = await import('@jobdash/shared/sample');
   const res = await call<{ restored: Record<string, number> }>('POST', '/api/backup/restore', sampleBackup());
   expect(res.status).toBe(200);
-  expect(res.body.restored).toEqual({ companies: 30, agents: 3, resume: 1 });
+  expect(res.body.restored).toEqual({ companies: 30, agents: 3, todos: 14, resume: 1 });
   expect((await call<{ fullName: string }>('GET', '/api/resume')).body.fullName).toBe('助部 大介');
   expect((await call<Company[]>('GET', '/api/companies')).body).toHaveLength(30);
 });

@@ -17,6 +17,7 @@ export function sanitizeReturnTo(value: string | null | undefined): string | und
 export function returnLabel(path: string | undefined): string {
   if (path?.startsWith('/calendar')) return 'カレンダー';
   if (path?.startsWith('/agents')) return 'エージェント';
+  if (path === '/' || path?.startsWith('/?')) return 'ダッシュボード';
   return '企業一覧';
 }
 

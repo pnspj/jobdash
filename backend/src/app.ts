@@ -10,6 +10,7 @@ import { backupRoute } from './routes/backup';
 import { companiesRoute } from './routes/companies';
 import { dataRoute } from './routes/data';
 import { resumeRoute } from './routes/resume';
+import { todosRoute } from './routes/todos';
 
 export const MAX_BODY_BYTES = 5 * 1024 * 1024;
 
@@ -29,6 +30,7 @@ export function createApp({ log = true }: { log?: boolean } = {}) {
   app.route('/api/companies', companiesRoute);
   app.route('/api/agents', agentsRoute);
   app.route('/api/resume', resumeRoute);
+  app.route('/api/todos', todosRoute);
   app.route('/api/backup', backupRoute);
   app.route('/api/data', dataRoute);
 

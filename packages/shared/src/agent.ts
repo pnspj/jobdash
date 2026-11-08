@@ -1,11 +1,6 @@
 import { z } from 'zod';
+import { optionalText, versionField } from './fields';
 import { optionalHttpUrl } from './url';
-
-const optionalText = z
-  .string()
-  .trim()
-  .transform((v) => (v === '' ? undefined : v))
-  .optional();
 
 /** Fields the user can edit. */
 export const agentInputSchema = z.object({
@@ -23,7 +18,7 @@ export const agentInputSchema = z.object({
 
 /** Partial update with optimistic locking. Optional fields are cleared with "" or null. */
 export const agentPatchSchema = z.object({
-  version: z.number().int().nonnegative(),
+  version: versionField,
   name: agentInputSchema.shape.name.optional(),
   shortName: agentInputSchema.shape.shortName.optional(),
   contactName: z.union([z.null(), agentInputSchema.shape.contactName]),

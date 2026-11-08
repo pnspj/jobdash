@@ -76,6 +76,15 @@ describe('sample data', () => {
   test('every agentId references an agent', () => {
     const ids = new Set(sample.agents.map((a) => a.id));
     for (const c of sample.companies) if (c.agentId) expect(ids.has(c.agentId)).toBe(true);
+    for (const t of sample.todos ?? []) if (t.agentId) expect(ids.has(t.agentId)).toBe(true);
+  });
+
+  test('to-dos: agent and dashboard ones, open and done (done ones have completedAt)', () => {
+    const todos = sample.todos ?? [];
+    expect(todos.some((t) => t.agentId && t.status === 'open')).toBe(true);
+    expect(todos.some((t) => !t.agentId && t.status === 'open')).toBe(true);
+    expect(todos.some((t) => !t.agentId && t.status === 'open' && !t.nextActionAt)).toBe(true); // undated
+    for (const t of todos) expect(Boolean(t.completedAt)).toBe(t.status === 'done');
   });
 });
 
@@ -94,7 +103,9 @@ describe('date shifting', () => {
     'loaded on %s, every next action is in the future and weekdays are business days',
     (today) => {
       const b = sampleBackup(today);
-      const nextActions = b.companies.flatMap((c) => (c.nextActionAt ? [c.nextActionAt] : []));
+      const nextActions = [...b.companies, ...(b.todos ?? []).filter((t) => t.status === 'open')].flatMap((x) =>
+        x.nextActionAt ? [x.nextActionAt] : [],
+      );
       expect(nextActions.length).toBeGreaterThan(0);
       for (const at of nextActions) expect(at.slice(0, 10) > today).toBe(true);
       for (const iv of b.companies.flatMap((c) => c.interviews ?? [])) {

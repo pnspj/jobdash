@@ -73,7 +73,7 @@ export default function SettingsPage() {
   };
 
   const restoredMessage = restore.data
-    ? `${restoreSource === 'sample' ? 'サンプルデータを読み込みました' : '復元しました'}（企業 ${restore.data.restored.companies ?? 0} 件、エージェント ${restore.data.restored.agents ?? 0} 件）。`
+    ? `${restoreSource === 'sample' ? 'サンプルデータを読み込みました' : '復元しました'}（企業 ${restore.data.restored.companies ?? 0} 件、エージェント ${restore.data.restored.agents ?? 0} 件、ToDo ${restore.data.restored.todos ?? 0} 件）。`
     : '';
 
   return (
@@ -112,7 +112,7 @@ export default function SettingsPage() {
       <section className={sectionClass}>
         <h2 className="mb-1 text-lg font-semibold">サンプルデータ</h2>
         <p className="mb-4 text-sm text-slate-500">
-          架空の企業30社・エージェント3件のサンプルを読み込みます。今後の面接や次回アクションが未来の日付になるよう、日付は週単位で調整されます。
+          架空の企業30社・エージェント3件・ToDo・職務経歴書のサンプルを読み込みます。今後の面接や次回アクションが未来の日付になるよう、日付は週単位で調整されます。
           <strong className="text-red-600">現在のデータはすべて置き換えられます。</strong>
         </p>
         <div className="flex flex-wrap gap-2">
@@ -165,7 +165,7 @@ export default function SettingsPage() {
         {deleteAll.isSuccess && (
           <Success>
             削除しました（企業 {deleteAll.data.deleted.companies ?? 0} 件、エージェント{' '}
-            {deleteAll.data.deleted.agents ?? 0} 件）。
+            {deleteAll.data.deleted.agents ?? 0} 件、ToDo {deleteAll.data.deleted.todos ?? 0} 件）。
           </Success>
         )}
         {deleteAll.error && <Failure>{errorMessage(deleteAll.error, '削除に失敗しました')}</Failure>}

@@ -20,6 +20,7 @@ export const dataRoute = new Hono()
       deleted: {
         companies: counts.company ?? 0,
         agents: counts.agent ?? 0,
+        todos: counts.todo ?? 0,
         resume: counts.resume ?? 0,
         total: items.length,
       },

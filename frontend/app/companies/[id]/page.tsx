@@ -44,7 +44,7 @@ function CompanyDetailScreen() {
     return (
       <div className="py-12 text-center">
         <p className="mb-4 text-slate-600">企業が見つかりませんでした。</p>
-        <Link href={returnTo ?? '/'} className="text-blue-600 hover:underline">
+        <Link href={returnTo ?? '/companies'} className="text-blue-600 hover:underline">
           {returnLabel(returnTo)}へ戻る
         </Link>
       </div>
@@ -83,12 +83,12 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
 
   const handleDelete = () => {
     if (!window.confirm(`「${company.companyName}」を削除しますか？この操作は取り消せません。`)) return;
-    remove.mutate(company.id, { onSuccess: () => router.push(returnTo ?? '/') });
+    remove.mutate(company.id, { onSuccess: () => router.push(returnTo ?? '/companies') });
   };
 
   return (
     <div className="space-y-6">
-      <Link href={returnTo ?? '/'} className="text-sm text-blue-600 hover:underline">
+      <Link href={returnTo ?? '/companies'} className="text-sm text-blue-600 hover:underline">
         ← {returnLabel(returnTo)}へ戻る
       </Link>
 

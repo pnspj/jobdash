@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const NAV_ITEMS = [
-  { href: '/', label: '企業一覧' },
+  { href: '/companies', label: '企業一覧' },
   { href: '/calendar', label: 'カレンダー' },
   { href: '/agents', label: 'エージェント' },
   { href: '/reports', label: '連絡用テキスト' },

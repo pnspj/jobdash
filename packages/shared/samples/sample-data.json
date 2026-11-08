@@ -746,5 +746,155 @@
     },
     "version": 1,
     "updatedAt": "2026-11-06T11:00:00.000Z"
-  }
+  },
+  "todos": [
+    {
+      "id": "sample-todo-01",
+      "title": "エージェント登録",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-20T09:00:00.000Z",
+      "agentId": "sample-agent-ma",
+      "version": 1,
+      "createdAt": "2026-09-20T00:00:00.000Z",
+      "updatedAt": "2026-09-20T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-02",
+      "title": "面談",
+      "details": "オンライン。希望条件と職務経歴をすり合わせ",
+      "status": "done",
+      "completedAt": "2026-09-24T09:00:00.000Z",
+      "agentId": "sample-agent-ma",
+      "version": 1,
+      "createdAt": "2026-09-24T00:00:00.000Z",
+      "updatedAt": "2026-09-24T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-03",
+      "title": "履歴書・職務経歴書提出",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-28T09:00:00.000Z",
+      "agentId": "sample-agent-ma",
+      "version": 1,
+      "createdAt": "2026-09-28T00:00:00.000Z",
+      "updatedAt": "2026-09-28T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-04",
+      "title": "面接対策",
+      "details": "ラーメンプラットフォームの最終面接に向けた模擬面接",
+      "nextActionAt": "2026-11-11T19:00",
+      "status": "open",
+      "agentId": "sample-agent-ma",
+      "version": 1,
+      "createdAt": "2026-10-13T00:00:00.000Z",
+      "updatedAt": "2026-10-13T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-05",
+      "title": "進捗連絡・相談",
+      "details": "オファーの回答期限について相談",
+      "nextActionAt": "2026-11-12",
+      "status": "open",
+      "agentId": "sample-agent-ma",
+      "version": 1,
+      "createdAt": "2026-10-14T00:00:00.000Z",
+      "updatedAt": "2026-10-14T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-06",
+      "title": "エージェント登録",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-21T09:00:00.000Z",
+      "agentId": "sample-agent-sa",
+      "version": 1,
+      "createdAt": "2026-09-21T00:00:00.000Z",
+      "updatedAt": "2026-09-21T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-07",
+      "title": "面談",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-25T09:00:00.000Z",
+      "agentId": "sample-agent-sa",
+      "version": 1,
+      "createdAt": "2026-09-25T00:00:00.000Z",
+      "updatedAt": "2026-09-25T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-08",
+      "title": "求人確認・応募依頼",
+      "details": "紹介された 5 件を確認して、応募するものを返信する",
+      "nextActionAt": "2026-11-13T12:00",
+      "status": "open",
+      "agentId": "sample-agent-sa",
+      "version": 1,
+      "createdAt": "2026-10-17T00:00:00.000Z",
+      "updatedAt": "2026-10-17T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-09",
+      "title": "エージェント登録",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-22T09:00:00.000Z",
+      "agentId": "sample-agent-ba",
+      "version": 1,
+      "createdAt": "2026-09-22T00:00:00.000Z",
+      "updatedAt": "2026-09-22T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-10",
+      "title": "進捗連絡・相談",
+      "details": "他社の選考状況を共有する",
+      "status": "open",
+      "agentId": "sample-agent-ba",
+      "version": 1,
+      "createdAt": "2026-10-19T00:00:00.000Z",
+      "updatedAt": "2026-10-19T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-11",
+      "title": "エージェントに登録する",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-20T09:00:00.000Z",
+      "version": 1,
+      "createdAt": "2026-09-20T00:00:00.000Z",
+      "updatedAt": "2026-09-20T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-12",
+      "title": "職務経歴書に現在の業務を書く",
+      "details": "",
+      "status": "done",
+      "completedAt": "2026-09-27T09:00:00.000Z",
+      "version": 1,
+      "createdAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-13",
+      "title": "現職の有給休暇の残りを確認する",
+      "details": "面接日程の調整に使う",
+      "nextActionAt": "2026-11-10T12:00",
+      "status": "open",
+      "version": 1,
+      "createdAt": "2026-10-22T00:00:00.000Z",
+      "updatedAt": "2026-10-22T09:00:00.000Z"
+    },
+    {
+      "id": "sample-todo-14",
+      "title": "個人開発の Web サービスの README を整える",
+      "details": "ポートフォリオとして面接で見せられるように",
+      "status": "open",
+      "version": 1,
+      "createdAt": "2026-10-23T00:00:00.000Z",
+      "updatedAt": "2026-10-23T09:00:00.000Z"
+    }
+  ]
 }

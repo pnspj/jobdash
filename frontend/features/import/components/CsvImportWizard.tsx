@@ -161,7 +161,10 @@ export default function CsvImportWizard() {
           <p className="text-lg font-semibold">{importedCount} 件の企業をインポートしました。</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          <Link
+            href="/companies"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
             一覧へ
           </Link>
           <button
@@ -184,7 +187,7 @@ export default function CsvImportWizard() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
+        <Link href="/companies" className="text-sm text-blue-600 hover:underline">
           ← 一覧へ戻る
         </Link>
         <h1 className="mt-2 text-2xl font-bold">CSVインポート</h1>

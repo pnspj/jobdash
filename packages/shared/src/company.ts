@@ -1,25 +1,9 @@
 import { z } from 'zod';
-import { LOCAL_DATETIME_RE } from './datetime';
 import { ACTION_STATUSES, SELECTION_PHASES } from './enums';
+import { optionalLocalDateTime, optionalText, versionField } from './fields';
 import { researchPatchSchema, researchSchema } from './research';
 import { interviewSchema, timeSlotSchema } from './schedule';
 import { optionalHttpUrl } from './url';
-
-/** Trimmed string; empty becomes undefined. */
-const optionalText = z
-  .string()
-  .trim()
-  .transform((v) => (v === '' ? undefined : v))
-  .optional();
-
-/** "" clears the value; otherwise must be YYYY-MM-DD or YYYY-MM-DDTHH:mm. */
-const optionalLocalDateTime = z
-  .union([
-    z.literal(''),
-    z.string().regex(LOCAL_DATETIME_RE, 'YYYY-MM-DD または YYYY-MM-DDTHH:mm 形式で指定してください'),
-  ])
-  .transform((v) => (v === '' ? undefined : v))
-  .optional();
 
 /** Fields the user can edit. */
 export const companyInputSchema = z.object({
@@ -40,7 +24,7 @@ export const companyInputSchema = z.object({
  * Optional fields can be cleared by sending "" (or null).
  */
 export const companyPatchSchema = z.object({
-  version: z.number().int().nonnegative(),
+  version: versionField,
   companyName: companyInputSchema.shape.companyName.optional(),
   companyUrl: z.union([z.null(), optionalHttpUrl]),
   agentId: z.union([z.null(), optionalText]),
