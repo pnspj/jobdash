@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -12,6 +12,7 @@ import {
   type SelectionPhase,
 } from '@jobdash/shared';
 import { ApiError, errorMessage } from '@/lib/apiClient';
+import { returnLabel, useReturnTo } from '@/lib/returnTo';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
@@ -19,12 +20,22 @@ import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges'
 import CompanyForm from '@/features/companies/components/CompanyForm';
 import NextActionEditor from '@/features/companies/components/NextActionEditor';
 import ResearchEditor from '@/features/companies/components/ResearchEditor';
+import InterviewSchedule from '@/features/calendar/components/InterviewSchedule';
 
 const sectionClass = 'rounded-lg border border-slate-200 bg-white p-6 shadow-sm';
 const selectClass = 'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm';
 
 export default function CompanyDetailPage() {
+  return (
+    <Suspense fallback={<p className="py-12 text-center text-slate-500">読み込み中...</p>}>
+      <CompanyDetailScreen />
+    </Suspense>
+  );
+}
+
+function CompanyDetailScreen() {
   const { id } = useParams<{ id: string }>();
+  const returnTo = useReturnTo();
   const { data: company, isPending, error, refetch } = useCompany(id);
 
   if (isPending) return <p className="py-12 text-center text-slate-500">読み込み中...</p>;
@@ -33,8 +44,8 @@ export default function CompanyDetailPage() {
     return (
       <div className="py-12 text-center">
         <p className="mb-4 text-slate-600">企業が見つかりませんでした。</p>
-        <Link href="/" className="text-blue-600 hover:underline">
-          一覧へ戻る
+        <Link href={returnTo ?? '/'} className="text-blue-600 hover:underline">
+          {returnLabel(returnTo)}へ戻る
         </Link>
       </div>
     );
@@ -51,10 +62,10 @@ export default function CompanyDetailPage() {
     );
   }
 
-  return <CompanyDetail company={company} />;
+  return <CompanyDetail company={company} returnTo={returnTo} />;
 }
 
-function CompanyDetail({ company }: { company: Company }) {
+function CompanyDetail({ company, returnTo }: { company: Company; returnTo: string | undefined }) {
   const router = useRouter();
   const update = useUpdateCompany(company);
   const remove = useDeleteCompany();
@@ -72,13 +83,13 @@ function CompanyDetail({ company }: { company: Company }) {
 
   const handleDelete = () => {
     if (!window.confirm(`「${company.companyName}」を削除しますか？この操作は取り消せません。`)) return;
-    remove.mutate(company.id, { onSuccess: () => router.push('/') });
+    remove.mutate(company.id, { onSuccess: () => router.push(returnTo ?? '/') });
   };
 
   return (
     <div className="space-y-6">
-      <Link href="/" className="text-sm text-blue-600 hover:underline">
-        ← 一覧へ戻る
+      <Link href={returnTo ?? '/'} className="text-sm text-blue-600 hover:underline">
+        ← {returnLabel(returnTo)}へ戻る
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -166,6 +177,11 @@ function CompanyDetail({ company }: { company: Company }) {
                 onSave={(nextActionAt) => update.mutate({ nextActionAt })}
               />
             </div>
+          </section>
+
+          <section className={sectionClass}>
+            <h2 className="mb-4 text-lg font-semibold">面接日程</h2>
+            <InterviewSchedule company={company} returnTo={returnTo} />
           </section>
 
           <section className={sectionClass}>

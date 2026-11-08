@@ -3,5 +3,6 @@ export * from './datetime';
 export * from './company';
 export * from './agent';
 export * from './research';
+export * from './schedule';
 export * from './sort';
 export * from './backup';

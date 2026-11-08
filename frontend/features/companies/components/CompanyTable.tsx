@@ -3,11 +3,15 @@
 import { useRouter } from 'next/navigation';
 import { formatLocalDateTime, isActionRequired, isClosedAction, todayLocalDate, type Company } from '@jobdash/shared';
 import ExternalLink from '@/components/ui/ExternalLink';
+import { withReturnTo } from '@/lib/returnTo';
 import { useAgentLookup } from '@/features/agents/api';
 import { ActionBadge, PhaseBadge } from './Badges';
 
-/** Company list table. Rows navigate to the detail page; name/agent cells link to external URLs. */
-export default function CompanyTable({ companies }: { companies: Company[] }) {
+/**
+ * Company list table. Rows navigate to the detail page; name/agent cells link to external URLs.
+ * `returnTo` is passed to the detail page as its back-link target.
+ */
+export default function CompanyTable({ companies, returnTo }: { companies: Company[]; returnTo?: string }) {
   const router = useRouter();
   const today = todayLocalDate();
   const { shortName: agentShortName } = useAgentLookup();
@@ -33,7 +37,7 @@ export default function CompanyTable({ companies }: { companies: Company[] }) {
             return (
               <tr
                 key={c.id}
-                onClick={() => router.push(`/companies/${c.id}`)}
+                onClick={() => router.push(withReturnTo(`/companies/${c.id}`, returnTo))}
                 className={`cursor-pointer hover:bg-blue-50/50 ${closed ? 'opacity-60' : ''}`}
               >
                 <td className="px-4 py-3 font-medium text-slate-900">

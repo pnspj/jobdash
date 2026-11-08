@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 
 const NAV_ITEMS = [
   { href: '/', label: '企業一覧' },
+  { href: '/calendar', label: 'カレンダー' },
   { href: '/agents', label: 'エージェント' },
   { href: '/settings', label: 'データ管理' },
 ];

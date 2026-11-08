@@ -1,14 +1,18 @@
 import {
+  normalizeSlots,
+  sortSlots,
   mergeResearch,
   normalizeShortName,
   type Company,
   type CompanyInputParsed,
   type CompanyPatchParsed,
+  type InterviewStage,
+  type TimeSlot,
   type companyImportRecordSchema,
 } from '@jobdash/shared';
 import type { z } from 'zod';
 import { agentRepository, companyRepository } from '../repositories';
-import { BadRequestError } from '../errors';
+import { BadRequestError, NotFoundError } from '../errors';
 import { agentService } from './agentService';
 
 async function assertAgentExists(agentId: string | null | undefined) {
@@ -38,6 +42,36 @@ export const companyService = {
   },
 
   delete: (id: string) => companyRepository.delete(id),
+
+  /**
+   * Confirm (or move) the interview of a stage.
+   * - replaces any interview of the same stage
+   * - clears all preferred slots
+   * - sets nextActionAt to the interview start when it is empty
+   */
+  async setInterview(id: string, stage: InterviewStage, slot: TimeSlot, version: number): Promise<Company> {
+    const current = await companyRepository.getOrThrow(id);
+    const interviews = sortSlots([...(current.interviews ?? []).filter((i) => i.stage !== stage), { stage, ...slot }]);
+    return companyRepository.update(id, {
+      version,
+      interviews,
+      preferredSlots: null,
+      ...(current.nextActionAt ? {} : { nextActionAt: slot.start }),
+    });
+  },
+
+  async removeInterview(id: string, stage: InterviewStage, version: number): Promise<Company> {
+    const current = await companyRepository.getOrThrow(id);
+    const interviews = (current.interviews ?? []).filter((i) => i.stage !== stage);
+    if (interviews.length === (current.interviews ?? []).length) throw new NotFoundError(`${stage}の日時は登録されていません`);
+    return companyRepository.update(id, { version, interviews: interviews.length > 0 ? interviews : null });
+  },
+
+  /** Replace the preferred slots (sorted, duplicates removed). An empty list clears them. */
+  async setPreferredSlots(id: string, slots: TimeSlot[], version: number): Promise<Company> {
+    const normalized = normalizeSlots(slots);
+    return companyRepository.update(id, { version, preferredSlots: normalized.length > 0 ? normalized : null });
+  },
 
   /** Bulk create. `agentShortName` is resolved to an existing agent or a newly created one. */
   async import(records: ImportRecord[]): Promise<{ imported: number; agentsCreated: number }> {

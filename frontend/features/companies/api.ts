@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Company, CompanyInput, CompanyPatch } from '@jobdash/shared';
+import { stageKeyOf, type Company, type CompanyImportRecord, type CompanyInput, type CompanyPatch, type InterviewStage, type TimeSlot } from '@jobdash/shared';
 import { apiRequest } from '@/lib/apiClient';
 
 const BASE = '/api/companies';
@@ -13,11 +13,22 @@ export const companyApi = {
   list: () => apiRequest<Company[]>(BASE),
   get: (id: string) => apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}`),
   create: (input: CompanyInput) => apiRequest<Company>(BASE, { method: 'POST', body: input }),
-  import: (records: CompanyInput[]) =>
-    apiRequest<{ imported: number }>(`${BASE}/import`, { method: 'POST', body: { records } }),
+  import: (records: CompanyImportRecord[]) =>
+    apiRequest<{ imported: number; agentsCreated: number }>(`${BASE}/import`, { method: 'POST', body: { records } }),
   update: (id: string, patch: CompanyPatch) =>
     apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch }),
   remove: (id: string) => apiRequest<void>(`${BASE}/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  setInterview: (id: string, stage: InterviewStage, slot: TimeSlot, version: number) =>
+    apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}/interviews/${stageKeyOf(stage)}`, {
+      method: 'PUT',
+      body: { version, ...slot },
+    }),
+  removeInterview: (id: string, stage: InterviewStage, version: number) =>
+    apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}/interviews/${stageKeyOf(stage)}?version=${version}`, {
+      method: 'DELETE',
+    }),
+  setPreferredSlots: (id: string, slots: TimeSlot[], version: number) =>
+    apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}/preferred-slots`, { method: 'PUT', body: { version, slots } }),
 };
 
 // ---------- hooks ----------
@@ -66,4 +77,32 @@ export function useDeleteCompany() {
       void qc.invalidateQueries({ queryKey: companyKeys.all, exact: true });
     },
   });
+}
+
+/** Schedule mutations of one company (interviews and preferred slots). */
+export function useScheduleMutations(company: Company | undefined) {
+  const qc = useQueryClient();
+  const onSuccess = (updated: Company) => {
+    qc.setQueryData(companyKeys.detail(updated.id), updated);
+    void qc.invalidateQueries({ queryKey: companyKeys.all, exact: true });
+  };
+  const loaded = () => {
+    if (!company) throw new Error('Company is not loaded');
+    return company;
+  };
+  return {
+    setInterview: useMutation({
+      mutationFn: ({ stage, slot }: { stage: InterviewStage; slot: TimeSlot }) =>
+        companyApi.setInterview(loaded().id, stage, slot, loaded().version),
+      onSuccess,
+    }),
+    removeInterview: useMutation({
+      mutationFn: (stage: InterviewStage) => companyApi.removeInterview(loaded().id, stage, loaded().version),
+      onSuccess,
+    }),
+    setPreferredSlots: useMutation({
+      mutationFn: (slots: TimeSlot[]) => companyApi.setPreferredSlots(loaded().id, slots, loaded().version),
+      onSuccess,
+    }),
+  };
 }

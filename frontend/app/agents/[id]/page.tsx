@@ -125,7 +125,7 @@ function AgentDetail({ agent }: { agent: Agent }) {
       <section>
         <h2 className="mb-3 text-lg font-semibold">紐づく企業（{linked.length}）</h2>
         {linked.length > 0 ? (
-          <CompanyTable companies={linked} />
+          <CompanyTable companies={linked} returnTo={`/agents/${agent.id}`} />
         ) : (
           <p className="text-sm text-slate-500">紐づく企業はありません。</p>
         )}

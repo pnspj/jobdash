@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { LOCAL_DATETIME_RE } from './datetime';
 import { ACTION_STATUSES, SELECTION_PHASES } from './enums';
 import { researchPatchSchema, researchSchema } from './research';
+import { interviewSchema, timeSlotSchema } from './schedule';
 
 /** Trimmed string; empty becomes undefined. */
 const optionalText = z
@@ -72,6 +73,10 @@ export const companySchema = z.object({
   nextActionAt: z.string().optional(),
   details: z.string(),
   research: researchSchema.optional(),
+  /** Confirmed interviews, at most one per stage. Managed via the interview endpoints. */
+  interviews: z.array(interviewSchema).optional(),
+  /** Preferred interview slots to send to the agent. Cleared when an interview is confirmed. */
+  preferredSlots: z.array(timeSlotSchema).optional(),
   version: z.number().int(),
   createdAt: z.string(),
   updatedAt: z.string(),

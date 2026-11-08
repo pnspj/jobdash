@@ -3,3 +3,39 @@
 body {
   @apply bg-slate-50 text-slate-800;
 }
+
+/* Calendar: preferred slots are tentative (dashed); replaced interviews are faded */
+.fc .jd-preferred {
+  border-style: dashed;
+  border-width: 2px;
+}
+.fc .jd-replaced {
+  opacity: 0.45;
+  border-style: dashed;
+}
+.fc .jd-clickable {
+  cursor: pointer;
+}
+
+/* Calendar: non-business days (Sat/Sun/holidays) share one light gray, no red/blue weekend colors */
+.fc .jd-offday {
+  background-color: #f1f5f9; /* slate-100 */
+  /* FullCalendar paints today's column with this variable using a more specific selector
+     (.fc .fc-timegrid-col.fc-day-today), so set it here too or today would lose the gray */
+  --fc-today-bg-color: #f1f5f9;
+}
+.fc .fc-col-header-cell.jd-offday {
+  background-color: #e2e8f0; /* slate-200 */
+}
+/* Today: no yellow background (it looked like a weekend color); mark the date label instead */
+.fc {
+  --fc-today-bg-color: transparent;
+}
+.fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: #ffffff;
+  background-color: #2563eb; /* blue-600 */
+  border-radius: 9999px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
