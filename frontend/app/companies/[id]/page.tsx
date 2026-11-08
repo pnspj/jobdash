@@ -173,14 +173,28 @@ export default function CompanyDetailPage() {
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1 block text-sm font-medium text-slate-700">次回アクション日</span>
-                <input
-                  type="date"
-                  disabled={saving}
-                  value={company.nextActionDate}
-                  onChange={(e) => quickUpdate({ nextActionDate: e.target.value })}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                />
+                <span className="mb-1 block text-sm font-medium text-slate-700">次回アクション日時</span>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    disabled={saving}
+                    value={company.nextActionDate}
+                    onChange={(e) => quickUpdate({ nextActionDate: e.target.value })}
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="time"
+                    aria-label="次回アクション時刻"
+                    disabled={saving || !company.nextActionDate}
+                    defaultValue={company.nextActionTime ?? ''}
+                    key={`${company.updatedAt}-time`}
+                    // Save on blur: onChange fires per segment while typing a time
+                    onBlur={(e) => {
+                      if (e.target.value !== (company.nextActionTime ?? '')) void quickUpdate({ nextActionTime: e.target.value });
+                    }}
+                    className="w-28 shrink-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                  />
+                </div>
               </label>
             </div>
           </section>
@@ -212,7 +226,9 @@ export default function CompanyDetailPage() {
               <dd>{company.action}</dd>
 
               <dt className="font-medium text-slate-500">次回アクション日</dt>
-              <dd className="tabular-nums">{company.nextActionDate || '-'}</dd>
+              <dd className="tabular-nums">
+                {company.nextActionDate ? `${company.nextActionDate} ${company.nextActionTime ?? ''}`.trim() : '-'}
+              </dd>
 
               <dt className="font-medium text-slate-500">詳細</dt>
               <dd className="whitespace-pre-wrap break-words">{company.details || '-'}</dd>

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createCompany, fetchCompanies } from '@/lib/api';
+import { downloadCsv } from '@/lib/csv';
+import { companiesToCsvRows } from '@/lib/csvMapping';
 import type { CompanyInput, CompanyRecord } from '@/lib/types';
 import { ActionBadge, PhaseBadge, isActionRequired } from '@/components/Badges';
 import CompanyForm from '@/components/CompanyForm';
@@ -16,7 +18,11 @@ const byNextActionDate = (a: CompanyRecord, b: CompanyRecord) => {
   if (!a.nextActionDate && !b.nextActionDate) return b.updatedAt.localeCompare(a.updatedAt);
   if (!a.nextActionDate) return 1;
   if (!b.nextActionDate) return -1;
-  return a.nextActionDate.localeCompare(b.nextActionDate);
+  return (
+    a.nextActionDate.localeCompare(b.nextActionDate) ||
+    // Within the same day, timed entries come first in time order
+    (a.nextActionTime ?? '99:99').localeCompare(b.nextActionTime ?? '99:99')
+  );
 };
 
 export default function CompanyListPage() {
@@ -57,6 +63,11 @@ export default function CompanyListPage() {
 
   const todayStr = today();
 
+  const handleExport = () => {
+    const sorted = [...companies].sort(byNextActionDate);
+    downloadCsv(`jobdash-${todayStr.replaceAll('-', '')}.csv`, companiesToCsvRows(sorted));
+  };
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -66,11 +77,24 @@ export default function CompanyListPage() {
             {visible.length} 件表示 / 全 {companies.length} 件
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input type="checkbox" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} />
             辞退/不通過も表示 ({closedCount})
           </label>
+          <Link
+            href="/import"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            CSVインポート
+          </Link>
+          <button
+            onClick={handleExport}
+            disabled={companies.length === 0}
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+          >
+            CSVエクスポート
+          </button>
           <button
             onClick={() => setModalOpen(true)}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
@@ -139,6 +163,7 @@ export default function CompanyListPage() {
                       }`}
                     >
                       {c.nextActionDate || '-'}
+                      {c.nextActionDate && c.nextActionTime && <span className="ml-1">{c.nextActionTime}</span>}
                       {overdue && <span className="ml-1 text-xs">(期限切れ)</span>}
                       {isToday && <span className="ml-1 text-xs">(今日)</span>}
                     </td>

@@ -29,9 +29,13 @@ export interface CompanyRecord {
   phase: SelectionPhase;
   action: ActionStatus;
   nextActionDate: string; // YYYY-MM-DD
+  nextActionTime?: string; // HH:mm (optional)
   details: string;
   updatedAt: string; // ISO string
 }
 
 /** Payload accepted by POST / PUT (server assigns id and updatedAt). */
 export type CompanyInput = Omit<CompanyRecord, 'id' | 'updatedAt'>;
+
+/** Maximum number of records accepted by a single bulk import request. */
+export const IMPORT_MAX_RECORDS = 1000;

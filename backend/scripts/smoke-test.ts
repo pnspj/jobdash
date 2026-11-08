@@ -20,6 +20,7 @@ const valid = {
   phase: '書類選考',
   action: '選考結果待ち',
   nextActionDate: '2026-11-10',
+  nextActionTime: '15:00',
   details: 'メモ\n2行目',
 };
 
@@ -29,6 +30,7 @@ const created = await res.json();
 check('POST returns 201', res.status === 201, res.status);
 check('POST assigns uuid id', /^[0-9a-f-]{36}$/.test(created.id), created.id);
 check('POST sets updatedAt', !Number.isNaN(Date.parse(created.updatedAt)), created.updatedAt);
+check('POST keeps nextActionTime', created.nextActionTime === '15:00', created);
 check('POST drops empty optional URL', !('agentJobUrl' in created), created);
 const id: string = created.id;
 
@@ -57,14 +59,34 @@ check('PUT advances updatedAt', updated.updatedAt >= created.updatedAt);
 res = await fetch(`${BASE}/${id}`);
 const reread = await res.json();
 check('PUT persisted and removed cleared URL', reread.phase === '一次面接' && !('companyUrl' in reread), reread);
+check('PUT drops time when date is cleared', !('nextActionTime' in reread), reread);
 
 // Validation / not found
 res = await fetch(BASE, { method: 'POST', ...json({ companyName: '', phase: 'x' }) });
 check('POST invalid returns 400', res.status === 400, res.status);
 res = await fetch(BASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{broken' });
 check('POST malformed JSON returns 400', res.status === 400, res.status);
+res = await fetch(BASE, { method: 'POST', ...json({ ...valid, nextActionTime: '25:00' }) });
+check('POST invalid time returns 400', res.status === 400, res.status);
 res = await fetch(`${BASE}/does-not-exist`, { method: 'PUT', ...json(valid) });
 check('PUT missing returns 404', res.status === 404, res.status);
+
+// Bulk import (60 rows spans multiple BatchWrite chunks)
+const importRecords = Array.from({ length: 60 }, (_, i) => ({ ...valid, companyName: `インポート${i}` }));
+res = await fetch(`${BASE}/import`, { method: 'POST', ...json({ records: importRecords }) });
+const imported = await res.json();
+check('IMPORT returns 201 with count', res.status === 201 && imported.imported === 60, imported);
+const afterImport: { id: string; companyName: string }[] = await (await fetch(BASE)).json();
+const importedItems = afterImport.filter((c) => c.companyName.startsWith('インポート'));
+check('IMPORT persisted all rows', importedItems.length === 60, importedItems.length);
+res = await fetch(`${BASE}/import`, { method: 'POST', ...json({ records: [valid, { ...valid, phase: 'x' }] }) });
+const rejected = await res.json();
+check('IMPORT rejects batch with invalid row', res.status === 400 && rejected.rowErrors?.[0]?.index === 1, rejected);
+res = await fetch(`${BASE}/import`, { method: 'POST', ...json({ records: [] }) });
+check('IMPORT rejects empty records', res.status === 400, res.status);
+for (const c of importedItems) await fetch(`${BASE}/${c.id}`, { method: 'DELETE' });
+const leftover = ((await (await fetch(BASE)).json()) as { companyName: string }[]).filter((c) => c.companyName.startsWith('インポート'));
+check('IMPORT cleanup', leftover.length === 0, leftover.length);
 
 // CORS
 res = await fetch(BASE, { headers: { Origin: 'http://localhost:3000' } });

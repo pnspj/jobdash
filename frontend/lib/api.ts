@@ -23,9 +23,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let message = `Request failed with status ${res.status}`;
     let errors: string[] | undefined;
     try {
-      const body = (await res.json()) as { message?: string; errors?: string[] };
+      const body = (await res.json()) as {
+        message?: string;
+        errors?: string[];
+        rowErrors?: { index: number; errors: string[] }[];
+      };
       message = body.message ?? message;
-      errors = body.errors;
+      errors = body.errors ?? body.rowErrors?.map((r) => `#${r.index + 1}: ${r.errors.join(', ')}`);
+      if (errors?.length) message = `${message}: ${errors.slice(0, 5).join(' / ')}`;
     } catch {
       // non-JSON error body
     }
@@ -42,6 +47,9 @@ export const fetchCompany = (id: string) => request<CompanyRecord>(`/api/compani
 
 export const createCompany = (input: CompanyInput) =>
   request<CompanyRecord>('/api/companies', { method: 'POST', body: JSON.stringify(input) });
+
+export const importCompanies = (records: CompanyInput[]) =>
+  request<{ imported: number }>('/api/companies/import', { method: 'POST', body: JSON.stringify({ records }) });
 
 export const updateCompany = (id: string, input: CompanyInput) =>
   request<CompanyRecord>(`/api/companies/${encodeURIComponent(id)}`, {

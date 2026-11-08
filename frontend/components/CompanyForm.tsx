@@ -11,6 +11,7 @@ export const EMPTY_INPUT: CompanyInput = {
   phase: '書類選考',
   action: '選考結果待ち',
   nextActionDate: '',
+  nextActionTime: '',
   details: '',
 };
 
@@ -137,13 +138,24 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
           <label className={labelClass} htmlFor="nextActionDate">
             次回アクション日
           </label>
-          <input
-            id="nextActionDate"
-            type="date"
-            className={inputClass}
-            value={value.nextActionDate}
-            onChange={(e) => set('nextActionDate', e.target.value)}
-          />
+          <div className="flex gap-2">
+            <input
+              id="nextActionDate"
+              type="date"
+              className={inputClass}
+              value={value.nextActionDate}
+              onChange={(e) => set('nextActionDate', e.target.value)}
+            />
+            <input
+              id="nextActionTime"
+              type="time"
+              aria-label="次回アクション時刻"
+              className={`${inputClass} max-w-32`}
+              disabled={!value.nextActionDate}
+              value={value.nextActionTime ?? ''}
+              onChange={(e) => set('nextActionTime', e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="sm:col-span-2">

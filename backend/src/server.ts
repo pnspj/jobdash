@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { randomUUID } from 'node:crypto';
 import {
+  BatchWriteCommand,
   DeleteCommand,
   GetCommand,
   PutCommand,
@@ -14,6 +15,7 @@ import { COMPANY_SK_PREFIX, docClient, TABLE_NAME, USER_PK } from './db.js';
 import { ensureTable } from './init-table.js';
 import {
   ACTION_STATUSES,
+  IMPORT_MAX_RECORDS,
   SELECTION_PHASES,
   type CompanyInput,
   type CompanyRecord,
@@ -34,6 +36,7 @@ const toRecord = (item: Record<string, unknown>): CompanyRecord => {
 };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const optionalString = (v: unknown): string | undefined =>
   typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined;
@@ -53,6 +56,9 @@ function validateInput(body: unknown): { ok: true; value: CompanyInput } | { ok:
   if (typeof b.nextActionDate !== 'string' || (b.nextActionDate !== '' && !DATE_RE.test(b.nextActionDate))) {
     errors.push('nextActionDate must be YYYY-MM-DD (or empty string)');
   }
+  if (b.nextActionTime !== undefined && (typeof b.nextActionTime !== 'string' || (b.nextActionTime !== '' && !TIME_RE.test(b.nextActionTime)))) {
+    errors.push('nextActionTime must be HH:mm (or empty string)');
+  }
   if (b.details !== undefined && typeof b.details !== 'string') errors.push('details must be a string');
 
   if (errors.length > 0) return { ok: false, errors };
@@ -67,6 +73,8 @@ function validateInput(body: unknown): { ok: true; value: CompanyInput } | { ok:
       phase: b.phase as CompanyInput['phase'],
       action: b.action as CompanyInput['action'],
       nextActionDate: b.nextActionDate as string,
+      // A time is meaningless without a date
+      nextActionTime: b.nextActionDate ? optionalString(b.nextActionTime) : undefined,
       details: (b.details as string | undefined) ?? '',
     },
   };
@@ -134,6 +142,43 @@ app.post('/api/companies', async (c) => {
     }),
   );
   return c.json(record, 201);
+});
+
+// POST /api/companies/import : bulk create companies (all-or-nothing validation)
+app.post('/api/companies/import', async (c) => {
+  const body = (await readJson(c)) as { records?: unknown } | null;
+  if (!body || !Array.isArray(body.records)) {
+    return c.json({ message: 'Request body must be { records: CompanyInput[] }' }, 400);
+  }
+  if (body.records.length === 0) return c.json({ message: 'records must not be empty' }, 400);
+  if (body.records.length > IMPORT_MAX_RECORDS) {
+    return c.json({ message: `Too many records (max ${IMPORT_MAX_RECORDS})` }, 400);
+  }
+
+  const now = new Date().toISOString();
+  const records: CompanyRecord[] = [];
+  const rowErrors: { index: number; errors: string[] }[] = [];
+  body.records.forEach((raw, index) => {
+    const result = validateInput(raw);
+    if (result.ok) records.push({ id: randomUUID(), ...result.value, updatedAt: now });
+    else rowErrors.push({ index, errors: result.errors });
+  });
+  if (rowErrors.length > 0) {
+    return c.json({ message: 'Validation failed', rowErrors }, 400);
+  }
+
+  // BatchWrite accepts up to 25 items per request; retry unprocessed items with backoff
+  for (let i = 0; i < records.length; i += 25) {
+    let requests = records.slice(i, i + 25).map((r) => ({ PutRequest: { Item: { ...toKey(r.id), ...r } } }));
+    for (let attempt = 0; requests.length > 0; attempt++) {
+      if (attempt >= 8) throw new Error('BatchWrite retries exhausted');
+      if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 50 * 2 ** attempt));
+      const res = await docClient.send(new BatchWriteCommand({ RequestItems: { [TABLE_NAME]: requests } }));
+      requests = (res.UnprocessedItems?.[TABLE_NAME] ?? []) as typeof requests;
+    }
+  }
+
+  return c.json({ imported: records.length }, 201);
 });
 
 // PUT /api/companies/:id : replace a company's fields

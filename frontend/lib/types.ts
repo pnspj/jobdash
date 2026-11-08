@@ -29,6 +29,7 @@ export interface CompanyRecord {
   phase: SelectionPhase;
   action: ActionStatus;
   nextActionDate: string; // YYYY-MM-DD
+  nextActionTime?: string; // HH:mm (optional)
   details: string;
   updatedAt: string; // ISO string
 }
