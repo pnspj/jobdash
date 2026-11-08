@@ -3,7 +3,7 @@
 import { type Agent, companyComparator, type Todo } from '@jobdash/shared';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { dangerButton, errorBox, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { useAgent, useDeleteAgent, useUpdateAgent } from '@/features/agents/api';
@@ -14,9 +14,20 @@ import { useTodos } from '@/features/todos/api';
 import TodoDialog from '@/features/todos/components/TodoDialog';
 import TodoList from '@/features/todos/components/TodoList';
 import { ApiError, errorMessage } from '@/lib/apiClient';
+import { returnLabel, useReturnTo } from '@/lib/returnTo';
 
 export default function AgentDetailPage() {
+  return (
+    <Suspense fallback={<p className="py-12 text-center text-slate-500">読み込み中...</p>}>
+      <AgentDetailScreen />
+    </Suspense>
+  );
+}
+
+function AgentDetailScreen() {
   const { id } = useParams<{ id: string }>();
+  // Back-link target when opened from another page (e.g. the dashboard); default: agent list
+  const returnTo = useReturnTo() ?? '/agents';
   const { data: agent, isPending, error } = useAgent(id);
 
   if (isPending) return <p className="py-12 text-center text-slate-500">読み込み中...</p>;
@@ -24,17 +35,17 @@ export default function AgentDetailPage() {
     return (
       <div className="py-12 text-center">
         <p className="mb-4 text-slate-600">エージェントが見つかりませんでした。</p>
-        <Link href="/agents" className="text-blue-600 hover:underline">
-          一覧へ戻る
+        <Link href={returnTo} className="text-blue-600 hover:underline">
+          {returnLabel(returnTo)}へ戻る
         </Link>
       </div>
     );
   }
   if (!agent) return <div className={errorBox}>{errorMessage(error, '取得に失敗しました')}</div>;
-  return <AgentDetail agent={agent} />;
+  return <AgentDetail agent={agent} returnTo={returnTo} />;
 }
 
-function AgentDetail({ agent }: { agent: Agent }) {
+function AgentDetail({ agent, returnTo }: { agent: Agent; returnTo: string }) {
   const router = useRouter();
   const update = useUpdateAgent(agent);
   const remove = useDeleteAgent();
@@ -53,13 +64,13 @@ function AgentDetail({ agent }: { agent: Agent }) {
   const handleDelete = () => {
     const note = todos.length > 0 ? `\nこのエージェントのToDo ${todos.length}件も削除されます。` : '';
     if (!window.confirm(`「${agent.name}」を削除しますか？${note}`)) return;
-    remove.mutate(agent.id, { onSuccess: () => router.push('/agents') });
+    remove.mutate(agent.id, { onSuccess: () => router.push(returnTo) });
   };
 
   return (
     <div className="space-y-6">
-      <Link href="/agents" className="text-sm text-blue-600 hover:underline">
-        ← エージェント一覧へ戻る
+      <Link href={returnTo} className="text-sm text-blue-600 hover:underline">
+        ← {returnLabel(returnTo)}へ戻る
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">

@@ -1,6 +1,7 @@
 export * from './agent';
 export * from './backup';
 export * from './company';
+export * from './dashboard';
 export * from './datetime';
 export * from './enums';
 export * from './fields';

@@ -26,6 +26,7 @@ test('withReturnTo encodes the target and keeps existing query', () => {
 test('returnLabel', () => {
   expect(returnLabel('/calendar?view=timeGridWeek')).toBe('カレンダー');
   expect(returnLabel('/agents/1')).toBe('エージェント');
+  expect(returnLabel('/agents')).toBe('エージェント一覧');
   expect(returnLabel('/')).toBe('ダッシュボード');
   expect(returnLabel('/companies')).toBe('企業一覧');
   expect(returnLabel(undefined)).toBe('企業一覧');

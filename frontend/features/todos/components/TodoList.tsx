@@ -11,6 +11,8 @@ interface Props {
   onEdit: (todo: Todo) => void;
   /** Show done to-dos below the open ones (collapsed by default). */
   showDone?: boolean;
+  /** Expand the done section initially (e.g. in the dashboard's to-do list dialog). */
+  defaultDoneOpen?: boolean;
   emptyMessage?: string;
 }
 
@@ -51,8 +53,14 @@ function TodoRow({ todo, onEdit }: { todo: Todo; onEdit: (todo: Todo) => void })
 }
 
 /** Checkbox list of to-dos: tick to complete, click the title to edit. */
-export default function TodoList({ todos, onEdit, showDone = true, emptyMessage = 'ToDoはありません。' }: Props) {
-  const [doneOpen, setDoneOpen] = useState(false);
+export default function TodoList({
+  todos,
+  onEdit,
+  showDone = true,
+  defaultDoneOpen = false,
+  emptyMessage = 'ToDoはありません。',
+}: Props) {
+  const [doneOpen, setDoneOpen] = useState(defaultDoneOpen);
   const sorted = [...todos].sort(compareTodos);
   const open = sorted.filter((t) => t.status === 'open');
   const done = sorted.filter((t) => t.status === 'done');

@@ -22,12 +22,21 @@ export default function TodoDialog({ open, onClose, todo, agentId }: Props) {
   return (
     <Modal open={open} title={todo ? 'ToDoを編集' : 'ToDoを追加'} onClose={onClose}>
       {/* Remount per to-do so the form starts from its saved values */}
-      {open && <TodoForm key={todo?.id ?? 'new'} todo={todo} agentId={agentId} onDone={onClose} />}
+      {open && <TodoForm key={todo?.id ?? 'new'} todo={todo} agentId={agentId} onDone={onClose} onCancel={onClose} />}
     </Modal>
   );
 }
 
-function TodoForm({ todo, agentId, onDone }: { todo?: Todo; agentId?: string; onDone: () => void }) {
+interface FormProps {
+  todo?: Todo;
+  agentId?: string;
+  /** Called after a successful save or delete. */
+  onDone: () => void;
+  onCancel: () => void;
+}
+
+/** The to-do form, also embedded in the dashboard's to-do list dialog. */
+export function TodoForm({ todo, agentId, onDone, onCancel }: FormProps) {
   const { create, update, remove } = useTodoMutations();
   const initial = splitLocalDateTime(todo?.nextActionAt);
   const [title, setTitle] = useState(todo?.title ?? '');
@@ -139,7 +148,7 @@ function TodoForm({ todo, agentId, onDone }: { todo?: Todo; agentId?: string; on
           )}
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={onDone} disabled={busy} className={secondaryButton}>
+          <button type="button" onClick={onCancel} disabled={busy} className={secondaryButton}>
             キャンセル
           </button>
           <button type="submit" disabled={busy} className={primaryButton}>

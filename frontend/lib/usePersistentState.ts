@@ -25,5 +25,6 @@ export function usePersistentState<T extends object>(key: string, initial: T) {
     if (loaded) window.localStorage.setItem(key, JSON.stringify(value));
   }, [key, value, loaded]);
 
-  return [value, setValue] as const;
+  // `loaded`: the stored value has been applied (render decisions that depend on it should wait)
+  return [value, setValue, loaded] as const;
 }
