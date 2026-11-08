@@ -15,7 +15,7 @@ test('delete all data requires explicit confirmation', async () => {
 
   const res = await call<{ deleted: Record<string, number> }>('DELETE', '/api/data?confirm=DELETE_ALL');
   expect(res.status).toBe(200);
-  expect(res.body.deleted).toEqual({ companies: 2, agents: 1, total: 3 });
+  expect(res.body.deleted).toEqual({ companies: 2, agents: 1, resume: 0, total: 3 });
   expect((await call<Company[]>('GET', '/api/companies')).body).toEqual([]);
   expect((await call<Agent[]>('GET', '/api/agents')).body).toEqual([]);
 });

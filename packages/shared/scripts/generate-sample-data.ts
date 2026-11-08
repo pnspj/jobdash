@@ -16,6 +16,7 @@ import type { Company } from '../src/company';
 import type { ActionStatus, SelectionPhase } from '../src/enums';
 import { EMPTY_RESEARCH, type Research } from '../src/research';
 import type { Interview, TimeSlot } from '../src/schedule';
+import { resumeContentSchema, type Resume } from '../src/resume';
 
 const iso = (date: string, time = '09:00') => new Date(`${date}T${time}:00+09:00`).toISOString();
 
@@ -250,14 +251,107 @@ const companies: Company[] = defs.map((d, i) => {
   };
 });
 
+// ---------- resume (persona: docs/sample-persona.md) ----------
+
+const resume: Resume = {
+  ...resumeContentSchema.parse({
+    fullName: '助部 大介',
+    summary:
+      '大学卒業後、未経験から SES 企業に入社し、Java を中心に保険・物流・小売の業務システム開発に 3 年半従事しました。3 件目の案件では自社チーム 4 名のリーダーとして、進捗管理と若手の育成を担当しました。\n' +
+      '2023 年からは受託開発企業で、Java・Python・TypeScript を用いた Web アプリケーション開発に携わり、現在は需要予測ダッシュボード開発のサブリーダーを務めています。',
+    careers: [
+      {
+        companyName: '株式会社おでんシステムズ',
+        period: { from: '2020-04', to: '2023-09' },
+        employees: '約300名',
+        employmentType: '正社員',
+        projects: [
+          {
+            name: '保険会社向け契約管理システムの保守開発',
+            period: { from: '2020-07', to: '2021-09' },
+            overview: '生命保険の契約管理システムにおける法改正対応と機能追加。',
+            responsibilities: '詳細設計、実装、単体・結合テスト\n障害調査と再発防止策の検討',
+            environment: 'Java 8, Spring Framework, Oracle Database, Linux',
+            team: '10名（うち自社2名）',
+            interviewNotes: { hardships: '既存コードの影響範囲が広く、テスト観点の洗い出しに苦労した。有識者へのヒアリングでテスト観点表を作った。' },
+          },
+          {
+            name: '物流会社向け倉庫管理システムの新規開発',
+            period: { from: '2021-10', to: '2022-09' },
+            overview: '複数倉庫の在庫・入出荷を一元管理する Web システムの新規開発。',
+            responsibilities: '基本設計〜テスト\n入出荷 API の設計・実装',
+            environment: 'Java 11, Spring Boot, PostgreSQL, Docker',
+            team: '8名',
+            interviewNotes: { hardships: '仕様確認の前に実装を進めて手戻りを出した。以後、着手前に認識合わせの場を設けるようにした。' },
+          },
+          {
+            name: '小売業向けポイントシステムのリプレース',
+            period: { from: '2022-10', to: '2023-09' },
+            overview: 'オンプレミスのポイント管理システムを AWS 上に再構築。',
+            responsibilities: '自社チームリーダーとして進捗・品質管理、若手 2 名の育成\nバッチ処理の設計・実装',
+            environment: 'Java 17, Spring Boot, MySQL, AWS（EC2, RDS, S3）',
+            team: '15名（うち自社4名をリード）',
+            interviewNotes: { hardships: 'メンバーの稼働に偏りが出た。週次でタスクを見直し、ペア作業で属人化を減らした。' },
+          },
+        ],
+      },
+      {
+        companyName: 'すき焼きソフトウェア株式会社',
+        period: { from: '2023-10' },
+        employees: '約80名',
+        employmentType: '正社員',
+        projects: [
+          {
+            name: '自治体向け施設予約 Web アプリの開発',
+            period: { from: '2023-10', to: '2024-12' },
+            overview: '公共施設の空き状況確認・予約を行う市民向け Web アプリの開発。',
+            responsibilities: 'フロントエンド・バックエンドの実装\nアクセシビリティ対応',
+            environment: 'Java 17, Spring Boot, TypeScript, React, AWS',
+            team: '6名',
+            interviewNotes: { hardships: '初めての React で学習が追いつかず、休日に個人開発で練習して半年で主要画面を任されるようになった。' },
+          },
+          {
+            name: '製造業向け需要予測ダッシュボードの開発',
+            period: { from: '2025-01' },
+            overview: '販売実績から需要を予測し、生産計画に活用するダッシュボードの開発。',
+            responsibilities: 'サブリーダーとしてタスク分解・レビュー\n予測 API と画面の実装',
+            environment: 'Python, FastAPI, TypeScript, Next.js, AWS',
+            team: '7名',
+            interviewNotes: { hardships: '顧客要望の優先度づけ。リーダーと分担し、顧客との定例で合意を取ってから着手する運用にした。' },
+          },
+        ],
+      },
+    ],
+    skills:
+      '・Java / Spring Boot による業務システムの設計・開発（約 5 年）\n' +
+      '・TypeScript / React / Next.js、Python / FastAPI による Web アプリケーション開発\n' +
+      '・AWS 上でのシステム構築・運用\n' +
+      '・4 名チームのリーダー、7 名チームのサブリーダーとしての進捗管理・レビュー・育成\n' +
+      '・個人開発: Claude を活用した Web サービスを Cloudflare で公開',
+    selfPr:
+      '【周囲を巻き込む推進力】\n' +
+      '明るく社交的な性格を活かし、チーム内外の関係者と積極的にコミュニケーションを取ってきました。リーダーとしては、週次のタスク見直しとペア作業の導入で、メンバーの稼働の偏りを解消しました。\n' +
+      '【継続的な学習】\n' +
+      '未経験から入社し、業務に加えて休日も個人開発や勉強会への参加を続けています。新しい技術を自分で試し、業務に還元することを大切にしています。',
+    interviewNotes: {
+      strengths: '体力と粘り強さ\n明るく社交的で、チーム内外の調整が得意\n未経験から現場で成長してきた学習力',
+      weaknesses: '先走って失敗することがある\n→ 着手前に関係者と認識を合わせることを意識している',
+      reasonForChange: '役割（リーダー経験）と技術（フロントエンド・クラウド・プロダクト開発）の幅を広げたい。\nできれば自社サービスで、ユーザーに近い開発がしたい。',
+    },
+  }),
+  version: 1,
+  updatedAt: iso('2026-11-06', '20:00'),
+};
+
 const backup: Backup = backupSchema.parse({
   app: 'jobdash',
   schemaVersion: 3,
   exportedAt: iso('2026-11-08', '12:00'),
   companies,
   agents,
+  resume,
 });
 
 const out = new URL('../samples/sample-data.json', import.meta.url);
 writeFileSync(out, `${JSON.stringify(backup, null, 2)}\n`);
-console.log(`Wrote ${out.pathname}: ${backup.companies.length} companies, ${backup.agents.length} agents`);
+console.log(`Wrote ${out.pathname}: ${backup.companies.length} companies, ${backup.agents.length} agents, resume: ${backup.resume ? 'yes' : 'no'}`);

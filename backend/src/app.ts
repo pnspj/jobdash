@@ -6,6 +6,7 @@ import { backupRoute } from './routes/backup';
 import { agentsRoute } from './routes/agents';
 import { companiesRoute } from './routes/companies';
 import { dataRoute } from './routes/data';
+import { resumeRoute } from './routes/resume';
 import { BadRequestError, ConflictError, NotFoundError, VersionConflictError } from './errors';
 
 export function createApp({ log = true }: { log?: boolean } = {}) {
@@ -17,6 +18,7 @@ export function createApp({ log = true }: { log?: boolean } = {}) {
   app.get('/health', (c) => c.json({ status: 'ok' }));
   app.route('/api/companies', companiesRoute);
   app.route('/api/agents', agentsRoute);
+  app.route('/api/resume', resumeRoute);
   app.route('/api/backup', backupRoute);
   app.route('/api/data', dataRoute);
 

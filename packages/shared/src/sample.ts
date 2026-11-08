@@ -37,6 +37,8 @@ export function shiftBackupDates(backup: Backup, days: number): Backup {
       updatedAt: shiftIso(c.updatedAt, days),
     })),
     agents: backup.agents.map((a) => ({ ...a, createdAt: shiftIso(a.createdAt, days), updatedAt: shiftIso(a.updatedAt, days) })),
+    // Resume periods are career history (year-month) and are not shifted
+    ...(backup.resume && { resume: { ...backup.resume, updatedAt: shiftIso(backup.resume.updatedAt, days) } }),
   };
 }
 

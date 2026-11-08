@@ -8,3 +8,5 @@ export * from './sort';
 export * from './backup';
 export * from './reports';
 export * from './stats';
+export * from './resume';
+export * from './resumeFormat';

@@ -16,5 +16,7 @@ export const dataRoute = new Hono()
       counts[type] = (counts[type] ?? 0) + 1;
     }
     await batchDelete(items as { PK: string; SK: string }[]);
-    return c.json({ deleted: { companies: counts.company ?? 0, agents: counts.agent ?? 0, total: items.length } });
+    return c.json({
+      deleted: { companies: counts.company ?? 0, agents: counts.agent ?? 0, resume: counts.resume ?? 0, total: items.length },
+    });
   });

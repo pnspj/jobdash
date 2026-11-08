@@ -39,3 +39,14 @@ body {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
+
+/* Printing (resume PDF): A4, white background, keep blocks together */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  body {
+    background: #ffffff;
+  }
+}

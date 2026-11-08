@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/calendar', label: 'カレンダー' },
   { href: '/agents', label: 'エージェント' },
   { href: '/reports', label: '連絡用テキスト' },
+  { href: '/resume', label: '職務経歴書' },
   { href: '/stats', label: '集計' },
   { href: '/settings', label: 'データ管理' },
 ];
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="min-h-screen antialiased">
-        <header className="border-b border-slate-200 bg-white">
+        <header className="border-b border-slate-200 bg-white print:hidden">
           <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
             <Link href="/" className="text-lg font-bold text-slate-900">
               JobDash
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6">
+        <main className="mx-auto max-w-6xl px-4 py-6 print:max-w-none print:p-0">
           <Providers>{children}</Providers>
         </main>
       </body>
