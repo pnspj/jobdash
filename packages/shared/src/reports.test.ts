@@ -38,7 +38,7 @@ test('companyLabel', () => {
   expect(companyLabel(make('B社', '一次面接', '要対応'))).toBe('B社');
   expect(
     companyLabel(make('C社', '一次面接', '要対応', { tags: ['SES'], interviewCount: 1 }), {
-      withInterviewCount: false,
+      interviewCount: false,
     }),
   ).toBe('C社（SES）');
 });
@@ -179,5 +179,36 @@ describe('motivationText', () => {
 
   test('unrated companies are reported separately', () => {
     expect(unratedForMotivation(companies).map((c) => c.companyName)).toEqual(['N社']);
+  });
+});
+
+describe('label options', () => {
+  // The examples from the request (2026-11-10 is a Tuesday)
+  const gyoza = make(
+    '餃子ソリューションズ株式会社',
+    '一次面接',
+    '要本番準備',
+    { tags: ['SES'], interviewCount: 2 },
+    {
+      interviews: [{ stage: '一次面接', start: '2026-11-10T16:00', end: '2026-11-10T17:00' }],
+    },
+  );
+
+  test.each([
+    [{}, '11/10（火）16:00 餃子ソリューションズ株式会社（SES）面接2回'],
+    [{ stage: true }, '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社（SES）面接2回'],
+    [{ stage: true, tag: false, interviewCount: false }, '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社'],
+    [{ tag: false }, '11/10（火）16:00 餃子ソリューションズ株式会社面接2回'],
+  ])('interview schedule %j', (options, expected) => {
+    expect(interviewScheduleText([gyoza], '2026-11-10', options)).toBe(expected);
+  });
+
+  test('selection status without tag and interview count', () => {
+    expect(selectionStatusText([gyoza], { tag: false, interviewCount: false })).toBe(
+      '◇一次面接待ち\n餃子ソリューションズ株式会社',
+    );
+    expect(selectionStatusText([gyoza], { interviewCount: false })).toBe(
+      '◇一次面接待ち\n餃子ソリューションズ株式会社（SES）',
+    );
   });
 });

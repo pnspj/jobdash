@@ -16,32 +16,55 @@ type ReportCompany = Pick<
 // Within a group, companies follow the default list order (agent names are irrelevant here)
 const byListOrder = companyComparator(() => '');
 
+/** Which optional parts of a company label to output. Both default to on. */
+export interface LabelOptions {
+  /** "（SI）": the first tag */
+  tag?: boolean;
+  /** "面接2回": the interview count from the research, when known */
+  interviewCount?: boolean;
+}
+
 /** "A社（SI）面接2回": first tag in parentheses, interview count when known. */
-export function companyLabel(c: Pick<Company, 'companyName' | 'research'>, { withInterviewCount = true } = {}): string {
+export function companyLabel(
+  c: Pick<Company, 'companyName' | 'research'>,
+  { tag = true, interviewCount = true }: LabelOptions = {},
+): string {
   const r = researchOf(c);
-  const tag = r.tags[0] ? `（${r.tags[0]}）` : '';
-  const count = withInterviewCount && r.interviewCount ? `面接${r.interviewCount}回` : '';
-  return `${c.companyName}${tag}${count}`;
+  const tagText = tag && r.tags[0] ? `（${r.tags[0]}）` : '';
+  const countText = interviewCount && r.interviewCount ? `面接${r.interviewCount}回` : '';
+  return `${c.companyName}${tagText}${countText}`;
 }
 
 // ---------- interview schedule ----------
 
+export interface InterviewScheduleOptions extends LabelOptions {
+  /** "一次面接": the stage of the interview (off by default) */
+  stage?: boolean;
+}
+
 /**
  * Upcoming interviews (start date >= today) of open companies, soonest first:
  *   11/4（水）16:00 A社（SI）面接2回
+ *   11/4（水）16:00 一次面接 A社（SI）面接2回   (stage: true)
  */
-export function interviewScheduleText(companies: ReportCompany[], today: string): string {
+export function interviewScheduleText(
+  companies: ReportCompany[],
+  today: string,
+  { stage = false, ...label }: InterviewScheduleOptions = {},
+): string {
   return companies
     .filter((c) => !isClosedAction(c.action))
     .flatMap((c) => (c.interviews ?? []).filter((i) => i.start.slice(0, 10) >= today).map((i) => ({ c, i })))
     .sort((a, b) => a.i.start.localeCompare(b.i.start))
-    .map(({ c, i }) => `${formatSlot(i, '{月}/{日}（{曜}）{開始}')} ${companyLabel(c)}`)
+    .map(({ c, i }) =>
+      [formatSlot(i, '{月}/{日}（{曜}）{開始}'), stage && i.stage, companyLabel(c, label)].filter(Boolean).join(' '),
+    )
     .join('\n');
 }
 
 // ---------- selection status ----------
 
-export interface SelectionStatusOptions {
+export interface SelectionStatusOptions extends LabelOptions {
   /** Also output "◇辞退 N社" (counts only). */
   includeDeclined?: boolean;
 }
@@ -117,7 +140,7 @@ export function selectionStatusText(companies: ReportCompany[], options: Selecti
     .sort((a, b) => groupRank(a.group) - groupRank(b.group))
     .map(({ group, companies: list }) => {
       const countOnly = group.kind === 'rejected' || group.kind === 'declined';
-      return [heading(group, list.length), ...(countOnly ? [] : list.map((c) => companyLabel(c)))].join('\n');
+      return [heading(group, list.length), ...(countOnly ? [] : list.map((c) => companyLabel(c, options)))].join('\n');
     })
     .join('\n\n');
 }

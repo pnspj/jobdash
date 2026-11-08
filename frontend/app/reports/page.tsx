@@ -22,6 +22,41 @@ const DIRECT = '__direct__';
 interface ReportSettings {
   agentFilter: string; // ALL | DIRECT | agent id
   includeDeclined: boolean;
+  schedule: { stage: boolean; tag: boolean; interviewCount: boolean };
+  status: { tag: boolean; interviewCount: boolean };
+}
+
+const DEFAULT_SETTINGS: ReportSettings = {
+  agentFilter: ALL,
+  includeDeclined: false,
+  schedule: { stage: false, tag: true, interviewCount: true },
+  status: { tag: true, interviewCount: true },
+};
+
+/** A row of checkboxes switching parts of the output on and off. */
+function Toggles<K extends string>({
+  value,
+  labels,
+  onChange,
+}: {
+  value: Record<K, boolean>;
+  labels: [K, string][];
+  onChange: (value: Record<K, boolean>) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+      {labels.map(([key, label]) => (
+        <label key={key} className="flex items-center gap-1.5">
+          <input
+            type="checkbox"
+            checked={value[key]}
+            onChange={(e) => onChange({ ...value, [key]: e.target.checked })}
+          />
+          {label}
+        </label>
+      ))}
+    </div>
+  );
 }
 
 function ReportBlock({
@@ -63,10 +98,7 @@ function ReportBlock({
 export default function ReportsPage() {
   const { data: companies = [], isPending, error } = useCompanies();
   const { data: agents = [] } = useAgents();
-  const [settings, setSettings] = usePersistentState<ReportSettings>('jobdash.reportSettings', {
-    agentFilter: ALL,
-    includeDeclined: false,
-  });
+  const [settings, setSettings] = usePersistentState<ReportSettings>('jobdash.reportSettings', DEFAULT_SETTINGS);
 
   const filtered = useMemo<Company[]>(() => {
     if (settings.agentFilter === ALL) return companies;
@@ -75,8 +107,8 @@ export default function ReportsPage() {
   }, [companies, settings.agentFilter]);
 
   const today = todayLocalDate();
-  const schedule = interviewScheduleText(filtered, today);
-  const status = selectionStatusText(filtered, { includeDeclined: settings.includeDeclined });
+  const schedule = interviewScheduleText(filtered, today, settings.schedule);
+  const status = selectionStatusText(filtered, { includeDeclined: settings.includeDeclined, ...settings.status });
   const motivation = motivationText(filtered);
   const unrated = unratedForMotivation(filtered);
 
@@ -112,10 +144,20 @@ export default function ReportsPage() {
         <>
           <ReportBlock
             title="面接予定"
-            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）は先頭のタグ、「面接N回」は会社研究の面接回数です。"
+            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）は先頭のタグ、「面接N回」は会社研究の面接回数です。チェックで出力する項目を切り替えられます。"
             text={schedule}
             empty="今日以降の面接予定はありません"
-          />
+          >
+            <Toggles
+              value={settings.schedule}
+              labels={[
+                ['stage', '選考段階（一次面接など）'],
+                ['tag', 'タグ'],
+                ['interviewCount', '面接回数'],
+              ]}
+              onChange={(schedule) => setSettings((s) => ({ ...s, schedule }))}
+            />
+          </ReportBlock>
 
           <ReportBlock
             title="選考状況"
@@ -123,14 +165,19 @@ export default function ReportsPage() {
             text={status}
             empty="出力対象の企業がありません"
           >
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              <input
-                type="checkbox"
-                checked={settings.includeDeclined}
-                onChange={(e) => setSettings((s) => ({ ...s, includeDeclined: e.target.checked }))}
-              />
-              辞退した企業の件数も出力する
-            </label>
+            <Toggles
+              value={{
+                tag: settings.status.tag,
+                interviewCount: settings.status.interviewCount,
+                declined: settings.includeDeclined,
+              }}
+              labels={[
+                ['tag', 'タグ'],
+                ['interviewCount', '面接回数'],
+                ['declined', '辞退した企業の件数'],
+              ]}
+              onChange={({ declined, ...status }) => setSettings((s) => ({ ...s, includeDeclined: declined, status }))}
+            />
           </ReportBlock>
 
           <ReportBlock
