@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JobDash - 転職活動を、localhost で。</title>
+    <meta
+      name="description"
+      content="応募企業・エージェント・面接日程・企業研究・職務経歴書を、自分の PC の中だけで管理する、エンジニアのためのオープンソースの転職活動ダッシュボード。"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="logo" href="#top">JobDash</a>
+        <nav class="header-nav" aria-label="ページ内">
+          <a href="#features">機能</a>
+          <a href="#local">localhost で動く理由</a>
+          <a href="#start">はじめかた</a>
+          <a href="#faq">制限事項・FAQ</a>
+          <a class="header-github" href="https://github.com/pnspj/jobdash">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="container hero-inner">
+          <div class="hero-text">
+            <p class="eyebrow">エンジニアのための、オープンソースの転職活動ダッシュボード</p>
+            <h1>転職活動を、<code>localhost</code> で。</h1>
+            <p class="lead">
+              応募企業、エージェント、面接日程、企業研究、職務経歴書。<br />
+              転職活動の情報をひとつにまとめて、どれも<strong>あなたの PC の外には出しません。</strong>
+            </p>
+            <div class="cta">
+              <a class="button primary" href="#start">はじめかた</a>
+              <a class="button secondary" href="https://github.com/pnspj/jobdash">GitHub で見る</a>
+            </div>
+          </div>
+          <figure class="terminal">
+            <div class="terminal-bar"><span></span><span></span><span></span></div>
+            <pre><code><span class="prompt">$</span> git clone https://github.com/pnspj/jobdash.git
+<span class="prompt">$</span> cd jobdash &amp;&amp; npm install
+<span class="prompt">$</span> npm start
+<span class="dim">...</span>
+<span class="ok">[jobdash]</span> 起動しました → http://localhost:3000</code></pre>
+          </figure>
+        </div>
+        <div class="container">
+          <figure class="shot hero-shot">
+            <img
+              src="images/dashboard.png"
+              width="1440"
+              height="900"
+              alt="ダッシュボード。次回アクション日時の近い順に、企業とToDoが1つの表に並んでいる"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <!-- Pains -->
+      <section class="section pains">
+        <div class="container">
+          <h2>こんなところで、手が止まっていませんか</h2>
+          <ul class="pain-list">
+            <li>転職活動、何から手をつければいいかわからない</li>
+            <li>複数のエージェントに、同じ選考状況を何度も説明している</li>
+            <li>面接の希望日時を、カレンダーを見ながら手で打っている</li>
+            <li>企業研究のメモが、ノートとブラウザと頭の中に散らばっている</li>
+            <li>職務経歴書の Word で、レイアウトと格闘している</li>
+            <li>応募企業の Excel が、列も色も増えすぎて手に負えない</li>
+            <li>選考状況や転職理由を、クラウドのサービスに置きたくない</li>
+            <li>転職活動の情報を、AI には渡したくない</li>
+          </ul>
+          <p class="pains-answer">JobDash は、これをまとめて<strong>手元の PC だけで</strong>片づけるためのアプリです。</p>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section class="section" id="features">
+        <div class="container">
+          <h2>できること</h2>
+
+          <article class="feature">
+            <div class="feature-text">
+              <p class="feature-pain">何から始めたらいいかわからない</p>
+              <h3>今やることだけが並ぶダッシュボード</h3>
+              <p>
+                次回アクションのある企業、エージェントごとの ToDo、自分の ToDo を、期限の近い順に 1
+                つの表にまとめます。
+              </p>
+              <p>
+                はじめて開いたときは「エージェントに登録する」「職務経歴書に現在の業務を書く」の 2 つの ToDo
+                から始められます。架空の 30 社のサンプルデータで、転職活動の全体像を先に眺めることもできます。
+              </p>
+            </div>
+            <figure class="shot">
+              <img src="images/dashboard-tutorial.png" width="1440" height="900" alt="はじめて開いたときのチュートリアル" />
+            </figure>
+          </article>
+
+          <article class="feature">
+            <div class="feature-text">
+              <p class="feature-pain">複数のエージェントとの情報共有が大変</p>
+              <h3>エージェントへの報告は、コピーして貼るだけ</h3>
+              <p>
+                「他社の選考状況を教えてください」と聞かれたら、ボタンひとつで文面ができます。面接予定・選考状況・志望度の
+                3 種類を出力でき、タグや面接回数の表示、企業名に「様」を付けるかどうかも切り替えられます。
+              </p>
+              <p>
+                エージェントごとに担当者の連絡先や ToDo を管理でき、選考フェーズの集計グラフもエージェント別に表示できます。
+              </p>
+            </div>
+            <figure class="text-sample">
+              <figcaption>選考状況の出力例</figcaption>
+              <pre>◇内定
+オムライスソリューションズ株式会社（自社サービス）面接3回
+カレーライスシステム株式会社（SI）面接2回
+
+◇最終面接待ち
+ラーメンプラットフォーム株式会社（自社サービス）面接3回
+
+◇二次面接結果待ち
+唐揚げテクノロジー株式会社（受託開発）面接2回
+
+◇一次面接不採用 1社</pre>
+            </figure>
+          </article>
+
+          <article class="feature">
+            <div class="feature-text">
+              <p class="feature-pain">面接の日程調整が大変</p>
+              <h3>希望日時はドラッグで選んで、テキストで送る</h3>
+              <p>
+                週表示のカレンダーをドラッグして面接の希望日時を選ぶと、エージェントに伝える用の文面ができます。他社の面接はグレーで表示されるので、ダブルブッキングを防げます。
+              </p>
+              <p>
+                面接日時が確定したら登録するだけで、その企業の希望日時は自動で片づきます。日付の書式は 4
+                種類のプリセットから選ぶか、自分で決められます。
+              </p>
+            </div>
+            <div class="feature-media">
+              <figure class="shot">
+                <img
+                  src="images/schedule.gif"
+                  width="1440"
+                  height="900"
+                  alt="カレンダーをドラッグして希望日時を選び、テキストとしてコピーする操作"
+                />
+              </figure>
+              <figure class="text-sample">
+                <figcaption>希望日時の出力例</figcaption>
+                <pre>11/16（月）13:00開始～17:00終了
+11/17（火）10:00開始～12:00終了
+11/18（水）15:00開始～18:00終了</pre>
+              </figure>
+            </div>
+          </article>
+
+          <article class="feature">
+            <div class="feature-text">
+              <p class="feature-pain">企業研究が大変</p>
+              <h3>企業研究を、企業ごとに 1 か所へ</h3>
+              <p>
+                志望理由、入社後の将来像、逆質問、魅力的な点、不安な点、タグ、面接回数、志望度（★3 段階）を企業ごとに残せます。面接の直前に開くページが
+                1 つで済みます。
+              </p>
+              <p>書いた内容は、志望度の高い順に並べてエージェントに伝える文面にもなります。</p>
+            </div>
+            <figure class="text-sample">
+              <figcaption>志望度の出力例</figcaption>
+              <pre>志望度★★★
+◇ラーメンプラットフォーム株式会社
+魅力的な点
+・サービスが先進的
+・技術スタックが自分に合っている
+不安な点
+・残業が多そう</pre>
+            </figure>
+          </article>
+
+          <article class="feature">
+            <div class="feature-text">
+              <p class="feature-pain">職務経歴書の Word を書くのが大変</p>
+              <h3>職務経歴書は、項目を埋めるだけ</h3>
+              <p>
+                職務要約やプロジェクトごとの担当業務を入力すると、<strong>Word・PDF・Markdown・テキスト</strong>で出力できます。在籍期間は自動で計算します。エージェントごとに提出形式が違っても、出力形式を切り替えるだけで対応できます。
+              </p>
+              <p>
+                プロジェクトで苦労したこと、強み・弱み、転職理由といった面接対策のメモも、同じ画面に書けます。メモは出力には含まれません。
+              </p>
+            </div>
+            <figure class="shot">
+              <img src="images/resume.png" width="1440" height="900" alt="職務経歴書の編集画面と出力形式の選択" />
+            </figure>
+          </article>
+
+          <article class="feature">
+            <div class="feature-text">
+              <p class="feature-pain">Excel での管理に疲れた</p>
+              <h3>Excel の管理表から、そのまま引っ越せる</h3>
+              <p>
+                今使っている管理表（Excel、スプレッドシート、Notion、etc...）から CSV をエクスポートして、JobDash に取り込めます。項目名が違っても、取り込み時に対応付けが可能です。
+              </p>
+              <ol class="steps-inline">
+                <li>CSV ファイルを選択する</li>
+                <li>列を対応付ける（企業名、エージェント、URL、選考フェーズなど）</li>
+                <li>選択項目を対応付ける（「一次面接」「1次」のような表記の揺れも吸収）</li>
+                <li>行ごとのエラーや登録済みの同名企業をプレビューで確かめて、取り込み実行</li>
+              </ol>
+              <p>
+                逆に、全項目を CSV で書き出して Excel などで開くこともできます。
+              </p>
+            </div>
+            <figure class="shot">
+              <img src="images/csv-import.gif" width="1440" height="900" alt="CSV インポートのウィザードで列と値を対応付ける操作" />
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <!-- Local first -->
+      <section class="section local" id="local">
+        <div class="container">
+          <h2>なぜ <code>localhost</code> なのか</h2>
+          <p class="section-lead">
+            選考状況、志望度、面接で話す転職理由。転職活動の情報は、今の勤務先にも知られたくない、いちばん機微な個人情報です。JobDash
+            はそれを、あなたの PC の中だけで扱います。
+          </p>
+
+          <div class="flow" role="img" aria-label="ブラウザ、API、データベースがすべて自分のPCの中にあり、外部のクラウドやAIへの通信はない">
+            <div class="flow-machine">
+              <p class="flow-title">あなたの PC</p>
+              <div class="flow-row">
+                <div class="flow-box">ブラウザ<small>localhost:3000</small></div>
+                <span class="flow-arrow" aria-hidden="true">⇄</span>
+                <div class="flow-box">API<small>127.0.0.1:8787</small></div>
+                <span class="flow-arrow" aria-hidden="true">⇄</span>
+                <div class="flow-box">DynamoDB Local<small>Docker / 127.0.0.1:8000</small></div>
+              </div>
+            </div>
+            <div class="flow-outside">
+              <div class="flow-box muted">クラウド</div>
+              <div class="flow-box muted">AI サービス</div>
+              <p class="flow-none">選考データは送りません</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <div class="card">
+              <h3>アカウント登録なし</h3>
+              <p>メールアドレスもパスワードも要りません。インストールしたその場で使い始められます。</p>
+            </div>
+            <div class="card">
+              <h3>外に送らない</h3>
+              <p>
+                すべて <code>127.0.0.1</code> だけで待ち受けます。Next.js
+                のテレメトリも無効にしています。選考データが PC の外に送られることはありません。
+              </p>
+            </div>
+            <div class="card">
+              <h3>AI 機能は入れていない</h3>
+              <p>
+                自動で AI に送る仕組みはありません。AI に相談したいときは、出力したテキストから、自分で選んだ部分だけを渡せます。
+              </p>
+            </div>
+            <div class="card">
+              <h3>コードで確かめられる</h3>
+              <p>
+                MIT ライセンスのオープンソースです。気になるところはソースを読めます。CI では gitleaks
+                による秘密情報のスキャンも動かしています。
+              </p>
+            </div>
+            <div class="card">
+              <h3>いつでも持ち出せて、消せる</h3>
+              <p>全データを JSON でバックアップ・復元できます。転職が決まったら、全データをまとめて削除できます。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How to proceed -->
+      <section class="section" id="flow">
+        <div class="container">
+          <h2>JobDash で進める転職活動</h2>
+          <p class="section-lead">何から始めればいいか迷ったら、この順に進めてみてください。</p>
+          <ol class="journey">
+            <li>
+              <h3>エージェントに登録する</h3>
+              <p>登録したエージェントと担当者の連絡先を、エージェント管理に入れておきます。</p>
+            </li>
+            <li>
+              <h3>職務経歴書を書く</h3>
+              <p>まずは今の業務から。書いた内容は Word や PDF で書き出して、エージェントに渡せます。</p>
+            </li>
+            <li>
+              <h3>応募して、企業研究を書く</h3>
+              <p>応募した企業を登録して、志望理由や逆質問を書きためます。既存の Excel があれば CSV で取り込めます。</p>
+            </li>
+            <li>
+              <h3>面接の日程を調整する</h3>
+              <p>希望日時をカレンダーで選んで送り、確定した面接日時を登録します。</p>
+            </li>
+            <li>
+              <h3>選考状況を共有して、比べる</h3>
+              <p>エージェントには連絡用テキストで報告し、志望度と集計グラフで全体を見渡します。</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Getting started -->
+      <section class="section start" id="start">
+        <div class="container">
+          <h2>はじめかた</h2>
+          <div class="start-grid">
+            <div>
+              <h3>必要なもの</h3>
+              <ul>
+                <li>Git</li>
+                <li>Node.js 24 以上</li>
+                <li>Docker（Docker Desktop など）</li>
+              </ul>
+              <p class="note">macOS と Linux で動きます。Windows では WSL の上で使ってください。</p>
+            </div>
+            <div>
+              <h3>インストールと起動</h3>
+              <pre class="code"><code><span class="prompt">$</span> git clone https://github.com/pnspj/jobdash.git
+<span class="prompt">$</span> cd jobdash
+<span class="prompt">$</span> npm install
+<span class="prompt">$</span> npm start</code></pre>
+              <p>
+                「起動しました」と表示されたら、ブラウザで
+                <a href="http://localhost:3000">http://localhost:3000</a> を開きます。終了するときは Ctrl+C
+                を押します。データは Docker の volume に残り、次に起動したときもそのまま使えます。
+              </p>
+              <p class="note">
+                最初の画面で「サンプルを見る」を選ぶと、架空の 30 社のデータで機能を試せます。試し終わったら「データ管理」から全データを削除できます。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="section faq" id="faq">
+        <div class="container">
+          <h2>制限事項・よくある質問</h2>
+
+          <details>
+            <summary>スマホや外出先から見られますか？</summary>
+            <p>
+              見られません。JobDash は、起動した PC のブラウザから <code>localhost</code>
+              を開いて使うアプリです。ログイン機能がないため、ネットワークに公開する使い方はしないでください。
+            </p>
+          </details>
+
+          <details>
+            <summary>複数の PC で使えますか？</summary>
+            <p>
+              同期の機能はありません。「データ管理」から JSON でバックアップし、別の PC で復元すれば移せます。
+            </p>
+          </details>
+
+          <details>
+            <summary>データはどこに保存されますか？</summary>
+            <p>
+              Docker の volume の中の DynamoDB Local に保存されます。<code>docker compose down -v</code> などで
+              volume を削除するとデータも消えるので、ときどき JSON でバックアップを取ってください。
+            </p>
+          </details>
+
+          <details>
+            <summary>本当に外部と通信しないのですか？</summary>
+            <p>
+              <code>npm start</code> で起動したアプリは、外部と通信しません。インストール時の
+              <code>npm install</code> と Docker イメージの取得は、もちろんネットワークを使います。
+            </p>
+            <p>
+              開発モード（<code>npm run dev</code>）では、Next.js
+              がエラー画面にバージョンを表示するために npm レジストリへ問い合わせます。この通信に選考データは含まれません。
+            </p>
+          </details>
+
+          <details>
+            <summary>費用はかかりますか？</summary>
+            <p>かかりません。MIT ライセンスのオープンソースです。</p>
+          </details>
+
+          <details>
+            <summary>自分で機能を足したり、改造したりできますか？</summary>
+            <p>
+              できます。Next.js・Hono・DynamoDB Local・zod で作られた TypeScript のモノレポです。Claude Code
+              などの AI コーディングエージェントで開発すると、Next.js が <code>frontend/AGENTS.md</code>
+              を自動で生成します（エージェント向けのドキュメント案内です）。
+            </p>
+          </details>
+
+          <details>
+            <summary>不具合を見つけたら？</summary>
+            <p>
+              個人開発のため、対応はできる範囲になります。不具合は
+              <a href="https://github.com/pnspj/jobdash/issues">Issues</a>
+              へ、脆弱性は公開せずに
+              <a href="https://github.com/pnspj/jobdash/blob/main/SECURITY.md">SECURITY.md</a>
+              の方法で報告してください。
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p class="logo">JobDash</p>
+        <nav aria-label="外部リンク">
+          <a href="https://github.com/pnspj/jobdash">GitHub</a>
+          <a href="https://github.com/pnspj/jobdash/blob/main/LICENSE">MIT License</a>
+          <a href="https://github.com/pnspj/jobdash/blob/main/SECURITY.md">Security</a>
+        </nav>
+        <p class="note">画面や出力例に登場する企業・人物は、すべて架空のものです。</p>
+      </div>
+    </footer>
+  </body>
+</html>

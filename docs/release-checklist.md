@@ -33,3 +33,6 @@
 7. [ ] Actions: 外部からのフォーク PR のワークフローは承認制にする
 8. [ ] CodeQL と Dependency review が動くことを確認する（ワークフローはプライベートの間はスキップされる設定）
 9. [ ] README にスクリーンショット（サンプルデータで撮影したもの）を追加するか検討する
+10. [ ] GitHub Pages を有効化する（Settings → Pages → Source を「GitHub Actions」にする）。`site/` のランディングページを `.github/workflows/pages.yml` が公開する
+    - Source を「Deploy from a branch」の `/docs` にしないこと（設計ドキュメントが公開されてしまう）
+    - 有効化後、Actions から Pages ワークフローを手動実行（workflow_dispatch）して公開を確認する
