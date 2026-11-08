@@ -5,7 +5,7 @@ import { call, clearTable } from './helpers';
 beforeEach(clearTable);
 
 const content = {
-  fullName: '助部 大介',
+  fullName: '序部 大介',
   summary: '要約',
   careers: [
     {
@@ -27,7 +27,7 @@ test('empty resume before the first save', async () => {
 test('save, update with version, and conflicts', async () => {
   const first = await call<Resume>('PUT', '/api/resume', { version: 0, ...content });
   expect(first.status).toBe(200);
-  expect(first.body).toMatchObject({ fullName: '助部 大介', version: 1, selfPr: '' });
+  expect(first.body).toMatchObject({ fullName: '序部 大介', version: 1, selfPr: '' });
   expect(first.body.careers[0].projects[0]).toMatchObject({ overview: '', interviewNotes: { hardships: 'メモ' } });
 
   // A second "first save" from another tab is a conflict
@@ -51,12 +51,12 @@ test('resume is included in backups and removed by delete-all', async () => {
   expect((await call<Backup>('GET', '/api/backup')).body.resume).toBeUndefined(); // nothing saved yet
   await call('PUT', '/api/resume', { version: 0, ...content });
   const { body: backup } = await call<Backup>('GET', '/api/backup');
-  expect(backup.resume?.fullName).toBe('助部 大介');
+  expect(backup.resume?.fullName).toBe('序部 大介');
 
   const deleted = await call<{ deleted: Record<string, number> }>('DELETE', '/api/data?confirm=DELETE_ALL');
   expect(deleted.body.deleted.resume).toBe(1);
   expect((await call<Resume>('GET', '/api/resume')).body.version).toBe(0);
 
   await call('POST', '/api/backup/restore', backup);
-  expect((await call<Resume>('GET', '/api/resume')).body.fullName).toBe('助部 大介');
+  expect((await call<Resume>('GET', '/api/resume')).body.fullName).toBe('序部 大介');
 });

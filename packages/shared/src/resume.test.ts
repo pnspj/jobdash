@@ -12,7 +12,7 @@ import {
 } from './resumeFormat';
 
 const resume: ResumeContent = resumeContentSchema.parse({
-  fullName: '助部 大介',
+  fullName: '序部 大介',
   summary: '要約1行目\n要約2行目',
   careers: [
     {
@@ -84,7 +84,7 @@ describe('outputs', () => {
 
   test('plain text', () => {
     const text = resumeToPlainText(resume, today);
-    expect(text).toContain('職務経歴書\n2026年11月8日現在\n氏名 助部 大介');
+    expect(text).toContain('職務経歴書\n2026年11月8日現在\n氏名 序部 大介');
     expect(text).toContain('■職務要約\n要約1行目\n要約2行目');
     expect(text).toContain(
       '◆株式会社おでんシステムズ（2020年4月～2023年9月（3年6か月））\n従業員数: 約300名 / 雇用形態: 正社員',
@@ -99,7 +99,7 @@ describe('outputs', () => {
 
   test('markdown', () => {
     const md = resumeToMarkdown(resume, today);
-    expect(md.startsWith('# 職務経歴書\n\n2026年11月8日現在  \n氏名 助部 大介  \n')).toBe(true);
+    expect(md.startsWith('# 職務経歴書\n\n2026年11月8日現在  \n氏名 序部 大介  \n')).toBe(true);
     expect(md).toContain('## 職務経歴');
     expect(md).toContain('### 株式会社おでんシステムズ（2020年4月～2023年9月（3年6か月））');
     expect(md).toContain('#### 案件A\n\n期間: 2020年7月～2021年9月（1年3か月）');
@@ -119,7 +119,7 @@ describe('outputs', () => {
 
 test('sample resume is valid and outputs cleanly', () => {
   const sample = backupSchema.parse(sampleJson);
-  expect(sample.resume?.fullName).toBe('助部 大介');
+  expect(sample.resume?.fullName).toBe('序部 大介');
   expect(sample.resume?.careers.map((c) => c.companyName)).toEqual([
     '株式会社おでんシステムズ',
     'すき焼きソフトウェア株式会社',

@@ -356,7 +356,7 @@ const todos: Todo[] = todoDefs.map((d, i) => {
 
 const resume: Resume = {
   ...resumeContentSchema.parse({
-    fullName: '助部 大介',
+    fullName: '序部 大介',
     summary:
       '大学卒業後、未経験から SES 企業に入社し、Java を中心に保険・物流・小売の業務システム開発に 3 年半従事しました。3 件目の案件では自社チーム 4 名のリーダーとして、進捗管理と若手の育成を担当しました。\n' +
       '2023 年からは受託開発企業で、Java・Python・TypeScript を用いた Web アプリケーション開発に携わり、現在は需要予測ダッシュボード開発のサブリーダーを務めています。',
