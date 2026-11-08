@@ -149,13 +149,18 @@ export function guessMapping(headers: string[]): ColumnMapping {
 
 /** Guess which enum value a raw CSV value refers to (normalized exact match, then containment). */
 export function guessEnumValue<T extends string>(raw: string, options: readonly T[]): T | null {
-  const key = normalizeKey(raw);
+  const key = enumKey(raw);
   if (key === '') return null;
-  const exact = options.find((o) => normalizeKey(o) === key);
+  const exact = options.find((o) => enumKey(o) === key);
   if (exact) return exact;
-  const partial = options.filter((o) => normalizeKey(o).includes(key) || key.includes(normalizeKey(o)));
+  const partial = options.filter((o) => enumKey(o).includes(key) || key.includes(enumKey(o)));
   return partial.length === 1 ? partial[0] : null;
 }
+
+const KANJI_DIGITS = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+
+/** normalizeKey, plus arabic ordinals written as kanji ("1次面接" -> "一次面接"), as spreadsheets often use them. */
+const enumKey = (s: string) => normalizeKey(s).replace(/(\d)次/g, (_, d: string) => `${KANJI_DIGITS[Number(d)]}次`);
 
 // ---------- date / time parsing ----------
 

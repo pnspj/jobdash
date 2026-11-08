@@ -89,6 +89,13 @@ test('guessEnumValue normalizes spacing and width', () => {
   assert.equal(guessEnumValue('辞退/不通過', ACTION_STATUSES), null); // ambiguous: user must choose
 });
 
+test('guessEnumValue reads arabic ordinals as kanji', () => {
+  assert.equal(guessEnumValue('1次面接', SELECTION_PHASES), '一次面接');
+  assert.equal(guessEnumValue('２次面接', SELECTION_PHASES), '二次面接'); // full-width digit
+  assert.equal(guessEnumValue('1次', SELECTION_PHASES), '一次面接');
+  assert.equal(guessEnumValue('3次面接', SELECTION_PHASES), null); // no such phase
+});
+
 test('convertRow converts a Notion row end to end', () => {
   const rows = parseCsv(NOTION_SAMPLE);
   const [header, ...data] = rows;
