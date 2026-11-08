@@ -1,16 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { isClosedAction } from '@jobdash/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { isClosedAction } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import { useMemo, useState } from 'react';
 import ExternalLink from '@/components/ui/ExternalLink';
 import Modal from '@/components/ui/Modal';
 import { errorBox, primaryButton } from '@/components/ui/styles';
 import { useAgents, useCreateAgent } from '@/features/agents/api';
 import AgentForm from '@/features/agents/components/AgentForm';
 import { useCompanies } from '@/features/companies/api';
+import { errorMessage } from '@/lib/apiClient';
 
 export default function AgentListPage() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function AgentListPage() {
           <h1 className="text-2xl font-bold">エージェント</h1>
           <p className="text-sm text-slate-500">{agents.length} 件</p>
         </div>
-        <button onClick={() => setModalOpen(true)} className={primaryButton}>
+        <button type="button" onClick={() => setModalOpen(true)} className={primaryButton}>
           ＋ エージェントを追加
         </button>
       </div>
@@ -68,7 +68,11 @@ export default function AgentListPage() {
               {agents.map((a) => {
                 const count = counts.get(a.id) ?? { total: 0, active: 0 };
                 return (
-                  <tr key={a.id} onClick={() => router.push(`/agents/${a.id}`)} className="cursor-pointer hover:bg-blue-50/50">
+                  <tr
+                    key={a.id}
+                    onClick={() => router.push(`/agents/${a.id}`)}
+                    className="cursor-pointer hover:bg-blue-50/50"
+                  >
                     <td className="px-4 py-3 font-mono font-medium">
                       <Link href={`/agents/${a.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline">
                         {a.shortName}
@@ -82,7 +86,11 @@ export default function AgentListPage() {
                     <td className="px-4 py-3 text-slate-600">{a.contactName || '-'}</td>
                     <td className="px-4 py-3 text-slate-600">
                       {a.contactEmail && (
-                        <a href={`mailto:${a.contactEmail}`} onClick={(e) => e.stopPropagation()} className="block hover:underline">
+                        <a
+                          href={`mailto:${a.contactEmail}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="block hover:underline"
+                        >
                           {a.contactEmail}
                         </a>
                       )}

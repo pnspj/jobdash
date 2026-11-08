@@ -2,7 +2,9 @@ import { BatchWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient, TABLE_NAME } from './client';
 import { USER_PK } from './keys';
 
-type WriteRequest = { PutRequest: { Item: Record<string, unknown> } } | { DeleteRequest: { Key: Record<string, unknown> } };
+type WriteRequest =
+  | { PutRequest: { Item: Record<string, unknown> } }
+  | { DeleteRequest: { Key: Record<string, unknown> } };
 
 /** Query all items in the user partition whose SK starts with `prefix` ('' = everything). */
 export async function queryByPrefix(prefix: string): Promise<Record<string, unknown>[]> {
@@ -36,7 +38,8 @@ export async function batchWrite(requests: WriteRequest[]): Promise<void> {
   }
 }
 
-export const batchPut = (items: Record<string, unknown>[]) => batchWrite(items.map((Item) => ({ PutRequest: { Item } })));
+export const batchPut = (items: Record<string, unknown>[]) =>
+  batchWrite(items.map((Item) => ({ PutRequest: { Item } })));
 
 export const batchDelete = (keys: { PK: unknown; SK: unknown }[]) =>
   batchWrite(keys.map(({ PK, SK }) => ({ DeleteRequest: { Key: { PK, SK } } })));

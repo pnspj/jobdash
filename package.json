@@ -10,6 +10,15 @@
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "sample:check": "npm run sample:generate -w @jobdash/shared && git diff --exit-code -- packages/shared/samples"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.6"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

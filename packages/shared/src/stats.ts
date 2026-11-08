@@ -1,5 +1,5 @@
 import type { Company } from './company';
-import { SELECTION_PHASES, isClosedAction, type SelectionPhase } from './enums';
+import { isClosedAction, SELECTION_PHASES, type SelectionPhase } from './enums';
 
 export interface PhaseCount {
   phase: SelectionPhase;

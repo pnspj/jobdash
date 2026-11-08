@@ -2,7 +2,10 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { ApiError, apiRequest } from './apiClient';
 
 const respond = (status: number, body: unknown) =>
-  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status })));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response(JSON.stringify(body), { status })),
+  );
 
 afterEach(() => vi.unstubAllGlobals());
 

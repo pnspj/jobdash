@@ -1,8 +1,8 @@
 'use client';
 
+import { type Career, emptyCareer, emptyProject, type Project, type ResumeContent } from '@jobdash/shared';
 import type { ReactNode } from 'react';
-import { emptyCareer, emptyProject, type Career, type Project, type ResumeContent } from '@jobdash/shared';
-import { inputClass, labelClass, sectionClass, secondaryButton } from '@/components/ui/styles';
+import { inputClass, labelClass, secondaryButton, sectionClass } from '@/components/ui/styles';
 import PeriodInput from './PeriodInput';
 
 type Update = (fn: (r: ResumeContent) => ResumeContent) => void;
@@ -32,7 +32,14 @@ function NotesBox({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function TextArea({ id, label, value, onChange, rows = 4, hint }: {
+function TextArea({
+  id,
+  label,
+  value,
+  onChange,
+  rows = 4,
+  hint,
+}: {
   id: string;
   label: string;
   value: string;
@@ -51,7 +58,13 @@ function TextArea({ id, label, value, onChange, rows = 4, hint }: {
   );
 }
 
-function OrderButtons({ index, count, onMove, onRemove, label }: {
+function OrderButtons({
+  index,
+  count,
+  onMove,
+  onRemove,
+  label,
+}: {
   index: number;
   count: number;
   onMove: (to: number) => void;
@@ -64,7 +77,13 @@ function OrderButtons({ index, count, onMove, onRemove, label }: {
       <button type="button" className={btn} disabled={index === 0} onClick={() => onMove(index - 1)} aria-label="上へ">
         ↑
       </button>
-      <button type="button" className={btn} disabled={index === count - 1} onClick={() => onMove(index + 1)} aria-label="下へ">
+      <button
+        type="button"
+        className={btn}
+        disabled={index === count - 1}
+        onClick={() => onMove(index + 1)}
+        aria-label="下へ"
+      >
         ↓
       </button>
       <button
@@ -87,7 +106,12 @@ function ProjectEditor({ project, id, onChange }: { project: Project; id: string
           <label className={labelClass} htmlFor={`${id}-name`}>
             プロジェクト名
           </label>
-          <input id={`${id}-name`} value={project.name} onChange={(e) => set('name', e.target.value)} className={inputClass} />
+          <input
+            id={`${id}-name`}
+            value={project.name}
+            onChange={(e) => set('name', e.target.value)}
+            className={inputClass}
+          />
         </div>
         <div>
           <span className={labelClass}>プロジェクト期間</span>
@@ -95,9 +119,27 @@ function ProjectEditor({ project, id, onChange }: { project: Project; id: string
         </div>
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <TextArea id={`${id}-overview`} label="プロジェクト概要" value={project.overview} onChange={(v) => set('overview', v)} rows={3} />
-        <TextArea id={`${id}-resp`} label="担当業務" value={project.responsibilities} onChange={(v) => set('responsibilities', v)} rows={3} />
-        <TextArea id={`${id}-env`} label="言語・環境" value={project.environment} onChange={(v) => set('environment', v)} rows={2} />
+        <TextArea
+          id={`${id}-overview`}
+          label="プロジェクト概要"
+          value={project.overview}
+          onChange={(v) => set('overview', v)}
+          rows={3}
+        />
+        <TextArea
+          id={`${id}-resp`}
+          label="担当業務"
+          value={project.responsibilities}
+          onChange={(v) => set('responsibilities', v)}
+          rows={3}
+        />
+        <TextArea
+          id={`${id}-env`}
+          label="言語・環境"
+          value={project.environment}
+          onChange={(v) => set('environment', v)}
+          rows={2}
+        />
         <TextArea id={`${id}-team`} label="チーム構成" value={project.team} onChange={(v) => set('team', v)} rows={2} />
       </div>
       <NotesBox title="面接対策メモ">
@@ -123,7 +165,12 @@ function CareerEditor({ career, index, onChange }: { career: Career; index: numb
           <label className={labelClass} htmlFor={`${id}-name`}>
             会社名 <span className="text-red-500">*</span>
           </label>
-          <input id={`${id}-name`} value={career.companyName} onChange={(e) => set('companyName', e.target.value)} className={inputClass} />
+          <input
+            id={`${id}-name`}
+            value={career.companyName}
+            onChange={(e) => set('companyName', e.target.value)}
+            className={inputClass}
+          />
         </div>
         <div>
           <span className={labelClass}>期間</span>
@@ -168,10 +215,19 @@ function CareerEditor({ career, index, onChange }: { career: Career; index: numb
                 count={career.projects.length}
                 label="プロジェクト"
                 onMove={(to) => set('projects', move(career.projects, pi, to))}
-                onRemove={() => set('projects', career.projects.filter((_, i) => i !== pi))}
+                onRemove={() =>
+                  set(
+                    'projects',
+                    career.projects.filter((_, i) => i !== pi),
+                  )
+                }
               />
             </div>
-            <ProjectEditor project={p} id={`${id}-project-${pi}`} onChange={(np) => set('projects', replace(career.projects, pi, np))} />
+            <ProjectEditor
+              project={p}
+              id={`${id}-project-${pi}`}
+              onChange={(np) => set('projects', replace(career.projects, pi, np))}
+            />
           </div>
         ))}
         <button
@@ -203,9 +259,20 @@ export default function ResumeEditor({ value, update }: { value: ResumeContent; 
           <label className={labelClass} htmlFor="fullName">
             氏名
           </label>
-          <input id="fullName" value={value.fullName} onChange={(e) => setField('fullName', e.target.value)} className={`${inputClass} max-w-xs`} />
+          <input
+            id="fullName"
+            value={value.fullName}
+            onChange={(e) => setField('fullName', e.target.value)}
+            className={`${inputClass} max-w-xs`}
+          />
         </div>
-        <TextArea id="summary" label="職務要約" value={value.summary} onChange={(v) => setField('summary', v)} rows={5} />
+        <TextArea
+          id="summary"
+          label="職務要約"
+          value={value.summary}
+          onChange={(v) => setField('summary', v)}
+          rows={5}
+        />
       </section>
 
       <section className={`${sectionClass} space-y-4`}>
@@ -219,19 +286,38 @@ export default function ResumeEditor({ value, update }: { value: ResumeContent; 
                 count={value.careers.length}
                 label="職務経歴"
                 onMove={(to) => setField('careers', move(value.careers, ci, to))}
-                onRemove={() => setField('careers', value.careers.filter((_, i) => i !== ci))}
+                onRemove={() =>
+                  setField(
+                    'careers',
+                    value.careers.filter((_, i) => i !== ci),
+                  )
+                }
               />
             </div>
-            <CareerEditor career={c} index={ci} onChange={(nc) => setField('careers', replace(value.careers, ci, nc))} />
+            <CareerEditor
+              career={c}
+              index={ci}
+              onChange={(nc) => setField('careers', replace(value.careers, ci, nc))}
+            />
           </div>
         ))}
-        <button type="button" onClick={() => setField('careers', [...value.careers, emptyCareer(thisMonth())])} className={secondaryButton}>
+        <button
+          type="button"
+          onClick={() => setField('careers', [...value.careers, emptyCareer(thisMonth())])}
+          className={secondaryButton}
+        >
           ＋ 職務経歴を追加
         </button>
       </section>
 
       <section className={`${sectionClass} space-y-4`}>
-        <TextArea id="skills" label="活かせる経験・スキル" value={value.skills} onChange={(v) => setField('skills', v)} rows={6} />
+        <TextArea
+          id="skills"
+          label="活かせる経験・スキル"
+          value={value.skills}
+          onChange={(v) => setField('skills', v)}
+          rows={6}
+        />
         <TextArea id="selfPr" label="自己PR" value={value.selfPr} onChange={(v) => setField('selfPr', v)} rows={8} />
       </section>
 

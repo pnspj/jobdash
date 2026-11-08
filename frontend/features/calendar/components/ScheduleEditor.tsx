@@ -1,26 +1,26 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import type { DateSelectArg, EventClickArg, EventChangeArg, EventInput } from '@fullcalendar/core';
+import type { DateSelectArg, EventChangeArg, EventClickArg, EventInput } from '@fullcalendar/core';
 import {
-  INTERVIEW_STAGE_KEYS,
+  type Company,
   formatLocalDateTime,
   formatSlot,
+  INTERVIEW_STAGE_KEYS,
+  type InterviewStageKey,
   isClosedAction,
   normalizeSlots,
-  toLocalDateTime,
-  type Company,
-  type InterviewStageKey,
   type TimeSlot,
+  toLocalDateTime,
 } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import { useEffect, useMemo, useState } from 'react';
 import { dangerButton, errorBox, primaryButton, sectionClass } from '@/components/ui/styles';
 import { useScheduleMutations } from '@/features/companies/api';
-import { OTHER_COLOR, STAGE_COLORS, interviewEvent, preferredEvent } from '../lib/events';
+import { errorMessage } from '@/lib/apiClient';
+import { interviewEvent, OTHER_COLOR, preferredEvent, STAGE_COLORS } from '../lib/events';
 import { useCalendarSettings } from '../lib/settings';
 import BaseCalendar from './BaseCalendar';
-import WeekStartToggle from './WeekStartToggle';
 import SlotTextExport from './SlotTextExport';
+import WeekStartToggle from './WeekStartToggle';
 
 export type ScheduleMode = InterviewStageKey | 'preferred';
 
@@ -68,7 +68,8 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
     mode === 'preferred'
       ? JSON.stringify(normalizeSlots(draftSlots)) !== JSON.stringify(savedSlots)
       : draftInterview !== null && !sameSlot(draftInterview, current);
-  const busy = mutations.setInterview.isPending || mutations.removeInterview.isPending || mutations.setPreferredSlots.isPending;
+  const busy =
+    mutations.setInterview.isPending || mutations.removeInterview.isPending || mutations.setPreferredSlots.isPending;
   const error = mutations.setInterview.error ?? mutations.removeInterview.error ?? mutations.setPreferredSlots.error;
 
   // Warn before leaving the page with unsaved changes
@@ -88,7 +89,8 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
     const list: EventInput[] = [];
     for (const o of others) {
       if (isClosedAction(o.action)) continue;
-      for (const i of o.interviews ?? []) list.push({ ...interviewEvent(o, i, OTHER_COLOR), extendedProps: { kind: 'other' } });
+      for (const i of o.interviews ?? [])
+        list.push({ ...interviewEvent(o, i, OTHER_COLOR), extendedProps: { kind: 'other' } });
     }
     for (const i of company.interviews ?? []) {
       const replaced = i.stage === stage && draftInterview && !sameSlot(draftInterview, i);
@@ -100,7 +102,7 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
       });
     }
     if (mode === 'preferred') {
-      draftSlots.forEach((s, index) =>
+      draftSlots.forEach((s, index) => {
         list.push({
           ...preferredEvent(company, s, index),
           id: `draft-slot:${index}`,
@@ -108,17 +110,17 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
           editable: true,
           classNames: ['jd-preferred', 'jd-clickable'],
           extendedProps: { kind: 'draft-slot', index },
-        }),
-      );
+        });
+      });
     } else {
-      savedSlots.forEach((s, index) =>
+      savedSlots.forEach((s, index) => {
         list.push({
           ...preferredEvent(company, s, index),
           title: '希望（クリックでこの日時に）',
           classNames: ['jd-preferred', 'jd-clickable'],
           extendedProps: { kind: 'pick', index },
-        }),
-      );
+        });
+      });
       if (draftInterview && !sameSlot(draftInterview, current)) {
         list.push({
           id: 'draft-interview',
@@ -234,7 +236,9 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
               <dl className="space-y-2 text-sm">
                 <div>
                   <dt className="text-slate-500">登録済みの日時</dt>
-                  <dd className="font-medium">{current ? formatSlot(current, '{月}/{日}（{曜}）{開始}～{終了日}{終了}') : '未登録'}</dd>
+                  <dd className="font-medium">
+                    {current ? formatSlot(current, '{月}/{日}（{曜}）{開始}～{終了日}{終了}') : '未登録'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-slate-500">新しい日時</dt>
@@ -252,7 +256,9 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
                 <ul className="list-disc space-y-1 pl-4 text-xs text-amber-700">
                   {savedSlots.length > 0 && <li>保存すると面接希望日時（{savedSlots.length}件）は削除されます。</li>}
                   {!company.nextActionAt && draftInterview && (
-                    <li>次回アクション日時が未設定のため、{formatLocalDateTime(draftInterview.start)} に設定されます。</li>
+                    <li>
+                      次回アクション日時が未設定のため、{formatLocalDateTime(draftInterview.start)} に設定されます。
+                    </li>
                   )}
                 </ul>
               )}
@@ -261,7 +267,12 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
                   {mutations.setInterview.isPending ? '保存中...' : '保存'}
                 </button>
                 {dirty && (
-                  <button type="button" onClick={() => setDraftInterview(null)} disabled={busy} className="text-sm text-slate-500 hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setDraftInterview(null)}
+                    disabled={busy}
+                    className="text-sm text-slate-500 hover:underline"
+                  >
                     取り消し
                   </button>
                 )}
@@ -304,12 +315,22 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
                   {mutations.setPreferredSlots.isPending ? '保存中...' : '保存'}
                 </button>
                 {dirty && (
-                  <button type="button" onClick={() => setDraftSlots(savedSlots)} disabled={busy} className="text-sm text-slate-500 hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setDraftSlots(savedSlots)}
+                    disabled={busy}
+                    className="text-sm text-slate-500 hover:underline"
+                  >
                     変更を破棄
                   </button>
                 )}
                 {draftSlots.length > 0 && (
-                  <button type="button" onClick={() => setDraftSlots([])} disabled={busy} className="text-sm text-red-600 hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setDraftSlots([])}
+                    disabled={busy}
+                    className="text-sm text-red-600 hover:underline"
+                  >
                     すべて削除
                   </button>
                 )}

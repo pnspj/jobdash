@@ -19,7 +19,8 @@ const ACTION_STYLES: Record<ActionStatus, string> = {
   不通過: 'bg-zinc-100 text-zinc-500 ring-zinc-300 line-through',
 };
 
-const base = 'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset';
+const base =
+  'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset';
 
 export function PhaseBadge({ phase }: { phase: SelectionPhase }) {
   return <span className={`${base} ${PHASE_STYLES[phase] ?? ''}`}>{phase}</span>;

@@ -1,5 +1,5 @@
-import { beforeEach, expect, test } from 'vitest';
 import type { Agent, Backup, Company } from '@jobdash/shared';
+import { beforeEach, expect, test } from 'vitest';
 import { call, clearTable } from './helpers';
 
 const company = {
@@ -31,7 +31,12 @@ test('export then restore replaces all data with the backup', async () => {
 
 test('restore rejects an invalid backup and keeps existing data', async () => {
   await call('POST', '/api/companies', company);
-  const res = await call('POST', '/api/backup/restore', { app: 'jobdash', schemaVersion: 1, exportedAt: '', companies: [] });
+  const res = await call('POST', '/api/backup/restore', {
+    app: 'jobdash',
+    schemaVersion: 1,
+    exportedAt: '',
+    companies: [],
+  });
   expect(res.status).toBe(400);
 
   const { body: backup } = await call<Backup>('GET', '/api/backup');

@@ -3,7 +3,7 @@
  * Imported via "@jobdash/shared/sample" so the JSON is bundled only where it is used.
  */
 import sampleJson from '../samples/sample-data.json';
-import { backupSchema, type Backup } from './backup';
+import { type Backup, backupSchema } from './backup';
 import { todayLocalDate } from './datetime';
 import { fromLocalDateTime, toLocalDateTime } from './schedule';
 
@@ -25,7 +25,11 @@ const shiftIso = (value: string, days: number) => new Date(Date.parse(value) + d
 /** Shift every date in a backup by `days` (interviews, preferred slots, next actions and timestamps). */
 export function shiftBackupDates(backup: Backup, days: number): Backup {
   if (days === 0) return backup;
-  const slot = <T extends { start: string; end: string }>(s: T): T => ({ ...s, start: shiftLocal(s.start, days), end: shiftLocal(s.end, days) });
+  const slot = <T extends { start: string; end: string }>(s: T): T => ({
+    ...s,
+    start: shiftLocal(s.start, days),
+    end: shiftLocal(s.end, days),
+  });
   return {
     ...backup,
     companies: backup.companies.map((c) => ({
@@ -36,7 +40,11 @@ export function shiftBackupDates(backup: Backup, days: number): Backup {
       createdAt: shiftIso(c.createdAt, days),
       updatedAt: shiftIso(c.updatedAt, days),
     })),
-    agents: backup.agents.map((a) => ({ ...a, createdAt: shiftIso(a.createdAt, days), updatedAt: shiftIso(a.updatedAt, days) })),
+    agents: backup.agents.map((a) => ({
+      ...a,
+      createdAt: shiftIso(a.createdAt, days),
+      updatedAt: shiftIso(a.updatedAt, days),
+    })),
     // Resume periods are career history (year-month) and are not shifted
     ...(backup.resume && { resume: { ...backup.resume, updatedAt: shiftIso(backup.resume.updatedAt, days) } }),
   };

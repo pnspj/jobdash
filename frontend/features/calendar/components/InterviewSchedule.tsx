@@ -1,5 +1,5 @@
+import { type Company, formatSlot, INTERVIEW_STAGES, stageKeyOf } from '@jobdash/shared';
 import Link from 'next/link';
-import { INTERVIEW_STAGES, formatSlot, stageKeyOf, type Company } from '@jobdash/shared';
 import { secondaryButton } from '@/components/ui/styles';
 import { withReturnTo } from '@/lib/returnTo';
 import { PREFERRED_COLOR, STAGE_COLORS } from '../lib/events';
@@ -23,7 +23,10 @@ export default function InterviewSchedule({ company, returnTo }: { company: Comp
             return (
               <li key={stage} className="flex items-center justify-between gap-3 py-2">
                 <span className="flex items-center gap-2">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STAGE_COLORS[stage] }} />
+                  <span
+                    className="inline-block h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: STAGE_COLORS[stage] }}
+                  />
                   <span className="w-20 font-medium">{stage}</span>
                   <span className={`tabular-nums ${interview ? '' : 'text-slate-400'}`}>
                     {interview ? formatSlot(interview, DISPLAY_FORMAT) : '未登録'}

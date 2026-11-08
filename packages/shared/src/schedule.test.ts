@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import {
-  SLOT_FORMAT_PRESETS,
   formatSlot,
   formatSlots,
   fromLocalDateTime,
   normalizeSlots,
+  SLOT_FORMAT_PRESETS,
   setInterviewSchema,
   setPreferredSlotsSchema,
   toLocalDateTime,
@@ -17,13 +17,18 @@ describe('formatSlot', () => {
     expect(formatSlot(slot)).toBe('11/4（水）17:00開始～20:00終了');
   });
 
-  test.each(SLOT_FORMAT_PRESETS.map((p) => [p.label, p.template]))('preset %s renders its own label', (label, template) => {
-    expect(formatSlot(slot, template)).toBe(label);
-  });
+  test.each(SLOT_FORMAT_PRESETS.map((p) => [p.label, p.template]))(
+    'preset %s renders its own label',
+    (label, template) => {
+      expect(formatSlot(slot, template)).toBe(label);
+    },
+  );
 
   test('custom template and multi-day slot', () => {
     expect(formatSlot(slot, '{月}月{日}日 {開始}-{終了}')).toBe('11月4日 17:00-20:00');
-    expect(formatSlot({ start: '2026-11-04T23:00', end: '2026-11-05T01:00' })).toBe('11/4（水）23:00開始～11/5（木）01:00終了');
+    expect(formatSlot({ start: '2026-11-04T23:00', end: '2026-11-05T01:00' })).toBe(
+      '11/4（水）23:00開始～11/5（木）01:00終了',
+    );
   });
 
   test('formatSlots sorts and applies a bullet', () => {
@@ -47,7 +52,9 @@ describe('schemas', () => {
     expect(setInterviewSchema.safeParse({ version: 1, ...slot }).success).toBe(true);
     expect(setInterviewSchema.safeParse(slot).success).toBe(false);
     expect(setInterviewSchema.safeParse({ version: 1, start: slot.end, end: slot.start }).success).toBe(false);
-    expect(setInterviewSchema.safeParse({ version: 1, start: '2026-11-04', end: '2026-11-04T10:00' }).success).toBe(false);
+    expect(setInterviewSchema.safeParse({ version: 1, start: '2026-11-04', end: '2026-11-04T10:00' }).success).toBe(
+      false,
+    );
   });
 
   test('setPreferredSlotsSchema accepts an empty list (clear)', () => {

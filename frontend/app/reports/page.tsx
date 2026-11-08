@@ -1,20 +1,20 @@
 'use client';
 
-import { useMemo } from 'react';
 import {
+  type Company,
   interviewScheduleText,
   motivationText,
   selectionStatusText,
   todayLocalDate,
   unratedForMotivation,
-  type Company,
 } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
-import { usePersistentState } from '@/lib/usePersistentState';
+import { useMemo } from 'react';
 import CopyButton from '@/components/ui/CopyButton';
 import { errorBox, inputClass, sectionClass } from '@/components/ui/styles';
 import { agentDisplayName, useAgents } from '@/features/agents/api';
 import { useCompanies } from '@/features/companies/api';
+import { errorMessage } from '@/lib/apiClient';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 const ALL = '__all__';
 const DIRECT = '__direct__';
@@ -24,7 +24,13 @@ interface ReportSettings {
   includeDeclined: boolean;
 }
 
-function ReportBlock({ title, description, text, empty, children }: {
+function ReportBlock({
+  title,
+  description,
+  text,
+  empty,
+  children,
+}: {
   title: string;
   description: string;
   text: string;

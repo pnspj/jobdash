@@ -1,8 +1,8 @@
-import { SCHEMA_VERSION, type Backup } from '@jobdash/shared';
-import { agentRepository, companyRepository } from '../repositories';
-import { resumeRepository } from '../repositories/resumeRepository';
+import { type Backup, SCHEMA_VERSION } from '@jobdash/shared';
 import { batchDelete, batchPut, queryByPrefix } from '../db/operations';
 import { BadRequestError } from '../errors';
+import { agentRepository, companyRepository } from '../repositories';
+import { resumeRepository } from '../repositories/resumeRepository';
 
 /** Only a saved resume (version > 0) is exported. */
 async function exportResume(): Promise<{ resume?: Awaited<ReturnType<typeof resumeRepository.get>> }> {
@@ -27,7 +27,9 @@ export const backupService = {
     const agentIds = new Set(backup.agents.map((a) => a.id));
     const dangling = backup.companies.filter((co) => co.agentId && !agentIds.has(co.agentId));
     if (dangling.length > 0) {
-      throw new BadRequestError(`存在しないエージェントを参照している企業があります: ${dangling.map((d) => d.companyName).join('、')}`);
+      throw new BadRequestError(
+        `存在しないエージェントを参照している企業があります: ${dangling.map((d) => d.companyName).join('、')}`,
+      );
     }
     const existing = await queryByPrefix('');
     await batchDelete(existing as { PK: string; SK: string }[]);

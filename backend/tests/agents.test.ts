@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, test } from 'vitest';
 import type { Agent, Company } from '@jobdash/shared';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { call, clearTable } from './helpers';
 
 const BASE = '/api/agents';
@@ -25,7 +25,11 @@ describe('agents API', () => {
     expect((await call<Agent[]>('GET', BASE)).body).toEqual([created.body]);
     expect((await call<Agent>('GET', `${BASE}/${created.body.id}`)).body).toEqual(created.body);
 
-    const updated = await call<Agent>('PATCH', `${BASE}/${created.body.id}`, { version: 1, contactEmail: '', memo: '' });
+    const updated = await call<Agent>('PATCH', `${BASE}/${created.body.id}`, {
+      version: 1,
+      contactEmail: '',
+      memo: '',
+    });
     expect(updated.status).toBe(200);
     expect('contactEmail' in updated.body).toBe(false);
     expect(updated.body).toMatchObject({ memo: '', version: 2, shortName: 'MA' });
@@ -47,7 +51,9 @@ describe('agents API', () => {
     const { body: b } = await call<Agent>('POST', BASE, { name: '××エージェント', shortName: 'BA' });
     expect((await call('PATCH', `${BASE}/${b.id}`, { version: 1, shortName: 'MA' })).status).toBe(409);
     // Keeping its own short name is fine
-    expect((await call('PATCH', `${BASE}/${a.id}`, { version: 1, shortName: 'MA', name: '○○エージェント株式会社' })).status).toBe(200);
+    expect(
+      (await call('PATCH', `${BASE}/${a.id}`, { version: 1, shortName: 'MA', name: '○○エージェント株式会社' })).status,
+    ).toBe(200);
   });
 
   test('agent referenced by a company cannot be deleted', async () => {

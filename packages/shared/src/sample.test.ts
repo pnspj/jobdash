@@ -1,18 +1,40 @@
 import { describe, expect, test } from 'vitest';
 import sampleJson from '../samples/sample-data.json';
 import { backupSchema } from './backup';
-import { fromLocalDateTime } from './schedule';
 import { SAMPLE_BASE_DATE, sampleBackup, shiftBackupDates, weekShiftDays } from './sample';
+import { fromLocalDateTime } from './schedule';
 
 const FICTIONAL_NAMES = [
-  '株式会社うどんシステムズ', '焼きそばテクノロジー株式会社', 'オムライスソリューションズ株式会社', 'チャーハンネットワークス株式会社',
-  'カレーライスシステム株式会社', 'ナポリタンテクノロジー株式会社', 'おにぎりソリューションズ株式会社', 'ピザインフォメーション株式会社',
-  'ラーメンプラットフォーム株式会社', 'ハンバーガーシステム株式会社', '唐揚げテクノロジー株式会社', '肉じゃがシステムズ株式会社',
-  '餃子ソリューションズ株式会社', '冷奴ネットワークス株式会社', 'お味噌汁システム株式会社', 'コロッケテクノロジー株式会社',
-  '茶碗蒸しソリューションズ株式会社', 'エビフライシステム株式会社', '焼き鳥インフォメーション株式会社', '麻婆豆腐テクノロジー株式会社',
-  'プリンテクノロジー株式会社', 'パンケーキシステム株式会社', 'マカロンソリューションズ株式会社', 'たい焼きネットワークス株式会社',
-  'シュークリームシステム株式会社', 'マヨネーズテクノロジー株式会社', 'わさびソリューションズ株式会社', 'チョコレートシステム株式会社',
-  'かき氷インフォメーション株式会社', 'ケチャップテクノロジー株式会社',
+  '株式会社うどんシステムズ',
+  '焼きそばテクノロジー株式会社',
+  'オムライスソリューションズ株式会社',
+  'チャーハンネットワークス株式会社',
+  'カレーライスシステム株式会社',
+  'ナポリタンテクノロジー株式会社',
+  'おにぎりソリューションズ株式会社',
+  'ピザインフォメーション株式会社',
+  'ラーメンプラットフォーム株式会社',
+  'ハンバーガーシステム株式会社',
+  '唐揚げテクノロジー株式会社',
+  '肉じゃがシステムズ株式会社',
+  '餃子ソリューションズ株式会社',
+  '冷奴ネットワークス株式会社',
+  'お味噌汁システム株式会社',
+  'コロッケテクノロジー株式会社',
+  '茶碗蒸しソリューションズ株式会社',
+  'エビフライシステム株式会社',
+  '焼き鳥インフォメーション株式会社',
+  '麻婆豆腐テクノロジー株式会社',
+  'プリンテクノロジー株式会社',
+  'パンケーキシステム株式会社',
+  'マカロンソリューションズ株式会社',
+  'たい焼きネットワークス株式会社',
+  'シュークリームシステム株式会社',
+  'マヨネーズテクノロジー株式会社',
+  'わさびソリューションズ株式会社',
+  'チョコレートシステム株式会社',
+  'かき氷インフォメーション株式会社',
+  'ケチャップテクノロジー株式会社',
 ];
 
 const sample = backupSchema.parse(sampleJson);
@@ -44,7 +66,9 @@ describe('sample data', () => {
   });
 
   test('companies waiting for the other party or closed have no next action', () => {
-    const waiting = sample.companies.filter((c) => ['日程調整待ち', '選考結果待ち', '辞退', '不通過'].includes(c.action));
+    const waiting = sample.companies.filter((c) =>
+      ['日程調整待ち', '選考結果待ち', '辞退', '不通過'].includes(c.action),
+    );
     expect(waiting.length).toBeGreaterThan(0);
     for (const c of waiting) expect(c.nextActionAt, c.companyName).toBeUndefined();
   });

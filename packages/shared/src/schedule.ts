@@ -78,7 +78,11 @@ export function dateTimeParts(s: string) {
  *   {終了日}             - "M/D（曜）" of the end, only when it is on a different day (else empty)
  */
 export const SLOT_FORMAT_PRESETS = [
-  { id: 'start-end-label', label: '11/4（水）17:00開始～20:00終了', template: '{月}/{日}（{曜}）{開始}開始～{終了日}{終了}終了' },
+  {
+    id: 'start-end-label',
+    label: '11/4（水）17:00開始～20:00終了',
+    template: '{月}/{日}（{曜}）{開始}開始～{終了日}{終了}終了',
+  },
   { id: 'range', label: '11/4（水）17:00～20:00', template: '{月}/{日}（{曜}）{開始}～{終了日}{終了}' },
   { id: 'with-year', label: '2026/11/4（水）17:00～20:00', template: '{年}/{月}/{日}（{曜}）{開始}～{終了日}{終了}' },
   { id: 'kanji', label: '11月4日（水）17:00～20:00', template: '{月}月{日}日（{曜}）{開始}～{終了日}{終了}' },
@@ -108,13 +112,17 @@ export const formatSlots = (slots: TimeSlot[], template?: string, bullet = '') =
     .join('\n');
 
 /** URL-friendly keys for interview stages (used in API paths and page query strings). */
-export const INTERVIEW_STAGE_KEYS = { first: '一次面接', second: '二次面接', final: '最終面接' } as const satisfies Record<
-  string,
-  InterviewStage
->;
+export const INTERVIEW_STAGE_KEYS = {
+  first: '一次面接',
+  second: '二次面接',
+  final: '最終面接',
+} as const satisfies Record<string, InterviewStage>;
 export type InterviewStageKey = keyof typeof INTERVIEW_STAGE_KEYS;
 
 export const isInterviewStageKey = (s: string): s is InterviewStageKey => s in INTERVIEW_STAGE_KEYS;
 
-export const stageKeyOf = (stage: InterviewStage) =>
-  (Object.keys(INTERVIEW_STAGE_KEYS) as InterviewStageKey[]).find((k) => INTERVIEW_STAGE_KEYS[k] === stage)!;
+const STAGE_KEY_BY_STAGE = Object.fromEntries(
+  Object.entries(INTERVIEW_STAGE_KEYS).map(([key, stage]) => [stage, key]),
+) as Record<InterviewStage, InterviewStageKey>;
+
+export const stageKeyOf = (stage: InterviewStage): InterviewStageKey => STAGE_KEY_BY_STAGE[stage];

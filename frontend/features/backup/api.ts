@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Backup } from '@jobdash/shared';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/apiClient';
 
 export const backupApi = {
@@ -10,10 +10,14 @@ export const backupApi = {
     apiRequest<{ deleted: Record<string, number> }>('/api/data?confirm=DELETE_ALL', { method: 'DELETE' }),
 };
 
-/** Every cached entity may have changed after these operations. */
+/**
+ * Every cached entity may have changed after these operations.
+ * Reset (not just invalidate) the cache: otherwise a page opened later would first render
+ * the stale data (e.g. the resume editor would initialize its draft from a deleted resume).
+ */
 function useInvalidateAll() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries();
+  return () => qc.resetQueries();
 }
 
 export function useRestoreBackup() {

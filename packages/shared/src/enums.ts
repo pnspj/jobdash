@@ -1,11 +1,4 @@
-export const SELECTION_PHASES = [
-  '書類選考',
-  '試験/課題',
-  '一次面接',
-  '二次面接',
-  '最終面接',
-  'オファー/内定',
-] as const;
+export const SELECTION_PHASES = ['書類選考', '試験/課題', '一次面接', '二次面接', '最終面接', 'オファー/内定'] as const;
 
 export const ACTION_STATUSES = [
   '要日程調整',

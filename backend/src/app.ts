@@ -1,18 +1,28 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
 import { HTTPException } from 'hono/http-exception';
-import { backupRoute } from './routes/backup';
+import { logger } from 'hono/logger';
+import { BadRequestError, ConflictError, NotFoundError, VersionConflictError } from './errors';
+import { allowedHosts, DEFAULT_ALLOWED_HOSTS } from './middleware/security';
 import { agentsRoute } from './routes/agents';
+import { backupRoute } from './routes/backup';
 import { companiesRoute } from './routes/companies';
 import { dataRoute } from './routes/data';
 import { resumeRoute } from './routes/resume';
-import { BadRequestError, ConflictError, NotFoundError, VersionConflictError } from './errors';
+
+export const MAX_BODY_BYTES = 5 * 1024 * 1024;
 
 export function createApp({ log = true }: { log?: boolean } = {}) {
   const app = new Hono();
 
   if (log) app.use('*', logger());
+  app.use('*', allowedHosts(process.env.ALLOWED_HOSTS?.split(',').map((h) => h.trim()) ?? DEFAULT_ALLOWED_HOSTS));
+  // Backups and CSV imports are the largest requests; a few MB is plenty for personal data
+  app.use(
+    '/api/*',
+    bodyLimit({ maxSize: MAX_BODY_BYTES, onError: (c) => c.json({ message: 'Request body too large' }, 413) }),
+  );
   app.use('/api/*', cors({ origin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000' }));
 
   app.get('/health', (c) => c.json({ status: 'ok' }));

@@ -56,6 +56,8 @@ export default function ResumeDocument({ blocks }: { blocks: ResumeBlock[] }) {
             );
           case 'paragraph':
             return <Lines key={i} text={b.text} />;
+          default:
+            return null;
         }
       })}
     </article>

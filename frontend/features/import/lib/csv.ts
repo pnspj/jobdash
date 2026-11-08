@@ -52,10 +52,22 @@ export function parseCsv(text: string): string[][] {
   return rows.filter((r) => r.some((cell) => cell.trim() !== ''));
 }
 
-const escapeField = (value: string) => (/[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+/**
+ * Cells starting with = + - @ (or tab / CR) are evaluated as formulas by spreadsheet apps (CSV injection).
+ * Prefix them with an apostrophe on export; `unescapeFormula` removes it again on import.
+ */
+const FORMULA_START = /^[=+\-@\t\r]/;
+export const escapeFormula = (value: string) => (FORMULA_START.test(value) ? `'${value}` : value);
+export const unescapeFormula = (value: string) =>
+  value.startsWith("'") && FORMULA_START.test(value.slice(1)) ? value.slice(1) : value;
+
+const escapeField = (raw: string) => {
+  const value = escapeFormula(raw);
+  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+};
 
 export function toCsv(rows: string[][]): string {
-  return rows.map((r) => r.map(escapeField).join(',')).join('\r\n') + '\r\n';
+  return `${rows.map((r) => r.map(escapeField).join(',')).join('\r\n')}\r\n`;
 }
 
 /** Trigger a browser download. A BOM is prepended so Excel opens UTF-8 correctly. */

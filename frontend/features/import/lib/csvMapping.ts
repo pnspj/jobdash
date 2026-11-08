@@ -1,21 +1,23 @@
 import {
   ACTION_STATUSES,
-  SELECTION_PHASES,
   type ActionStatus,
-  joinLocalDateTime,
-  splitLocalDateTime,
+  type Agent,
+  type Company,
+  type CompanyImportRecordParsed,
   EMPTY_RESEARCH,
+  isHttpUrl,
+  joinLocalDateTime,
   MAX_INTERVIEW_COUNT,
   normalizeShortName,
   parseRating,
   parseTags,
-  researchOf,
-  type Agent,
   type Research,
-  type Company,
-  type CompanyImportRecordParsed,
+  researchOf,
+  SELECTION_PHASES,
   type SelectionPhase,
+  splitLocalDateTime,
 } from '@jobdash/shared';
+import { unescapeFormula } from './csv';
 
 // ---------- target fields ----------
 
@@ -35,7 +37,13 @@ export type TargetField =
   | 'rating';
 
 type ResearchTextField = 'motivation' | 'futureVision' | 'reverseQuestions' | 'attractions' | 'concerns';
-const RESEARCH_TEXT_FIELDS: ResearchTextField[] = ['motivation', 'futureVision', 'reverseQuestions', 'attractions', 'concerns'];
+const RESEARCH_TEXT_FIELDS: ResearchTextField[] = [
+  'motivation',
+  'futureVision',
+  'reverseQuestions',
+  'attractions',
+  'concerns',
+];
 
 export const TARGET_FIELDS: { key: TargetField; label: string; required?: boolean; hint?: string }[] = [
   { key: 'companyName', label: '会社名', required: true },
@@ -97,7 +105,17 @@ const HEADER_ALIASES: Record<TargetField, string[]> = {
   agentJobUrl: ['エージェント求人url', '求人url', 'url', 'agentjoburl', 'joburl', 'link', 'リンク'],
   phase: ['選考フェーズ', 'フェーズ', '選考状況', 'ステータス', 'phase', 'status'],
   action: ['アクション', '次のアクション', 'action', 'todo'],
-  nextActionDate: ['次回アクション日時', '次回アクション日', '次回アクション', '日付', '日程', '期限', 'date', 'nextactiondate', 'due'],
+  nextActionDate: [
+    '次回アクション日時',
+    '次回アクション日',
+    '次回アクション',
+    '日付',
+    '日程',
+    '期限',
+    'date',
+    'nextactiondate',
+    'due',
+  ],
   nextActionTime: ['次回アクション時刻', '時刻', '時間', 'time', 'nextactiontime'],
   details: ['詳細', 'メモ', '備考', 'note', 'notes', 'details', 'memo', 'comment'],
   tags: ['タグ', 'tags', 'tag', '業態', '種別', 'カテゴリ', 'category'],
@@ -142,7 +160,18 @@ export function guessEnumValue<T extends string>(raw: string, options: readonly 
 // ---------- date / time parsing ----------
 
 const MONTHS: Record<string, number> = {
-  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+  jan: 1,
+  feb: 2,
+  mar: 3,
+  apr: 4,
+  may: 5,
+  jun: 6,
+  jul: 7,
+  aug: 8,
+  sep: 9,
+  oct: 10,
+  nov: 11,
+  dec: 12,
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -188,7 +217,7 @@ export function parseDateTime(raw: string): ParsedDateTime {
   }
 
   // "November 9, 2026 15:00" / "Nov 9 2026 3:00 PM"
-  m = s.match(new RegExp(String.raw`^([a-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})` + timePart.replace('[ T]+', String.raw`[ T,]+`), 'i'));
+  m = s.match(new RegExp(String.raw`^([a-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})` + timePart.replace('[ T]+', '[ T,]+'), 'i'));
   if (m) {
     const [, mon, d, y, h, mi, ap] = m;
     const month = MONTHS[mon.slice(0, 3).toLowerCase()];
@@ -199,7 +228,15 @@ export function parseDateTime(raw: string): ParsedDateTime {
   return { error: `日付を解釈できません: ${raw}` };
 }
 
-function finish(y: number, mo: number, d: number, h: string | undefined, mi: string | undefined, ap: string | undefined, raw: string): ParsedDateTime {
+function finish(
+  y: number,
+  mo: number,
+  d: number,
+  h: string | undefined,
+  mi: string | undefined,
+  ap: string | undefined,
+  raw: string,
+): ParsedDateTime {
   if (!isValidDate(y, mo, d)) return { error: `存在しない日付です: ${raw}` };
   const date = `${y}-${pad(mo)}-${pad(d)}`;
   if (h === undefined || mi === undefined) return { date };
@@ -243,7 +280,8 @@ export function autoMapAgents(
       if (overrides[raw]) return [raw, overrides[raw]];
       const key = normalizeShortName(raw);
       const match =
-        agents.find((a) => normalizeShortName(a.shortName) === key) ?? agents.find((a) => normalizeShortName(a.name) === key);
+        agents.find((a) => normalizeShortName(a.shortName) === key) ??
+        agents.find((a) => normalizeShortName(a.name) === key);
       return [raw, match ? match.id : NEW_AGENT];
     }),
   );
@@ -260,7 +298,7 @@ export interface ConvertedRow {
   errors: string[];
 }
 
-const cell = (row: string[], idx: number | null) => (idx === null ? '' : (row[idx] ?? '').trim());
+const cell = (row: string[], idx: number | null) => (idx === null ? '' : unescapeFormula((row[idx] ?? '').trim()));
 
 export function convertRow(
   row: string[],
@@ -299,6 +337,14 @@ export function convertRow(
 
   const research = convertResearch(row, mapping, errors);
 
+  const url = (idx: number | null, label: string) => {
+    const value = cell(row, idx);
+    if (value && !isHttpUrl(value)) errors.push(`${label}は http:// または https:// で始まる必要があります: ${value}`);
+    return value || undefined;
+  };
+  const companyUrl = url(mapping.companyUrl, '会社URL');
+  const agentJobUrl = url(mapping.agentJobUrl, 'エージェント求人URL');
+
   const rawAgent = cell(row, mapping.agent);
   const choice = rawAgent ? (values.agent[rawAgent] ?? NEW_AGENT) : NO_AGENT;
   const agentLink =
@@ -309,13 +355,13 @@ export function convertRow(
     errors,
     input: {
       companyName,
-      companyUrl: cell(row, mapping.companyUrl) || undefined,
+      companyUrl,
       ...agentLink,
-      agentJobUrl: cell(row, mapping.agentJobUrl) || undefined,
+      agentJobUrl,
       phase: phase ?? defaults.phase,
       action: action ?? defaults.action,
       nextActionAt: joinLocalDateTime(nextActionDate, nextActionTime ?? ''),
-      details: mapping.details === null ? '' : (row[mapping.details] ?? ''),
+      details: mapping.details === null ? '' : unescapeFormula(row[mapping.details] ?? ''),
       ...(research && { research }),
     },
   };
@@ -327,7 +373,8 @@ const RESEARCH_FIELDS: TargetField[] = [...RESEARCH_TEXT_FIELDS, 'tags', 'interv
 function convertResearch(row: string[], mapping: ColumnMapping, errors: string[]): Research | undefined {
   if (RESEARCH_FIELDS.every((f) => mapping[f] === null)) return undefined;
   const research: Research = { ...EMPTY_RESEARCH, tags: parseTags(cell(row, mapping.tags)) };
-  for (const f of RESEARCH_TEXT_FIELDS) research[f] = mapping[f] === null ? '' : (row[mapping[f]] ?? '').trim();
+  for (const f of RESEARCH_TEXT_FIELDS)
+    research[f] = mapping[f] === null ? '' : unescapeFormula((row[mapping[f]] ?? '').trim());
 
   const rawCount = cell(row, mapping.interviewCount).normalize('NFKC').replace(/回$/, '');
   if (rawCount) {
@@ -384,7 +431,10 @@ function exportValues(c: Company, agentShortName: (id: string | undefined) => st
 
 // ---------- export ----------
 
-export function companiesToCsvRows(companies: Company[], agentShortName: (id: string | undefined) => string): string[][] {
+export function companiesToCsvRows(
+  companies: Company[],
+  agentShortName: (id: string | undefined) => string,
+): string[][] {
   const fields = TARGET_FIELDS.map((f) => f.key);
   const header = [...fields.map((f) => EXPORT_HEADERS[f]), '更新日時', 'ID'];
   const body = companies.map((c) => {

@@ -4,7 +4,15 @@ import { useState } from 'react';
 import { secondaryButton } from './styles';
 
 /** Copies `text` to the clipboard and briefly shows a confirmation. */
-export default function CopyButton({ text, label = 'コピー', disabled }: { text: string; label?: string; disabled?: boolean }) {
+export default function CopyButton({
+  text,
+  label = 'コピー',
+  disabled,
+}: {
+  text: string;
+  label?: string;
+  disabled?: boolean;
+}) {
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
 
   const copy = async () => {

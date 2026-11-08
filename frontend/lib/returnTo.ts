@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 
 /** Accept only same-origin absolute paths (prevents open redirects such as "//evil.example"). */
 export function sanitizeReturnTo(value: string | null | undefined): string | undefined {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return undefined;
+  if (!value?.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return undefined;
   return value;
 }
 

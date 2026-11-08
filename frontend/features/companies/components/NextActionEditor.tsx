@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { joinLocalDateTime, splitLocalDateTime } from '@jobdash/shared';
+import { useState } from 'react';
 import TimeSelect from '@/components/ui/TimeSelect';
 
 interface Props {
@@ -30,7 +30,8 @@ export default function NextActionEditor({ value, disabled, onSave }: Props) {
       save();
     }
   };
-  const inputClass = 'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-400';
+  const inputClass =
+    'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-400';
 
   return (
     <div>

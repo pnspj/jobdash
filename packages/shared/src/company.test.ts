@@ -66,3 +66,24 @@ describe('companyImportSchema', () => {
     expect(companyImportSchema.safeParse({ records: [] }).success).toBe(false);
   });
 });
+
+describe('URL fields', () => {
+  test.each(['javascript:alert(1)', 'JAVASCRIPT:alert(1)', 'data:text/html,x', 'ftp://example.com', 'example.com'])(
+    'rejects %s',
+    (url) => {
+      expect(companyInputSchema.safeParse({ ...valid, companyUrl: url }).success).toBe(false);
+      expect(companyInputSchema.safeParse({ ...valid, agentJobUrl: url }).success).toBe(false);
+      expect(companyPatchSchema.safeParse({ version: 1, companyUrl: url }).success).toBe(false);
+    },
+  );
+
+  test('accepts http(s) and empty', () => {
+    expect(companyInputSchema.parse({ ...valid, companyUrl: ' https://a.example.com/x?y=1 ' }).companyUrl).toBe(
+      'https://a.example.com/x?y=1',
+    );
+    expect(companyInputSchema.parse({ ...valid, agentJobUrl: 'http://b.example.com' }).agentJobUrl).toBe(
+      'http://b.example.com',
+    );
+    expect(companyInputSchema.parse({ ...valid, companyUrl: '' }).companyUrl).toBeUndefined();
+  });
+});

@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { companyComparator, isClosedAction, todayLocalDate } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useCreateCompany } from '@/features/companies/api';
@@ -11,6 +10,7 @@ import CompanyForm from '@/features/companies/components/CompanyForm';
 import CompanyTable from '@/features/companies/components/CompanyTable';
 import { downloadCsv } from '@/features/import/lib/csv';
 import { companiesToCsvRows } from '@/features/import/lib/csvMapping';
+import { errorMessage } from '@/lib/apiClient';
 
 const secondaryButton =
   'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50';
@@ -46,10 +46,11 @@ export default function CompanyListPage() {
           <Link href="/import" className={secondaryButton}>
             CSVインポート
           </Link>
-          <button onClick={handleExport} disabled={companies.length === 0} className={secondaryButton}>
+          <button type="button" onClick={handleExport} disabled={companies.length === 0} className={secondaryButton}>
             CSVエクスポート
           </button>
           <button
+            type="button"
             onClick={() => setModalOpen(true)}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
           >
@@ -61,7 +62,7 @@ export default function CompanyListPage() {
       {error && (
         <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage(error, '一覧の取得に失敗しました')}
-          <button onClick={() => refetch()} className="ml-3 underline">
+          <button type="button" onClick={() => refetch()} className="ml-3 underline">
             再読み込み
           </button>
         </div>

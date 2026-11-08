@@ -1,6 +1,6 @@
-import { normalizeShortName, type Agent, type AgentInputParsed, type AgentPatchParsed } from '@jobdash/shared';
-import { agentRepository, companyRepository } from '../repositories';
+import { type Agent, type AgentInputParsed, type AgentPatchParsed, normalizeShortName } from '@jobdash/shared';
 import { ConflictError } from '../errors';
+import { agentRepository, companyRepository } from '../repositories';
 
 async function assertShortNameAvailable(shortName: string, exceptId?: string) {
   const key = normalizeShortName(shortName);
@@ -28,7 +28,10 @@ export const agentService = {
     await agentRepository.getOrThrow(id);
     const linked = (await companyRepository.list()).filter((c) => c.agentId === id);
     if (linked.length > 0) {
-      const names = linked.slice(0, 3).map((c) => c.companyName).join('、');
+      const names = linked
+        .slice(0, 3)
+        .map((c) => c.companyName)
+        .join('、');
       throw new ConflictError(
         `${linked.length}社の企業に紐づいているため削除できません（${names}${linked.length > 3 ? ' など' : ''}）`,
       );
@@ -49,8 +52,10 @@ export const agentService = {
       if (!ids.has(key) && !missing.has(key)) missing.set(key, s.trim());
     }
     if (missing.size > 0) {
-      const created = await agentRepository.createMany([...missing.values()].map((s) => ({ name: s, shortName: s, memo: '' })));
-      created.forEach((a) => ids.set(normalizeShortName(a.shortName), a.id));
+      const created = await agentRepository.createMany(
+        [...missing.values()].map((s) => ({ name: s, shortName: s, memo: '' })),
+      );
+      for (const a of created) ids.set(normalizeShortName(a.shortName), a.id);
     }
     return ids;
   },

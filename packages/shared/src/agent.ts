@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { optionalHttpUrl } from './url';
 
 const optionalText = z
   .string()
@@ -16,7 +17,7 @@ export const agentInputSchema = z.object({
     .transform((v) => (v === '' ? undefined : v))
     .optional(),
   contactPhone: optionalText,
-  url: optionalText,
+  url: optionalHttpUrl,
   memo: z.string().default(''),
 });
 

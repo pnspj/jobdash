@@ -1,5 +1,5 @@
 import type { EventInput } from '@fullcalendar/core';
-import { isClosedAction, type Company, type InterviewStage, type TimeSlot } from '@jobdash/shared';
+import { type Company, type InterviewStage, isClosedAction, type TimeSlot } from '@jobdash/shared';
 
 /** Colors per interview stage; preferred slots use amber. */
 export const STAGE_COLORS: Record<InterviewStage, string> = {
@@ -18,7 +18,11 @@ export interface EventMeta {
   stage?: InterviewStage;
 }
 
-export const interviewEvent = (company: Company, i: { stage: InterviewStage } & TimeSlot, color = STAGE_COLORS[i.stage]): EventInput => ({
+export const interviewEvent = (
+  company: Company,
+  i: { stage: InterviewStage } & TimeSlot,
+  color = STAGE_COLORS[i.stage],
+): EventInput => ({
   id: `interview:${company.id}:${i.stage}`,
   title: `${company.companyName} ${i.stage}`,
   start: i.start,

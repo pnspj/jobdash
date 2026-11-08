@@ -1,11 +1,11 @@
 # JobDash - 転職活動 選考状況管理
 
-| 構成 | 技術 | ポート |
-|---|---|---|
-| DB | DynamoDB Local (Docker) | 8000 |
-| API | Hono + @hono/node-server (`backend/`) | 8787 |
-| Web | Next.js (App Router) + Tailwind CSS + TanStack Query (`frontend/`) | 3000 |
-| 共通 | zod スキーマ・型・選択肢定義 (`packages/shared/`) | - |
+| 構成 | 技術                                                               | ポート |
+| ---- | ------------------------------------------------------------------ | ------ |
+| DB   | DynamoDB Local (Docker)                                            | 8000   |
+| API  | Hono + @hono/node-server (`backend/`)                              | 8787   |
+| Web  | Next.js (App Router) + Tailwind CSS + TanStack Query (`frontend/`) | 3000   |
+| 共通 | zod スキーマ・型・選択肢定義 (`packages/shared/`)                  | -      |
 
 設計方針・データモデル・合意事項は [docs/design.md](docs/design.md) を参照。
 
@@ -23,31 +23,48 @@ npm run dev:frontend        # 別ターミナル → http://localhost:3000
 
 テーブルだけを作成したい場合: `npm run init-table -w backend`
 
+## セキュリティ
+
+認証のないローカル専用アプリです。外部から触れないよう、次のようにしています（詳細は [SECURITY.md](SECURITY.md)）。
+
+- API・フロントエンド（dev / start）・DynamoDB Local は `127.0.0.1` だけで待ち受けます。
+- API は `Host` が `localhost` / `127.0.0.1` 以外のリクエストを拒否します（DNS リバインディング対策）。許可するホストは `ALLOWED_HOSTS` で変更できます。
+- URL 項目は `http(s)://` のみ受け付けます。CSV エクスポートでは数式として解釈される値（`=` `+` `-` `@` で始まる値）を無害化します。
+- リクエストボディは 5MB までです。
+
 ## テスト
 
 ```bash
 npm test                    # 全 workspace
 npm run typecheck           # 全 workspace の型チェック
+npm run lint                # Biome（Lint とフォーマットのチェック）
+npm run format              # Biome で自動整形・自動修正
+npm run sample:check        # サンプル JSON が生成スクリプトの出力と一致するか
 ```
 
 - `packages/shared`: スキーマ・並び順の単体テスト
 - `backend`: API の結合テスト。DynamoDB Local 上のテスト用テーブル `JobHuntingTable_test` を使う（本番データには触れない）
-- `frontend`: CSV 変換ロジックの単体テスト
+- `frontend`: CSV 変換ロジックなどの単体テスト
+
+CI（GitHub Actions）では、上記に加えてフロントエンドのビルド、`npm audit`、gitleaks による全履歴の秘密情報スキャンを実行します。公開リポジトリでは CodeQL と Dependency Review も動きます。依存関係の更新は Dependabot が週次で PR を作ります。
 
 ## データ管理
 
 - **バックアップ / 復元**: 画面上部の「データ管理」から、全データを JSON でダウンロード・復元できます。復元すると現在のデータはすべて置き換えられます。
 - **サンプルデータ**: `packages/shared/samples/sample-data.json` に架空の企業 30 社・エージェント 3 件のデータがあります（実在の企業名・URL は含みません）。「データ管理」の「サンプルデータを読み込む」、またはコマンドで読み込めます。面接などの日付は、読み込み時に週単位でずらし、今後の予定が必ず未来になるようにします（曜日は変わりません）。**現在のデータはすべて置き換えられます。**
+
   ```bash
   npm run seed:sample -w backend -- --yes        # サンプルで全データを置き換え
   npm run sample:generate -w @jobdash/shared     # 生成スクリプトから JSON を作り直す
   ```
 - **全データの削除**: 「データ管理」の最下部から。確認のため「削除」と入力する必要があります。API は `DELETE /api/data?confirm=DELETE_ALL`。
 - **データ移行**: スキーマを変えたときは `backend/scripts/` の移行スクリプトを使います。既定は変更内容の表示（dry run）のみで、`--apply` を付けると `backups/` に JSON を書き出してから適用します。
+
   ```bash
   npm run migrate:v3 -w backend               # dry run
   npm run migrate:v3 -w backend -- --apply    # 適用
   ```
+
   - v2: 次回アクション日時の統合、「辞退/不通過」の分割
   - v3: 自由入力のエージェントをエージェント（`agentId`）に移行
 

@@ -1,28 +1,28 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { type ActionStatus, formatLocalDateTime, type SelectionPhase } from '@jobdash/shared';
 import Link from 'next/link';
-import { formatLocalDateTime, type ActionStatus, type SelectionPhase } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import { useCompanies, useImportCompanies } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
+import { errorMessage } from '@/lib/apiClient';
 import { parseCsv } from '../lib/csv';
 import {
   ACTION_STATUSES,
-  SELECTION_PHASES,
-  TARGET_FIELDS,
-  NEW_AGENT,
-  NO_AGENT,
+  type AgentChoice,
   autoMapAgents,
   autoMapEnum,
-  type AgentChoice,
+  type ColumnMapping,
   convertRow,
   distinctValues,
   guessMapping,
-  normalizeKey,
-  type ColumnMapping,
   type ImportDefaults,
+  NEW_AGENT,
+  NO_AGENT,
+  normalizeKey,
+  SELECTION_PHASES,
+  TARGET_FIELDS,
   type TargetField,
 } from '../lib/csvMapping';
 
@@ -105,11 +105,15 @@ export default function CsvImportWizard() {
   const agentMap = useMemo(() => autoMapAgents(agentRaw, agents, agentOverrides), [agentRaw, agents, agentOverrides]);
 
   const phaseMap = useMemo(() => autoMapEnum(phaseRaw, SELECTION_PHASES, phaseOverrides), [phaseRaw, phaseOverrides]);
-  const actionMap = useMemo(() => autoMapEnum(actionRaw, ACTION_STATUSES, actionOverrides), [actionRaw, actionOverrides]);
+  const actionMap = useMemo(
+    () => autoMapEnum(actionRaw, ACTION_STATUSES, actionOverrides),
+    [actionRaw, actionOverrides],
+  );
 
   const countBy = (idx: number | null) => {
     const counts = new Map<string, number>();
-    if (csv && idx !== null) for (const r of csv.rows) counts.set((r[idx] ?? '').trim(), (counts.get((r[idx] ?? '').trim()) ?? 0) + 1);
+    if (csv && idx !== null)
+      for (const r of csv.rows) counts.set((r[idx] ?? '').trim(), (counts.get((r[idx] ?? '').trim()) ?? 0) + 1);
     return counts;
   };
 
@@ -161,6 +165,7 @@ export default function CsvImportWizard() {
             一覧へ
           </Link>
           <button
+            type="button"
             onClick={() => {
               importMutation.reset();
               setFile(null);
@@ -184,7 +189,8 @@ export default function CsvImportWizard() {
         </Link>
         <h1 className="mt-2 text-2xl font-bold">CSVインポート</h1>
         <p className="text-sm text-slate-500">
-          1行目をヘッダーとして読み込みます。Notion のデータベースからエクスポートしたCSVや、JobDash でエクスポートしたCSVを取り込めます。
+          1行目をヘッダーとして読み込みます。Notion のデータベースからエクスポートしたCSVや、JobDash
+          でエクスポートしたCSVを取り込めます。
         </p>
       </div>
 
@@ -200,7 +206,11 @@ export default function CsvImportWizard() {
           />
           <label className="flex items-center gap-2 text-sm text-slate-600">
             文字コード
-            <select value={encoding} onChange={(e) => setEncoding(e.target.value as Encoding)} className={`${selectClass} w-auto`}>
+            <select
+              value={encoding}
+              onChange={(e) => setEncoding(e.target.value as Encoding)}
+              className={`${selectClass} w-auto`}
+            >
               <option value="utf-8">UTF-8</option>
               <option value="shift_jis">Shift_JIS (Excel)</option>
             </select>
@@ -263,7 +273,9 @@ export default function CsvImportWizard() {
               const used = new Set(Object.values(mapping).filter((v) => v !== null));
               const unused = csv.headers.filter((_, i) => !used.has(i));
               return unused.length > 0 ? (
-                <p className="mt-3 text-xs text-slate-500">取り込まれない列: {unused.map((h) => h || '(無名)').join(', ')}</p>
+                <p className="mt-3 text-xs text-slate-500">
+                  取り込まれない列: {unused.map((h) => h || '(無名)').join(', ')}
+                </p>
               ) : null;
             })()}
           </section>
@@ -344,12 +356,18 @@ export default function CsvImportWizard() {
               {errorCount > 0 && <span className="text-red-600">エラー {errorCount} 行</span>}
               {duplicateCount > 0 && (
                 <label className="flex items-center gap-2 text-amber-700">
-                  <input type="checkbox" checked={skipDuplicates} onChange={(e) => setSkipDuplicates(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={skipDuplicates}
+                    onChange={(e) => setSkipDuplicates(e.target.checked)}
+                  />
                   既存と同名の企業 {duplicateCount} 行をスキップ
                 </label>
               )}
               {mapping.companyName === null && <span className="text-red-600">「会社名」の列を割り当ててください</span>}
-              {unmappedValues > 0 && <span className="text-red-600">対応先が未設定の値が {unmappedValues} 個あります</span>}
+              {unmappedValues > 0 && (
+                <span className="text-red-600">対応先が未設定の値が {unmappedValues} 個あります</span>
+              )}
             </div>
 
             <div className="max-h-[32rem] overflow-auto rounded-md border border-slate-200">
@@ -383,7 +401,12 @@ export default function CsvImportWizard() {
                         <td className="px-3 py-2 tabular-nums">{r.rowNumber}</td>
                         <td className="px-3 py-2 font-medium">
                           {r.input.agentJobUrl ? (
-                            <a href={r.input.agentJobUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <a
+                              href={r.input.agentJobUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
                               {r.input.companyName || '(空)'}
                             </a>
                           ) : (
@@ -431,6 +454,7 @@ export default function CsvImportWizard() {
 
             <div className="mt-4 flex justify-end">
               <button
+                type="button"
                 onClick={handleImport}
                 disabled={importing || toImport.length === 0 || mapping.companyName === null}
                 className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
@@ -506,7 +530,11 @@ function EnumMappingTable({
       )}
       <label className="flex items-center gap-2 text-sm text-slate-600">
         <span className="shrink-0">{columnMapped ? '空欄の場合' : '列が未割り当てのため全行'}:</span>
-        <select value={defaultValue} onChange={(e) => onDefaultChange(e.target.value)} className={`${selectClass} w-auto`}>
+        <select
+          value={defaultValue}
+          onChange={(e) => onDefaultChange(e.target.value)}
+          className={`${selectClass} w-auto`}
+        >
           {options.map((o) => (
             <option key={o} value={o}>
               {o}

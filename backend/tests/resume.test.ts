@@ -1,5 +1,5 @@
-import { beforeEach, expect, test } from 'vitest';
 import type { Backup, Resume } from '@jobdash/shared';
+import { beforeEach, expect, test } from 'vitest';
 import { call, clearTable } from './helpers';
 
 beforeEach(clearTable);

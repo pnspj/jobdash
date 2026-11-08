@@ -10,21 +10,35 @@
  * The output is validated against the backup schema.
  */
 import { writeFileSync } from 'node:fs';
-import { backupSchema, type Backup } from '../src/backup';
 import type { Agent } from '../src/agent';
+import { type Backup, backupSchema } from '../src/backup';
 import type { Company } from '../src/company';
 import type { ActionStatus, SelectionPhase } from '../src/enums';
 import { EMPTY_RESEARCH, type Research } from '../src/research';
+import { type Resume, resumeContentSchema } from '../src/resume';
 import type { Interview, TimeSlot } from '../src/schedule';
-import { resumeContentSchema, type Resume } from '../src/resume';
 
 const iso = (date: string, time = '09:00') => new Date(`${date}T${time}:00+09:00`).toISOString();
 
 // ---------- agents ----------
 
 const agentDefs = [
-  { key: 'ma', name: '○○エージェント', shortName: 'MA', contactName: '佐藤 花子', phone: '03-0000-0001', memo: '連絡は平日10時〜18時。返信が早い。' },
-  { key: 'sa', name: '△△エージェント', shortName: 'SA', contactName: '鈴木 一郎', phone: '03-0000-0002', memo: '求人紹介が多め。面接対策の模擬面接あり。' },
+  {
+    key: 'ma',
+    name: '○○エージェント',
+    shortName: 'MA',
+    contactName: '佐藤 花子',
+    phone: '03-0000-0001',
+    memo: '連絡は平日10時〜18時。返信が早い。',
+  },
+  {
+    key: 'sa',
+    name: '△△エージェント',
+    shortName: 'SA',
+    contactName: '鈴木 一郎',
+    phone: '03-0000-0002',
+    memo: '求人紹介が多め。面接対策の模擬面接あり。',
+  },
   { key: 'ba', name: '××エージェント', shortName: 'BA', contactName: '高橋 次郎', phone: '03-0000-0003', memo: '' },
 ] as const;
 type AgentKey = (typeof agentDefs)[number]['key'];
@@ -62,7 +76,10 @@ const iv = (stage: Interview['stage'], date: string, start: string, end: string)
   start: `${date}T${start}`,
   end: `${date}T${end}`,
 });
-const slot = (date: string, start: string, end: string): TimeSlot => ({ start: `${date}T${start}`, end: `${date}T${end}` });
+const slot = (date: string, start: string, end: string): TimeSlot => ({
+  start: `${date}T${start}`,
+  end: `${date}T${end}`,
+});
 
 const active: CompanyDef[] = [
   {
@@ -82,7 +99,11 @@ const active: CompanyDef[] = [
       attractions: 'プロダクトの成長性が高い\n開発チームの裁量が大きい\nフルリモート可',
       concerns: '組織が急拡大しており、評価制度が整備途中',
     },
-    interviews: [iv('一次面接', '2026-10-14', '10:00', '11:00'), iv('二次面接', '2026-10-22', '15:00', '16:00'), iv('最終面接', '2026-10-30', '13:00', '14:00')],
+    interviews: [
+      iv('一次面接', '2026-10-14', '10:00', '11:00'),
+      iv('二次面接', '2026-10-22', '15:00', '16:00'),
+      iv('最終面接', '2026-10-30', '13:00', '14:00'),
+    ],
   },
   {
     name: 'カレーライスシステム株式会社',
@@ -117,7 +138,11 @@ const active: CompanyDef[] = [
       attractions: 'サービスが先進的\n技術スタックが自分に合っている',
       concerns: '残業が多そう',
     },
-    interviews: [iv('一次面接', '2026-10-20', '11:00', '12:00'), iv('二次面接', '2026-10-29', '16:00', '17:00'), iv('最終面接', '2026-11-12', '14:00', '15:00')],
+    interviews: [
+      iv('一次面接', '2026-10-20', '11:00', '12:00'),
+      iv('二次面接', '2026-10-29', '16:00', '17:00'),
+      iv('最終面接', '2026-11-12', '14:00', '15:00'),
+    ],
   },
   {
     name: '唐揚げテクノロジー株式会社',
@@ -163,9 +188,13 @@ const active: CompanyDef[] = [
     phase: '一次面接',
     action: '日程調整待ち',
     agent: 'ba',
-        details: '希望日時をエージェントに送付済み。',
+    details: '希望日時をエージェントに送付済み。',
     research: { tags: ['SaaS'], interviewCount: 2 },
-    preferredSlots: [slot('2026-11-16', '13:00', '17:00'), slot('2026-11-17', '10:00', '12:00'), slot('2026-11-18', '15:00', '18:00')],
+    preferredSlots: [
+      slot('2026-11-16', '13:00', '17:00'),
+      slot('2026-11-17', '10:00', '12:00'),
+      slot('2026-11-18', '15:00', '18:00'),
+    ],
   },
   {
     name: 'たい焼きネットワークス株式会社',
@@ -198,8 +227,20 @@ const active: CompanyDef[] = [
 ];
 
 const declined: CompanyDef[] = [
-  { name: 'チャーハンネットワークス株式会社', phase: '一次面接', action: '辞退', agent: 'sa', details: '他社の選考を優先するため辞退。' },
-  { name: '冷奴ネットワークス株式会社', phase: '一次面接', action: '辞退', agent: 'ba', details: '勤務地の条件が合わず辞退。' },
+  {
+    name: 'チャーハンネットワークス株式会社',
+    phase: '一次面接',
+    action: '辞退',
+    agent: 'sa',
+    details: '他社の選考を優先するため辞退。',
+  },
+  {
+    name: '冷奴ネットワークス株式会社',
+    phase: '一次面接',
+    action: '辞退',
+    agent: 'ba',
+    details: '勤務地の条件が合わず辞退。',
+  },
 ];
 
 const rejectedNames = [
@@ -237,7 +278,10 @@ const companies: Company[] = defs.map((d, i) => {
     id: `sample-company-${n}`,
     companyName: d.name,
     companyUrl: `https://company-${n}.example.com/`,
-    ...(d.agent && { agentId: `sample-agent-${d.agent}`, agentJobUrl: `https://agent-${d.agent}.example.com/jobs/${1000 + i}` }),
+    ...(d.agent && {
+      agentId: `sample-agent-${d.agent}`,
+      agentJobUrl: `https://agent-${d.agent}.example.com/jobs/${1000 + i}`,
+    }),
     phase: d.phase,
     action: d.action,
     ...(d.nextActionAt && { nextActionAt: d.nextActionAt }),
@@ -273,7 +317,10 @@ const resume: Resume = {
             responsibilities: '詳細設計、実装、単体・結合テスト\n障害調査と再発防止策の検討',
             environment: 'Java 8, Spring Framework, Oracle Database, Linux',
             team: '10名（うち自社2名）',
-            interviewNotes: { hardships: '既存コードの影響範囲が広く、テスト観点の洗い出しに苦労した。有識者へのヒアリングでテスト観点表を作った。' },
+            interviewNotes: {
+              hardships:
+                '既存コードの影響範囲が広く、テスト観点の洗い出しに苦労した。有識者へのヒアリングでテスト観点表を作った。',
+            },
           },
           {
             name: '物流会社向け倉庫管理システムの新規開発',
@@ -282,7 +329,9 @@ const resume: Resume = {
             responsibilities: '基本設計〜テスト\n入出荷 API の設計・実装',
             environment: 'Java 11, Spring Boot, PostgreSQL, Docker',
             team: '8名',
-            interviewNotes: { hardships: '仕様確認の前に実装を進めて手戻りを出した。以後、着手前に認識合わせの場を設けるようにした。' },
+            interviewNotes: {
+              hardships: '仕様確認の前に実装を進めて手戻りを出した。以後、着手前に認識合わせの場を設けるようにした。',
+            },
           },
           {
             name: '小売業向けポイントシステムのリプレース',
@@ -291,7 +340,9 @@ const resume: Resume = {
             responsibilities: '自社チームリーダーとして進捗・品質管理、若手 2 名の育成\nバッチ処理の設計・実装',
             environment: 'Java 17, Spring Boot, MySQL, AWS（EC2, RDS, S3）',
             team: '15名（うち自社4名をリード）',
-            interviewNotes: { hardships: 'メンバーの稼働に偏りが出た。週次でタスクを見直し、ペア作業で属人化を減らした。' },
+            interviewNotes: {
+              hardships: 'メンバーの稼働に偏りが出た。週次でタスクを見直し、ペア作業で属人化を減らした。',
+            },
           },
         ],
       },
@@ -308,7 +359,10 @@ const resume: Resume = {
             responsibilities: 'フロントエンド・バックエンドの実装\nアクセシビリティ対応',
             environment: 'Java 17, Spring Boot, TypeScript, React, AWS',
             team: '6名',
-            interviewNotes: { hardships: '初めての React で学習が追いつかず、休日に個人開発で練習して半年で主要画面を任されるようになった。' },
+            interviewNotes: {
+              hardships:
+                '初めての React で学習が追いつかず、休日に個人開発で練習して半年で主要画面を任されるようになった。',
+            },
           },
           {
             name: '製造業向け需要予測ダッシュボードの開発',
@@ -317,7 +371,9 @@ const resume: Resume = {
             responsibilities: 'サブリーダーとしてタスク分解・レビュー\n予測 API と画面の実装',
             environment: 'Python, FastAPI, TypeScript, Next.js, AWS',
             team: '7名',
-            interviewNotes: { hardships: '顧客要望の優先度づけ。リーダーと分担し、顧客との定例で合意を取ってから着手する運用にした。' },
+            interviewNotes: {
+              hardships: '顧客要望の優先度づけ。リーダーと分担し、顧客との定例で合意を取ってから着手する運用にした。',
+            },
           },
         ],
       },
@@ -336,7 +392,8 @@ const resume: Resume = {
     interviewNotes: {
       strengths: '体力と粘り強さ\n明るく社交的で、チーム内外の調整が得意\n未経験から現場で成長してきた学習力',
       weaknesses: '先走って失敗することがある\n→ 着手前に関係者と認識を合わせることを意識している',
-      reasonForChange: '役割（リーダー経験）と技術（フロントエンド・クラウド・プロダクト開発）の幅を広げたい。\nできれば自社サービスで、ユーザーに近い開発がしたい。',
+      reasonForChange:
+        '役割（リーダー経験）と技術（フロントエンド・クラウド・プロダクト開発）の幅を広げたい。\nできれば自社サービスで、ユーザーに近い開発がしたい。',
     },
   }),
   version: 1,
@@ -354,4 +411,6 @@ const backup: Backup = backupSchema.parse({
 
 const out = new URL('../samples/sample-data.json', import.meta.url);
 writeFileSync(out, `${JSON.stringify(backup, null, 2)}\n`);
-console.log(`Wrote ${out.pathname}: ${backup.companies.length} companies, ${backup.agents.length} agents, resume: ${backup.resume ? 'yes' : 'no'}`);
+console.log(
+  `Wrote ${out.pathname}: ${backup.companies.length} companies, ${backup.agents.length} agents, resume: ${backup.resume ? 'yes' : 'no'}`,
+);

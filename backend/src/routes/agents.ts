@@ -1,5 +1,5 @@
-import { Hono } from 'hono';
 import { agentInputSchema, agentPatchSchema } from '@jobdash/shared';
+import { Hono } from 'hono';
 import { agentService } from '../services/agentService';
 import { zValidator } from '../validation';
 

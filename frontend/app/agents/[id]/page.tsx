@@ -1,16 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { type Agent, companyComparator } from '@jobdash/shared';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { companyComparator, type Agent } from '@jobdash/shared';
-import { ApiError, errorMessage } from '@/lib/apiClient';
+import { useMemo, useState } from 'react';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { dangerButton, errorBox, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { useAgent, useDeleteAgent, useUpdateAgent } from '@/features/agents/api';
 import AgentForm from '@/features/agents/components/AgentForm';
 import { useCompanies } from '@/features/companies/api';
 import CompanyTable from '@/features/companies/components/CompanyTable';
+import { ApiError, errorMessage } from '@/lib/apiClient';
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,11 +61,12 @@ function AgentDetail({ agent }: { agent: Agent }) {
         </div>
         <div className="flex gap-2">
           {!editing && (
-            <button onClick={() => setEditing(true)} className={secondaryButton}>
+            <button type="button" onClick={() => setEditing(true)} className={secondaryButton}>
               編集
             </button>
           )}
           <button
+            type="button"
             onClick={handleDelete}
             disabled={remove.isPending || linked.length > 0}
             title={linked.length > 0 ? '企業が紐づいているため削除できません' : undefined}

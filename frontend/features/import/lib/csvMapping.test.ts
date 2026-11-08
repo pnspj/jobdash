@@ -1,10 +1,8 @@
-import { test } from 'vitest';
 import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 import { parseCsv, toCsv } from './csv';
 import {
   ACTION_STATUSES,
-  NO_AGENT,
-  SELECTION_PHASES,
   autoMapAgents,
   autoMapEnum,
   companiesToCsvRows,
@@ -12,7 +10,9 @@ import {
   distinctValues,
   guessEnumValue,
   guessMapping,
+  NO_AGENT,
   parseDateTime,
+  SELECTION_PHASES,
 } from './csvMapping';
 
 const NOTION_SAMPLE = `\uFEFF会社名,アクション,次回アクション日,選考フェーズ,Agent,URL
@@ -31,11 +31,18 @@ test('parseCsv handles BOM, quotes, commas and trailing newline', () => {
 
 test('parseCsv handles escaped quotes and embedded newlines, CRLF', () => {
   const rows = parseCsv('a,b\r\n"x ""q""","line1\nline2"\r\n\r\n');
-  assert.deepEqual(rows, [['a', 'b'], ['x "q"', 'line1\nline2']]);
+  assert.deepEqual(rows, [
+    ['a', 'b'],
+    ['x "q"', 'line1\nline2'],
+  ]);
 });
 
 test('toCsv round-trips through parseCsv', () => {
-  const data = [['h1', 'h2'], ['a,b', 'say "hi"\nnext'], ['', 'plain']];
+  const data = [
+    ['h1', 'h2'],
+    ['a,b', 'say "hi"\nnext'],
+    ['', 'plain'],
+  ];
   assert.deepEqual(parseCsv(toCsv(data)), data);
 });
 
@@ -89,7 +96,9 @@ test('convertRow converts a Notion row end to end', () => {
   const values = {
     phase: autoMapEnum(distinctValues(data, mapping.phase), SELECTION_PHASES),
     action: autoMapEnum(distinctValues(data, mapping.action), ACTION_STATUSES),
-    agent: autoMapAgents(distinctValues(data, mapping.agent), [{ id: 'agent-ma', name: '○○エージェント', shortName: 'ma' }]),
+    agent: autoMapAgents(distinctValues(data, mapping.agent), [
+      { id: 'agent-ma', name: '○○エージェント', shortName: 'ma' },
+    ]),
   };
   const defaults = { phase: '書類選考', action: '要対応' } as const;
 
@@ -118,7 +127,13 @@ test('convertRow converts a Notion row end to end', () => {
 
 test('convertRow reports unmapped enum values and empty company name', () => {
   const mapping = guessMapping(['会社名', '選考フェーズ']);
-  const r = convertRow(['', '謎'], 1, mapping, { phase: {}, action: {}, agent: {} }, { phase: '書類選考', action: '要対応' });
+  const r = convertRow(
+    ['', '謎'],
+    1,
+    mapping,
+    { phase: {}, action: {}, agent: {} },
+    { phase: '書類選考', action: '要対応' },
+  );
   assert.equal(r.errors.length, 2);
 });
 
@@ -166,7 +181,13 @@ test('research columns are imported (tags split, rating stars, interview count)'
 
 test('rows have no research when no research column is mapped', () => {
   const mapping = guessMapping(['会社名']);
-  const r = convertRow(['A社'], 1, mapping, { phase: {}, action: {}, agent: {} }, { phase: '書類選考', action: '要対応' });
+  const r = convertRow(
+    ['A社'],
+    1,
+    mapping,
+    { phase: {}, action: {}, agent: {} },
+    { phase: '書類選考', action: '要対応' },
+  );
   assert.equal(r.input.research, undefined);
 });
 
@@ -191,9 +212,62 @@ test('export writes research columns that import reads back', () => {
     createdAt: '',
     updatedAt: '2026-11-08T00:00:00.000Z',
   } as const;
-  const rows = parseCsv(toCsv(companiesToCsvRows([{ ...company, research: { ...company.research, tags: [...company.research.tags] } }], () => '')));
+  const rows = parseCsv(
+    toCsv(
+      companiesToCsvRows(
+        [{ ...company, research: { ...company.research, tags: [...company.research.tags] } }],
+        () => '',
+      ),
+    ),
+  );
   const mapping = guessMapping(rows[0]);
-  const r = convertRow(rows[1], 1, mapping, { phase: { 一次面接: '一次面接' }, action: { 要対応: '要対応' }, agent: {} }, { phase: '書類選考', action: '要対応' });
+  const r = convertRow(
+    rows[1],
+    1,
+    mapping,
+    { phase: { 一次面接: '一次面接' }, action: { 要対応: '要対応' }, agent: {} },
+    { phase: '書類選考', action: '要対応' },
+  );
   assert.deepEqual(r.errors, []);
   assert.deepEqual(r.input.research, { ...company.research, tags: ['SI', '受託開発'] });
+});
+
+test('CSV injection: formula-like cells are escaped on export and restored on import', async () => {
+  const { escapeFormula, unescapeFormula } = await import('./csv');
+  expect(escapeFormula('=HYPERLINK("x")')).toBe(`'=HYPERLINK("x")`);
+  expect(escapeFormula('-残業')).toBe("'-残業");
+  expect(escapeFormula('A社')).toBe('A社');
+  expect(unescapeFormula("'=1+1")).toBe('=1+1');
+  expect(unescapeFormula("'quoted")).toBe("'quoted"); // only apostrophes added by escapeFormula are removed
+
+  const csv = toCsv([
+    ['会社名', '詳細'],
+    ['=cmd|calc', '+memo'],
+  ]);
+  expect(csv).toContain(`'=cmd|calc`);
+  const [header, ...data] = parseCsv(csv);
+  const r = convertRow(
+    data[0],
+    1,
+    guessMapping(header),
+    { phase: {}, action: {}, agent: {} },
+    { phase: '書類選考', action: '要対応' },
+  );
+  expect(r.input.companyName).toBe('=cmd|calc');
+  expect(r.input.details).toBe('+memo');
+});
+
+test('non-http URLs in CSV are reported as row errors', () => {
+  const [header, ...data] = parseCsv(
+    '会社名,会社URL,URL\nA社,javascript:alert(1),https://agent-ma.example.com/jobs/1\n',
+  );
+  const r = convertRow(
+    data[0],
+    1,
+    guessMapping(header),
+    { phase: {}, action: {}, agent: {} },
+    { phase: '書類選考', action: '要対応' },
+  );
+  expect(r.errors).toHaveLength(1);
+  expect(r.errors[0]).toMatch(/会社URL/);
 });

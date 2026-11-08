@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, type ChangeEvent } from 'react';
 import { sampleBackup } from '@jobdash/shared/sample';
-import { errorMessage } from '@/lib/apiClient';
+import { type ChangeEvent, useState } from 'react';
 import { dangerButton, inputClass, primaryButton, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { backupApi, useDeleteAllData, useRestoreBackup } from '@/features/backup/api';
+import { errorMessage } from '@/lib/apiClient';
 
 const DELETE_CONFIRM_WORD = '削除';
 
@@ -83,7 +83,7 @@ export default function SettingsPage() {
       <section className={sectionClass}>
         <h2 className="mb-1 text-lg font-semibold">バックアップ</h2>
         <p className="mb-4 text-sm text-slate-500">全データをJSONファイルとしてダウンロードします。</p>
-        <button onClick={handleExport} disabled={exporting} className={primaryButton}>
+        <button type="button" onClick={handleExport} disabled={exporting} className={primaryButton}>
           {exporting ? '取得中...' : 'バックアップをダウンロード'}
         </button>
         {exportError && <Failure>{exportError}</Failure>}
@@ -92,7 +92,8 @@ export default function SettingsPage() {
       <section className={sectionClass}>
         <h2 className="mb-1 text-lg font-semibold">復元</h2>
         <p className="mb-4 text-sm text-slate-500">
-          バックアップのJSONファイルから復元します。<strong className="text-red-600">現在のデータはすべて置き換えられます。</strong>
+          バックアップのJSONファイルから復元します。
+          <strong className="text-red-600">現在のデータはすべて置き換えられます。</strong>
         </p>
         <input
           type="file"
@@ -103,7 +104,9 @@ export default function SettingsPage() {
         />
         {restore.isPending && restoreSource === 'file' && <p className="mt-3 text-sm text-slate-500">復元中...</p>}
         {restore.isSuccess && restoreSource === 'file' && <Success>{restoredMessage}</Success>}
-        {restore.error && restoreSource === 'file' && <Failure>{errorMessage(restore.error, '復元に失敗しました')}</Failure>}
+        {restore.error && restoreSource === 'file' && (
+          <Failure>{errorMessage(restore.error, '復元に失敗しました')}</Failure>
+        )}
       </section>
 
       <section className={sectionClass}>
@@ -113,15 +116,21 @@ export default function SettingsPage() {
           <strong className="text-red-600">現在のデータはすべて置き換えられます。</strong>
         </p>
         <div className="flex flex-wrap gap-2">
-          <button onClick={handleLoadSample} disabled={restore.isPending} className={secondaryButton}>
+          <button type="button" onClick={handleLoadSample} disabled={restore.isPending} className={secondaryButton}>
             {restore.isPending && restoreSource === 'sample' ? '読み込み中...' : 'サンプルデータを読み込む'}
           </button>
-          <button onClick={() => downloadJson('jobdash-sample.json', sampleBackup())} className={secondaryButton}>
+          <button
+            type="button"
+            onClick={() => downloadJson('jobdash-sample.json', sampleBackup())}
+            className={secondaryButton}
+          >
             サンプルJSONをダウンロード
           </button>
         </div>
         {restore.isSuccess && restoreSource === 'sample' && <Success>{restoredMessage}</Success>}
-        {restore.error && restoreSource === 'sample' && <Failure>{errorMessage(restore.error, '読み込みに失敗しました')}</Failure>}
+        {restore.error && restoreSource === 'sample' && (
+          <Failure>{errorMessage(restore.error, '読み込みに失敗しました')}</Failure>
+        )}
       </section>
 
       <section className="rounded-lg border border-red-200 bg-white p-6 shadow-sm">
@@ -145,6 +154,7 @@ export default function SettingsPage() {
             autoComplete="off"
           />
           <button
+            type="button"
             onClick={handleDeleteAll}
             disabled={confirmWord.trim() !== DELETE_CONFIRM_WORD || deleteAll.isPending}
             className={dangerButton}
@@ -154,7 +164,8 @@ export default function SettingsPage() {
         </div>
         {deleteAll.isSuccess && (
           <Success>
-            削除しました（企業 {deleteAll.data.deleted.companies ?? 0} 件、エージェント {deleteAll.data.deleted.agents ?? 0} 件）。
+            削除しました（企業 {deleteAll.data.deleted.companies ?? 0} 件、エージェント{' '}
+            {deleteAll.data.deleted.agents ?? 0} 件）。
           </Success>
         )}
         {deleteAll.error && <Failure>{errorMessage(deleteAll.error, '削除に失敗しました')}</Failure>}

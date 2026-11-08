@@ -1,7 +1,6 @@
+import type { Agent, Company } from '@jobdash/shared';
 import { beforeEach, describe, expect, test } from 'vitest';
-import type { Company } from '@jobdash/shared';
 import { call, clearTable } from './helpers';
-import type { Agent } from '@jobdash/shared';
 
 const BASE = '/api/companies';
 
@@ -50,7 +49,12 @@ describe('companies API', () => {
 
     const res = await call<Company>('PATCH', `${BASE}/${c.id}`, { version: 1, phase: '一次面接', nextActionAt: '' });
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ phase: '一次面接', action: '選考結果待ち', companyName: valid.companyName, version: 2 });
+    expect(res.body).toMatchObject({
+      phase: '一次面接',
+      action: '選考結果待ち',
+      companyName: valid.companyName,
+      version: 2,
+    });
     expect('nextActionAt' in res.body).toBe(false);
     expect(res.body.updatedAt >= c.updatedAt).toBe(true);
     expect(res.body.createdAt).toBe(c.createdAt);
@@ -96,7 +100,9 @@ describe('companies API', () => {
   });
 
   test('bulk import is all-or-nothing', async () => {
-    const res = await call<{ errors: string[] }>('POST', `${BASE}/import`, { records: [valid, { ...valid, phase: 'x' }] });
+    const res = await call<{ errors: string[] }>('POST', `${BASE}/import`, {
+      records: [valid, { ...valid, phase: 'x' }],
+    });
     expect(res.status).toBe(400);
     expect(res.body.errors[0]).toMatch(/^records\.1\.phase/);
     expect((await call<Company[]>('GET', BASE)).body).toHaveLength(0);

@@ -1,18 +1,24 @@
 'use client';
 
-import { Suspense, useMemo, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import type { DatesSetArg, EventClickArg } from '@fullcalendar/core';
 import { DATE_RE, INTERVIEW_STAGES, todayLocalDate } from '@jobdash/shared';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useMemo, useRef } from 'react';
+import { errorBox } from '@/components/ui/styles';
+import BaseCalendar from '@/features/calendar/components/BaseCalendar';
+import WeekStartToggle from '@/features/calendar/components/WeekStartToggle';
+import {
+  type CalendarFilter,
+  companyEvents,
+  type EventMeta,
+  PREFERRED_COLOR,
+  STAGE_COLORS,
+} from '@/features/calendar/lib/events';
+import { useCalendarSettings } from '@/features/calendar/lib/settings';
+import { useCompanies } from '@/features/companies/api';
 import { errorMessage } from '@/lib/apiClient';
 import { withReturnTo } from '@/lib/returnTo';
 import { usePersistentState } from '@/lib/usePersistentState';
-import { errorBox } from '@/components/ui/styles';
-import { useCompanies } from '@/features/companies/api';
-import BaseCalendar from '@/features/calendar/components/BaseCalendar';
-import WeekStartToggle from '@/features/calendar/components/WeekStartToggle';
-import { PREFERRED_COLOR, STAGE_COLORS, companyEvents, type CalendarFilter, type EventMeta } from '@/features/calendar/lib/events';
-import { useCalendarSettings } from '@/features/calendar/lib/settings';
 
 const VIEWS = ['timeGridWeek', 'dayGridMonth'] as const;
 type View = (typeof VIEWS)[number];
@@ -66,7 +72,9 @@ function CalendarScreen() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">面接カレンダー</h1>
-          <p className="text-sm text-slate-500">予定の登録・変更は企業の詳細画面から行います。予定をクリックすると企業の詳細へ移動します。</p>
+          <p className="text-sm text-slate-500">
+            予定の登録・変更は企業の詳細画面から行います。予定をクリックすると企業の詳細へ移動します。
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
           <WeekStartToggle
@@ -82,7 +90,11 @@ function CalendarScreen() {
             希望日時も表示
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" checked={filter.showClosed} onChange={(e) => setFilter((f) => ({ ...f, showClosed: e.target.checked }))} />
+            <input
+              type="checkbox"
+              checked={filter.showClosed}
+              onChange={(e) => setFilter((f) => ({ ...f, showClosed: e.target.checked }))}
+            />
             辞退・不通過の企業も表示
           </label>
         </div>
@@ -96,7 +108,10 @@ function CalendarScreen() {
           </span>
         ))}
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-sm border-2 border-dashed bg-amber-100" style={{ borderColor: PREFERRED_COLOR }} />
+          <span
+            className="inline-block h-3 w-3 rounded-sm border-2 border-dashed bg-amber-100"
+            style={{ borderColor: PREFERRED_COLOR }}
+          />
           面接希望日時
         </span>
       </div>

@@ -3,6 +3,7 @@ import { LOCAL_DATETIME_RE } from './datetime';
 import { ACTION_STATUSES, SELECTION_PHASES } from './enums';
 import { researchPatchSchema, researchSchema } from './research';
 import { interviewSchema, timeSlotSchema } from './schedule';
+import { optionalHttpUrl } from './url';
 
 /** Trimmed string; empty becomes undefined. */
 const optionalText = z
@@ -13,17 +14,20 @@ const optionalText = z
 
 /** "" clears the value; otherwise must be YYYY-MM-DD or YYYY-MM-DDTHH:mm. */
 const optionalLocalDateTime = z
-  .union([z.literal(''), z.string().regex(LOCAL_DATETIME_RE, 'YYYY-MM-DD または YYYY-MM-DDTHH:mm 形式で指定してください')])
+  .union([
+    z.literal(''),
+    z.string().regex(LOCAL_DATETIME_RE, 'YYYY-MM-DD または YYYY-MM-DDTHH:mm 形式で指定してください'),
+  ])
   .transform((v) => (v === '' ? undefined : v))
   .optional();
 
 /** Fields the user can edit. */
 export const companyInputSchema = z.object({
   companyName: z.string().trim().min(1, '会社名は必須です'),
-  companyUrl: optionalText,
+  companyUrl: optionalHttpUrl,
   /** Agent id; empty = direct application. */
   agentId: optionalText,
-  agentJobUrl: optionalText,
+  agentJobUrl: optionalHttpUrl,
   phase: z.enum(SELECTION_PHASES),
   action: z.enum(ACTION_STATUSES),
   nextActionAt: optionalLocalDateTime,
@@ -38,9 +42,9 @@ export const companyInputSchema = z.object({
 export const companyPatchSchema = z.object({
   version: z.number().int().nonnegative(),
   companyName: companyInputSchema.shape.companyName.optional(),
-  companyUrl: z.union([z.null(), optionalText]),
+  companyUrl: z.union([z.null(), optionalHttpUrl]),
   agentId: z.union([z.null(), optionalText]),
-  agentJobUrl: z.union([z.null(), optionalText]),
+  agentJobUrl: z.union([z.null(), optionalHttpUrl]),
   phase: companyInputSchema.shape.phase.optional(),
   action: companyInputSchema.shape.action.optional(),
   nextActionAt: z.union([z.null(), optionalLocalDateTime]),

@@ -24,7 +24,9 @@ type Item = Record<string, unknown>;
 
 const companies = await queryByPrefix(skPrefix('COMPANY'));
 const agents = await queryByPrefix(skPrefix('AGENT'));
-console.log(`Table ${TABLE_NAME}: ${companies.length} companies, ${agents.length} agents. Mode: ${apply ? 'APPLY' : 'dry run'}`);
+console.log(
+  `Table ${TABLE_NAME}: ${companies.length} companies, ${agents.length} agents. Mode: ${apply ? 'APPLY' : 'dry run'}`,
+);
 
 const agentIdByKey = new Map(agents.map((a) => [normalizeShortName(String(a.shortName)), String(a.id)]));
 const newAgents: Item[] = [];
@@ -54,7 +56,8 @@ for (const item of companies) {
 
   const { PK: _pk, SK: _sk, type: _type, ...entity } = next;
   const result = companySchema.safeParse(entity);
-  if (!result.success) throw new Error(`Company ${String(item.SK)} is invalid after migration: ${result.error.message}`);
+  if (!result.success)
+    throw new Error(`Company ${String(item.SK)} is invalid after migration: ${result.error.message}`);
   updatedCompanies.push(next);
 }
 

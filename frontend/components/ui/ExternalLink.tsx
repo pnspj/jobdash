@@ -1,3 +1,4 @@
+import { isHttpUrl } from '@jobdash/shared';
 import type { ReactNode } from 'react';
 
 interface Props {
@@ -12,7 +13,8 @@ interface Props {
 
 /** Link opened in a new tab. Renders only the children (or "-") when href is empty. */
 export default function ExternalLink({ href, children, marker = false, className = '', stopPropagation }: Props) {
-  if (!href) return <>{children ?? '-'}</>;
+  // Defense in depth: the API only stores http(s) URLs, but never render other schemes as links
+  if (!href || !isHttpUrl(href)) return <>{children ?? href ?? '-'}</>;
   return (
     <a
       href={href}

@@ -10,6 +10,7 @@ export function usePersistentState<T extends object>(key: string, initial: T) {
   const [value, setValue] = useState<T>(initial);
   const [loaded, setLoaded] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: read the stored value once per key (initial is a fallback only)
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(key);
@@ -18,7 +19,6 @@ export function usePersistentState<T extends object>(key: string, initial: T) {
       // ignore broken storage
     }
     setLoaded(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- read once per key
   }, [key]);
 
   useEffect(() => {

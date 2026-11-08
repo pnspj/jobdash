@@ -3,8 +3,8 @@
  * Pure functions: callers filter companies (e.g. by agent) and pass "today".
  */
 import type { Company } from './company';
-import { SELECTION_PHASES, isClosedAction, type SelectionPhase } from './enums';
-import { RATINGS, formatRating, researchOf, splitLines } from './research';
+import { isClosedAction, SELECTION_PHASES, type SelectionPhase } from './enums';
+import { formatRating, RATINGS, researchOf, splitLines } from './research';
 import { formatSlot } from './schedule';
 import { companyComparator } from './sort';
 
@@ -134,9 +134,7 @@ export function selectionStatusText(companies: ReportCompany[], options: Selecti
  *   ・残業が多そう
  */
 export function motivationText(companies: ReportCompany[]): string {
-  const eligible = [...companies]
-    .filter((c) => c.phase !== '書類選考' && !isClosedAction(c.action))
-    .sort(byListOrder);
+  const eligible = [...companies].filter((c) => c.phase !== '書類選考' && !isClosedAction(c.action)).sort(byListOrder);
   return [...RATINGS]
     .reverse()
     .map((rating) => {
@@ -148,7 +146,9 @@ export function motivationText(companies: ReportCompany[]): string {
           const lines = splitLines(text);
           return lines.length > 0 ? [title, ...lines.map((l) => `・${l}`)] : [];
         };
-        return [`◇${c.companyName}`, ...section('魅力的な点', r.attractions), ...section('不安な点', r.concerns)].join('\n');
+        return [`◇${c.companyName}`, ...section('魅力的な点', r.attractions), ...section('不安な点', r.concerns)].join(
+          '\n',
+        );
       });
       return [`志望度${formatRating(rating)}`, ...blocks].join('\n');
     })

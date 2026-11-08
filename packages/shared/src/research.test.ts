@@ -48,5 +48,8 @@ test('parseRating', () => {
 
 test('parseTags and splitLines', () => {
   expect(parseTags('自社サービス, SaaS／BtoB、 受託開発')).toEqual(['自社サービス', 'SaaS', 'BtoB', '受託開発']);
-  expect(splitLines(' サービスが先進的 \n\n技術スタックが合う\r\n')).toEqual(['サービスが先進的', '技術スタックが合う']);
+  expect(splitLines(' サービスが先進的 \n\n技術スタックが合う\r\n')).toEqual([
+    'サービスが先進的',
+    '技術スタックが合う',
+  ]);
 });

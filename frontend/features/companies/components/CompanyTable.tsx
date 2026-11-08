@@ -1,10 +1,10 @@
 'use client';
 
+import { type Company, formatLocalDateTime, isActionRequired, isClosedAction, todayLocalDate } from '@jobdash/shared';
 import { useRouter } from 'next/navigation';
-import { formatLocalDateTime, isActionRequired, isClosedAction, todayLocalDate, type Company } from '@jobdash/shared';
 import ExternalLink from '@/components/ui/ExternalLink';
-import { withReturnTo } from '@/lib/returnTo';
 import { useAgentLookup } from '@/features/agents/api';
+import { withReturnTo } from '@/lib/returnTo';
 import { ActionBadge, PhaseBadge } from './Badges';
 
 /**

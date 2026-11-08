@@ -1,13 +1,13 @@
 'use client';
 
+import { groupByAgent, maxPhaseTotal, type PhaseCount, phaseCounts, selectionSummary } from '@jobdash/shared';
 import { useMemo } from 'react';
-import { groupByAgent, maxPhaseTotal, phaseCounts, selectionSummary, type PhaseCount } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
-import { usePersistentState } from '@/lib/usePersistentState';
 import { errorBox, sectionClass } from '@/components/ui/styles';
 import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
 import { useCompanies } from '@/features/companies/api';
 import PhaseChart, { CHART_COLORS } from '@/features/stats/components/PhaseChart';
+import { errorMessage } from '@/lib/apiClient';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 const collator = new Intl.Collator('ja');
 
@@ -40,7 +40,13 @@ function Legend({ includeRejected }: { includeRejected: boolean }) {
   );
 }
 
-function CountsTable({ rows, includeRejected }: { rows: { name: string; counts: PhaseCount[] }[]; includeRejected: boolean }) {
+function CountsTable({
+  rows,
+  includeRejected,
+}: {
+  rows: { name: string; counts: PhaseCount[] }[];
+  includeRejected: boolean;
+}) {
   const phases = rows[0]?.counts.map((c) => c.phase) ?? [];
   return (
     <div className="overflow-x-auto">
@@ -157,7 +163,13 @@ export default function StatsPage() {
                         {g.counts.reduce((n, c) => n + c.active + c.rejected, 0)}社
                       </span>
                     </h3>
-                    <PhaseChart data={g.counts} includeRejected={includeRejected} maxY={sharedMax} height={200} compact />
+                    <PhaseChart
+                      data={g.counts}
+                      includeRejected={includeRejected}
+                      maxY={sharedMax}
+                      height={200}
+                      compact
+                    />
                   </div>
                 ))}
               </div>
@@ -167,7 +179,10 @@ export default function StatsPage() {
               <div className="mt-2">
                 <CountsTable
                   includeRejected={includeRejected}
-                  rows={[{ name: '全体', counts: overall }, ...perAgent.map((g) => ({ name: g.name, counts: g.counts }))]}
+                  rows={[
+                    { name: '全体', counts: overall },
+                    ...perAgent.map((g) => ({ name: g.name, counts: g.counts })),
+                  ]}
                 />
               </div>
             </details>

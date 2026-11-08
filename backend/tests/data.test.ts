@@ -1,12 +1,17 @@
-import { beforeEach, expect, test } from 'vitest';
 import type { Agent, Company } from '@jobdash/shared';
+import { beforeEach, expect, test } from 'vitest';
 import { call, clearTable } from './helpers';
 
 beforeEach(clearTable);
 
 test('delete all data requires explicit confirmation', async () => {
   const { body: agent } = await call<Agent>('POST', '/api/agents', { name: '○○エージェント', shortName: 'MA' });
-  await call('POST', '/api/companies', { companyName: 'A社', agentId: agent.id, phase: '書類選考', action: '選考結果待ち' });
+  await call('POST', '/api/companies', {
+    companyName: 'A社',
+    agentId: agent.id,
+    phase: '書類選考',
+    action: '選考結果待ち',
+  });
   await call('POST', '/api/companies', { companyName: 'B社', phase: '書類選考', action: '選考結果待ち' });
 
   expect((await call('DELETE', '/api/data')).status).toBe(400);

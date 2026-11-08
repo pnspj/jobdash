@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { DeleteCommand, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
+import { DeleteCommand, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient, TABLE_NAME } from '../db/client';
-import { itemKey, skPrefix, stripKeys, type EntityType } from '../db/keys';
+import { type EntityType, itemKey, skPrefix, stripKeys } from '../db/keys';
 import { batchPut, queryByPrefix } from '../db/operations';
 import { NotFoundError, VersionConflictError } from '../errors';
 
@@ -18,7 +18,10 @@ export interface EntityMeta {
  * Generic CRUD for one entity type in the single table (SK = `<TYPE>#<id>`).
  * `Input` is the parsed create payload; patches carry `version` for optimistic locking.
  */
-export function createEntityRepository<Entity extends EntityMeta, Input extends object>(type: EntityType, label: string) {
+export function createEntityRepository<Entity extends EntityMeta, Input extends object>(
+  type: EntityType,
+  label: string,
+) {
   const toItem = (e: Entity): Record<string, unknown> => ({ ...itemKey(type, e.id), type, ...(e as object) });
   const build = (input: Input, now: string) =>
     ({ id: randomUUID(), ...input, version: 1, createdAt: now, updatedAt: now }) as unknown as Entity;
@@ -45,7 +48,11 @@ export function createEntityRepository<Entity extends EntityMeta, Input extends 
     async create(input: Input): Promise<Entity> {
       const entity = build(input, new Date().toISOString());
       await docClient.send(
-        new PutCommand({ TableName: TABLE_NAME, Item: toItem(entity), ConditionExpression: 'attribute_not_exists(PK)' }),
+        new PutCommand({
+          TableName: TABLE_NAME,
+          Item: toItem(entity),
+          ConditionExpression: 'attribute_not_exists(PK)',
+        }),
       );
       return entity;
     },
@@ -92,7 +99,11 @@ export function createEntityRepository<Entity extends EntityMeta, Input extends 
     async delete(id: string): Promise<void> {
       try {
         await docClient.send(
-          new DeleteCommand({ TableName: TABLE_NAME, Key: itemKey(type, id), ConditionExpression: 'attribute_exists(PK)' }),
+          new DeleteCommand({
+            TableName: TABLE_NAME,
+            Key: itemKey(type, id),
+            ConditionExpression: 'attribute_exists(PK)',
+          }),
         );
       } catch (err) {
         if (err instanceof ConditionalCheckFailedException) throw new NotFoundError(`${label} not found`);

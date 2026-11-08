@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
 import type { Agent, AgentInput } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import { type FormEvent, useState } from 'react';
 import { inputClass, labelClass, primaryButton, secondaryButton } from '@/components/ui/styles';
+import { errorMessage } from '@/lib/apiClient';
 
 type FormValues = Required<{ [K in keyof AgentInput]: string }>;
 

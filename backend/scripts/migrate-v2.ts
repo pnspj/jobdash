@@ -12,7 +12,7 @@
  * Idempotent: items already in v2 shape are left unchanged.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { companySchema, type Company } from '@jobdash/shared';
+import { type Company, companySchema } from '@jobdash/shared';
 import { TABLE_NAME } from '../src/db/client';
 import { skPrefix } from '../src/db/keys';
 import { batchPut, queryByPrefix } from '../src/db/operations';

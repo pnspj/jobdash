@@ -8,7 +8,8 @@ services:
     working_dir: /home/dynamodblocal
     user: root
     ports:
-      - "8000:8000"
+      # Loopback only: DynamoDB Local has no authentication
+      - "127.0.0.1:8000:8000"
     volumes:
       - dynamodb-data:/home/dynamodblocal/data
 

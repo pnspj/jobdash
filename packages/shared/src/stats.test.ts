@@ -15,8 +15,22 @@ const companies = [
 
 test('phaseCounts: active per phase; rejected only when requested; declined never', () => {
   const off = phaseCounts(companies);
-  expect(off.map((p) => p.phase)).toEqual(['書類選考', '試験/課題', '一次面接', '二次面接', '最終面接', 'オファー/内定']);
-  expect(off.map((p) => [p.active, p.rejected])).toEqual([[1, 0], [0, 0], [1, 0], [0, 0], [0, 0], [1, 0]]);
+  expect(off.map((p) => p.phase)).toEqual([
+    '書類選考',
+    '試験/課題',
+    '一次面接',
+    '二次面接',
+    '最終面接',
+    'オファー/内定',
+  ]);
+  expect(off.map((p) => [p.active, p.rejected])).toEqual([
+    [1, 0],
+    [0, 0],
+    [1, 0],
+    [0, 0],
+    [0, 0],
+    [1, 0],
+  ]);
 
   const on = phaseCounts(companies, { includeRejected: true });
   expect(on.find((p) => p.phase === '一次面接')).toEqual({ phase: '一次面接', active: 1, rejected: 2 });
@@ -24,7 +38,14 @@ test('phaseCounts: active per phase; rejected only when requested; declined neve
 });
 
 test('selectionSummary', () => {
-  expect(selectionSummary(companies)).toEqual({ total: 6, active: 3, offers: 1, interviewing: 1, rejected: 2, declined: 1 });
+  expect(selectionSummary(companies)).toEqual({
+    total: 6,
+    active: 3,
+    offers: 1,
+    interviewing: 1,
+    rejected: 2,
+    declined: 1,
+  });
 });
 
 test('groupByAgent and maxPhaseTotal', () => {

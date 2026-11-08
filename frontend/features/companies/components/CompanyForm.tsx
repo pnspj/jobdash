@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
 import {
   ACTION_STATUSES,
-  SELECTION_PHASES,
-  joinLocalDateTime,
-  splitLocalDateTime,
   type ActionStatus,
   type Company,
   type CompanyInput,
+  joinLocalDateTime,
+  SELECTION_PHASES,
   type SelectionPhase,
+  splitLocalDateTime,
 } from '@jobdash/shared';
 import Link from 'next/link';
+import { type FormEvent, useState } from 'react';
 import TimeSelect from '@/components/ui/TimeSelect';
 import { agentDisplayName, useAgents } from '@/features/agents/api';
 import { errorMessage } from '@/lib/apiClient';
@@ -67,8 +67,7 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const set = <K extends keyof FormValues>(key: K, v: FormValues[K]) =>
-    setValue((prev) => ({ ...prev, [key]: v }));
+  const set = <K extends keyof FormValues>(key: K, v: FormValues[K]) => setValue((prev) => ({ ...prev, [key]: v }));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -117,7 +116,12 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
           <label className={labelClass} htmlFor="agentId">
             担当エージェント
           </label>
-          <select id="agentId" className={inputClass} value={value.agentId} onChange={(e) => set('agentId', e.target.value)}>
+          <select
+            id="agentId"
+            className={inputClass}
+            value={value.agentId}
+            onChange={(e) => set('agentId', e.target.value)}
+          >
             <option value="">（なし・直接応募）</option>
             {agents.map((a) => (
               <option key={a.id} value={a.id}>
@@ -125,7 +129,9 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
               </option>
             ))}
             {/* Keep an unknown id selectable so editing does not silently drop it */}
-            {value.agentId && !agents.some((a) => a.id === value.agentId) && <option value={value.agentId}>（不明なエージェント）</option>}
+            {value.agentId && !agents.some((a) => a.id === value.agentId) && (
+              <option value={value.agentId}>（不明なエージェント）</option>
+            )}
           </select>
           <Link href="/agents" target="_blank" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
             エージェントを登録・編集 ↗

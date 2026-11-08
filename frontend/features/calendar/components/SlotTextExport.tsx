@@ -1,6 +1,6 @@
 'use client';
 
-import { SLOT_FORMAT_PRESETS, formatSlots, type TimeSlot } from '@jobdash/shared';
+import { formatSlots, SLOT_FORMAT_PRESETS, type TimeSlot } from '@jobdash/shared';
 import CopyButton from '@/components/ui/CopyButton';
 import { inputClass } from '@/components/ui/styles';
 import { usePersistentState } from '@/lib/usePersistentState';

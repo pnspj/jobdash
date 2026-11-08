@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { type Agent, type AgentInput, type AgentPatch, agentShortNameLookup } from '@jobdash/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { agentShortNameLookup, type Agent, type AgentInput, type AgentPatch } from '@jobdash/shared';
+import { useMemo } from 'react';
 import { apiRequest } from '@/lib/apiClient';
 
 const BASE = '/api/agents';
@@ -40,7 +40,11 @@ export function useAgentLookup() {
   const { data: agents = [] } = useAgents();
   return useMemo(() => {
     const byId = new Map(agents.map((a) => [a.id, a]));
-    return { agents, shortName: agentShortNameLookup(agents), get: (id: string | undefined) => (id ? byId.get(id) : undefined) };
+    return {
+      agents,
+      shortName: agentShortNameLookup(agents),
+      get: (id: string | undefined) => (id ? byId.get(id) : undefined),
+    };
   }, [agents]);
 }
 

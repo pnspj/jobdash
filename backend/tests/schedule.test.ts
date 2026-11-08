@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, test } from 'vitest';
 import type { Company } from '@jobdash/shared';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { call, clearTable } from './helpers';
 
 const BASE = '/api/companies';
@@ -16,7 +16,10 @@ async function create(extra: Record<string, unknown> = {}) {
 describe('preferred slots', () => {
   test('are sorted, de-duplicated and cleared with an empty list', async () => {
     const c = await create();
-    const set = await call<Company>('PUT', `${BASE}/${c.id}/preferred-slots`, { version: 1, slots: [slotB, slotA, slotA] });
+    const set = await call<Company>('PUT', `${BASE}/${c.id}/preferred-slots`, {
+      version: 1,
+      slots: [slotB, slotA, slotA],
+    });
     expect(set.status).toBe(200);
     expect(set.body.preferredSlots).toEqual([slotA, slotB]);
 
@@ -90,7 +93,10 @@ describe('interviews', () => {
 
   test('interviews cannot be changed through PATCH', async () => {
     const c = await create();
-    const res = await call<Company>('PATCH', `${BASE}/${c.id}`, { version: 1, interviews: [{ stage: '一次面接', ...slotA }] });
+    const res = await call<Company>('PATCH', `${BASE}/${c.id}`, {
+      version: 1,
+      interviews: [{ stage: '一次面接', ...slotA }],
+    });
     expect(res.body.interviews).toBeUndefined();
   });
 });

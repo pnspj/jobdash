@@ -1,15 +1,22 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import {
+  type Resume,
+  type ResumeContent,
+  resumeBlocks,
+  resumeToMarkdown,
+  resumeToPlainText,
+  todayLocalDate,
+} from '@jobdash/shared';
 import { useSearchParams } from 'next/navigation';
-import { resumeBlocks, resumeToMarkdown, resumeToPlainText, todayLocalDate, type Resume, type ResumeContent } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import CopyButton from '@/components/ui/CopyButton';
 import { errorBox, primaryButton, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { useResume, useSaveResume } from '@/features/resume/api';
 import ResumeDocument from '@/features/resume/components/ResumeDocument';
 import ResumeEditor from '@/features/resume/components/ResumeEditor';
 import { resumeToDocx } from '@/features/resume/lib/toDocx';
+import { errorMessage } from '@/lib/apiClient';
 
 const contentOf = ({ version: _v, updatedAt: _u, ...content }: Resume): ResumeContent => content;
 
@@ -70,7 +77,9 @@ function ResumeScreen({ saved }: { saved: Resume }) {
         <div>
           <h1 className="text-2xl font-bold">職務経歴書</h1>
           <p className="text-sm text-slate-500">
-            {saved.version > 0 ? `最終保存: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}` : 'まだ保存されていません'}
+            {saved.version > 0
+              ? `最終保存: ${new Date(saved.updatedAt).toLocaleString('ja-JP')}`
+              : 'まだ保存されていません'}
           </p>
         </div>
         <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
@@ -111,7 +120,11 @@ function ResumeScreen({ saved }: { saved: Resume }) {
             <div className="flex flex-wrap items-center gap-2">
               <span className="w-24 text-sm font-medium text-slate-700">Markdown</span>
               <CopyButton text={markdown} label="コピー" />
-              <button type="button" onClick={() => download(`${baseName}.md`, markdown, 'text/markdown;charset=utf-8')} className={secondaryButton}>
+              <button
+                type="button"
+                onClick={() => download(`${baseName}.md`, markdown, 'text/markdown;charset=utf-8')}
+                className={secondaryButton}
+              >
                 .md をダウンロード
               </button>
             </div>
@@ -135,13 +148,17 @@ function ResumeScreen({ saved }: { saved: Resume }) {
       {/* Save bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-end gap-3 px-4 py-3">
-          {save.error && <span className="mr-auto text-sm text-red-700">{errorMessage(save.error, '保存に失敗しました')}</span>}
+          {save.error && (
+            <span className="mr-auto text-sm text-red-700">{errorMessage(save.error, '保存に失敗しました')}</span>
+          )}
           {dirty ? (
             <>
               <span className="text-xs text-amber-600">未保存の変更があります</span>
               <button
                 type="button"
-                onClick={() => window.confirm('編集内容を破棄して、保存済みの内容に戻しますか？') && setDraft(contentOf(saved))}
+                onClick={() =>
+                  window.confirm('編集内容を破棄して、保存済みの内容に戻しますか？') && setDraft(contentOf(saved))
+                }
                 disabled={save.isPending}
                 className="text-sm text-slate-500 hover:underline"
               >

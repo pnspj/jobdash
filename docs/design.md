@@ -19,21 +19,21 @@
 
 ## 2. 技術方針
 
-| 項目 | 方針 |
-|---|---|
-| リポジトリ構成 | npm workspaces によるモノレポ: `packages/shared`, `backend`, `frontend` |
-| 型・バリデーション | `packages/shared` の **zod スキーマ**を唯一の定義元とする（型・入力検証・選択肢定義）。フロントとバックエンドで型を二重に定義しない |
-| バックエンド | Hono。`routes/`（HTTP）→ `repositories/`（DynamoDB アクセス）に分割し、業務ルールが増えたら `services/` を挟む。入力検証は `@hono/zod-validator` |
-| API クライアント | shared の型を使った薄い fetch ラッパー。Hono RPC は backend の依存がフロントの型チェックに入り込むため採用しない |
-| 更新 API | **PATCH で部分更新**し、`version` 属性による楽観ロックで同時更新を検出する（不一致なら 409）。詳細画面のセクションごとの保存が互いに上書きし合うのを防ぐ |
-| フロントのデータ取得 | **TanStack Query**（キャッシュと、更新後の一覧・詳細の再取得） |
-| フロントのディレクトリ | 機能単位: `features/<機能>/{components,hooks,lib}`。複数機能で使う UI 部品は `components/ui` |
-| テスト | **vitest** に統一。API は `app.request()` を使い、dynamodb-local のテスト用テーブルに対する結合テストにする |
-| バックアップ | 全データの JSON 書き出し・復元を用意する。データ移行の前には必ずバックアップを取る |
-| カレンダー | FullCalendar（`@fullcalendar/timegrid`, `daygrid`, `interaction` の MIT ライセンス部分） |
-| グラフ | Recharts |
-| Word 出力 | `docx` |
-| PDF 出力 | 印刷用 CSS を当てたページを、ブラウザの「PDF として保存」で出力する（日本語フォントを埋め込む手間が無い） |
+| 項目                   | 方針                                                                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| リポジトリ構成         | npm workspaces によるモノレポ: `packages/shared`, `backend`, `frontend`                                                                                  |
+| 型・バリデーション     | `packages/shared` の **zod スキーマ**を唯一の定義元とする（型・入力検証・選択肢定義）。フロントとバックエンドで型を二重に定義しない                      |
+| バックエンド           | Hono。`routes/`（HTTP）→ `repositories/`（DynamoDB アクセス）に分割し、業務ルールが増えたら `services/` を挟む。入力検証は `@hono/zod-validator`         |
+| API クライアント       | shared の型を使った薄い fetch ラッパー。Hono RPC は backend の依存がフロントの型チェックに入り込むため採用しない                                         |
+| 更新 API               | **PATCH で部分更新**し、`version` 属性による楽観ロックで同時更新を検出する（不一致なら 409）。詳細画面のセクションごとの保存が互いに上書きし合うのを防ぐ |
+| フロントのデータ取得   | **TanStack Query**（キャッシュと、更新後の一覧・詳細の再取得）                                                                                           |
+| フロントのディレクトリ | 機能単位: `features/<機能>/{components,hooks,lib}`。複数機能で使う UI 部品は `components/ui`                                                             |
+| テスト                 | **vitest** に統一。API は `app.request()` を使い、dynamodb-local のテスト用テーブルに対する結合テストにする                                              |
+| バックアップ           | 全データの JSON 書き出し・復元を用意する。データ移行の前には必ずバックアップを取る                                                                       |
+| カレンダー             | FullCalendar（`@fullcalendar/timegrid`, `daygrid`, `interaction` の MIT ライセンス部分）                                                                 |
+| グラフ                 | Recharts                                                                                                                                                 |
+| Word 出力              | `docx`                                                                                                                                                   |
+| PDF 出力               | 印刷用 CSS を当てたページを、ブラウザの「PDF として保存」で出力する（日本語フォントを埋め込む手間が無い）                                                |
 
 ### 2.1 コード・テストのデータ
 
@@ -59,11 +59,11 @@
 
 シングルテーブル `JobHuntingTable`。PK は全アイテム共通の `USER#me`。
 
-| エンティティ | SK | 備考 |
-|---|---|---|
-| 企業 | `COMPANY#<uuid>` | |
-| エージェント | `AGENT#<uuid>` | |
-| 職務経歴書 | `RESUME#main` | 1 件のみ。経歴・プロジェクトは入れ子で 1 アイテムに持つ（上限 400KB に対して十分小さい） |
+| エンティティ | SK               | 備考                                                                                     |
+| ------------ | ---------------- | ---------------------------------------------------------------------------------------- |
+| 企業         | `COMPANY#<uuid>` |                                                                                          |
+| エージェント | `AGENT#<uuid>`   |                                                                                          |
+| 職務経歴書   | `RESUME#main`    | 1 件のみ。経歴・プロジェクトは入れ子で 1 アイテムに持つ（上限 400KB に対して十分小さい） |
 
 全アイテムに持たせる共通属性: `type`（`COMPANY` / `AGENT` / `RESUME`）, `version`, `createdAt`, `updatedAt`。
 一覧の取得は `PK = USER#me AND begins_with(SK, '<TYPE>#')` の Query で行う（Scan は使わない）。
@@ -78,30 +78,33 @@ interface Company {
   id: string;
   companyName: string;
   companyUrl?: string;
-  agentId?: string;            // 未設定 = 直接応募（エージェント管理の段階で、自由入力の agent から置き換える）
+  agentId?: string; // 未設定 = 直接応募（エージェント管理の段階で、自由入力の agent から置き換える）
   agentJobUrl?: string;
   phase: SelectionPhase;
   action: ActionStatus;
-  nextActionAt?: string;       // YYYY-MM-DD または YYYY-MM-DDTHH:mm
+  nextActionAt?: string; // YYYY-MM-DD または YYYY-MM-DDTHH:mm
   details: string;
 
   // カレンダーの段階で追加
   interviews: { stage: '一次面接' | '二次面接' | '最終面接'; start: string; end: string }[];
-  preferredSlots: { start: string; end: string }[];   // 面接希望日時（選考段階の区別なし）
+  preferredSlots: { start: string; end: string }[]; // 面接希望日時（選考段階の区別なし）
 
   // 会社研究の段階で追加
   research: {
-    motivation: string;        // 志望理由
-    futureVision: string;      // 入社後の将来像
-    reverseQuestions: string;  // 逆質問
-    attractions: string;       // 魅力的な点（1 行 1 項目）
-    concerns: string;          // 不安な点（1 行 1 項目）
-    tags: string[];            // 自由入力。先頭のタグをレポートの「（SI）」表記に使う
-    interviewCount?: number;   // 面接回数。求人情報を見て手入力する
-    rating?: 1 | 2 | 3;        // 総合評価 = 志望度（★の数）
+    motivation: string; // 志望理由
+    futureVision: string; // 入社後の将来像
+    reverseQuestions: string; // 逆質問
+    attractions: string; // 魅力的な点（1 行 1 項目）
+    concerns: string; // 不安な点（1 行 1 項目）
+    tags: string[]; // 自由入力。先頭のタグをレポートの「（SI）」表記に使う
+    interviewCount?: number; // 面接回数。求人情報を見て手入力する
+    rating?: 1 | 2 | 3; // 総合評価 = 志望度（★の数）
   };
 
-  type: 'COMPANY'; version: number; createdAt: string; updatedAt: string;
+  type: 'COMPANY';
+  version: number;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
@@ -114,12 +117,12 @@ interface Company {
 ```ts
 interface Agent {
   id: string;
-  name: string;           // エージェント名
-  shortName: string;      // 略称（企業一覧などの表示に使う）
-  contactName?: string;   // 担当者名
-  contactEmail?: string;  // 担当者メールアドレス
-  contactPhone?: string;  // 担当者電話番号
-  url?: string;           // エージェントURL
+  name: string; // エージェント名
+  shortName: string; // 略称（企業一覧などの表示に使う）
+  contactName?: string; // 担当者名
+  contactEmail?: string; // 担当者メールアドレス
+  contactPhone?: string; // 担当者電話番号
+  url?: string; // エージェントURL
   memo: string;
 }
 ```
@@ -135,24 +138,24 @@ interface Agent {
 ```ts
 interface Resume {
   fullName: string;
-  summary: string;                 // 職務要約
+  summary: string; // 職務要約
   careers: {
     companyName: string;
-    period: { from: string; to?: string };   // YYYY-MM。to が未設定 = 現在
-    employees?: string;            // 従業員数
-    employmentType?: string;       // 雇用形態
+    period: { from: string; to?: string }; // YYYY-MM。to が未設定 = 現在
+    employees?: string; // 従業員数
+    employmentType?: string; // 雇用形態
     projects: {
       name: string;
       period: { from: string; to?: string };
-      overview: string;            // プロジェクト概要
-      responsibilities: string;    // 担当業務
-      environment: string;         // 言語・環境
-      team: string;                // チーム構成
-      interviewNotes: { hardships: string };  // 面接対策メモ（出力しない）
+      overview: string; // プロジェクト概要
+      responsibilities: string; // 担当業務
+      environment: string; // 言語・環境
+      team: string; // チーム構成
+      interviewNotes: { hardships: string }; // 面接対策メモ（出力しない）
     }[];
   }[];
-  skills: string;                  // 活かせる経験・スキル
-  selfPr: string;                  // 自己PR
+  skills: string; // 活かせる経験・スキル
+  selfPr: string; // 自己PR
   interviewNotes: { strengths: string; weaknesses: string; reasonForChange: string }; // 出力しない
 }
 ```
@@ -205,12 +208,12 @@ interface Resume {
 
 **選考状況**: 次の見出しの順に並べる。書類選考の企業は出さない（合意事項 2）。
 
-| 見出し | 条件 |
-|---|---|
-| ◇内定 | フェーズ = オファー/内定（終了以外） |
-| ◇{フェーズ}結果待ち | アクション = 選考結果待ち |
-| ◇{フェーズ}待ち | アクション = 要日程調整・日程調整待ち・要本番準備・要対応 |
-| ◇{フェーズ}不採用 N社 | アクション = 不通過（社名は出さず件数のみ） |
+| 見出し                | 条件                                                      |
+| --------------------- | --------------------------------------------------------- |
+| ◇内定                 | フェーズ = オファー/内定（終了以外）                      |
+| ◇{フェーズ}結果待ち   | アクション = 選考結果待ち                                 |
+| ◇{フェーズ}待ち       | アクション = 要日程調整・日程調整待ち・要本番準備・要対応 |
+| ◇{フェーズ}不採用 N社 | アクション = 不通過（社名は出さず件数のみ）               |
 
 - フェーズの見出しは選考が進んでいる順（`SELECTION_PHASES` の逆順）に並べ、同じフェーズでは「結果待ち」を「待ち」より先にする。「不採用」の見出しは最後にまとめる。
 - 辞退した企業は既定では出さない。画面のチェックで「◇辞退 N社」を最後に出せる。
@@ -230,14 +233,14 @@ interface Resume {
 
 ## 5. 進め方
 
-| 段階 | 内容 | 状態 |
-|---|---|---|
-| 0 | 土台作り: モノレポ化と shared の zod スキーマ、バックエンドの層分け、PATCH + version、TanStack Query、vitest、JSON バックアップ、データ移行（`nextActionAt` への統合、「辞退/不通過」の分割） | 完了 |
-| 1 | エージェント管理（自由入力の `agent` を `agentId` に移行） | 完了 |
-| 2 | 会社研究の項目 | 完了 |
-| 3 | カレンダー（登録画面・表示画面） | 完了 |
-| 4 | エージェント連絡用のテキスト出力、集計グラフ | 完了 |
-| 5 | 職務経歴書 | 完了 |
+| 段階 | 内容                                                                                                                                                                                          | 状態 |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| 0    | 土台作り: モノレポ化と shared の zod スキーマ、バックエンドの層分け、PATCH + version、TanStack Query、vitest、JSON バックアップ、データ移行（`nextActionAt` への統合、「辞退/不通過」の分割） | 完了 |
+| 1    | エージェント管理（自由入力の `agent` を `agentId` に移行）                                                                                                                                    | 完了 |
+| 2    | 会社研究の項目                                                                                                                                                                                | 完了 |
+| 3    | カレンダー（登録画面・表示画面）                                                                                                                                                              | 完了 |
+| 4    | エージェント連絡用のテキスト出力、集計グラフ                                                                                                                                                  | 完了 |
+| 5    | 職務経歴書                                                                                                                                                                                    | 完了 |
 
 各段階の終わりに動作確認をしてもらってからコミットする。
 

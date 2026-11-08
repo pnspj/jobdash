@@ -1,18 +1,18 @@
 import {
-  normalizeSlots,
-  sortSlots,
-  mergeResearch,
-  normalizeShortName,
   type Company,
   type CompanyInputParsed,
   type CompanyPatchParsed,
-  type InterviewStage,
-  type TimeSlot,
   type companyImportRecordSchema,
+  type InterviewStage,
+  mergeResearch,
+  normalizeShortName,
+  normalizeSlots,
+  sortSlots,
+  type TimeSlot,
 } from '@jobdash/shared';
 import type { z } from 'zod';
-import { agentRepository, companyRepository } from '../repositories';
 import { BadRequestError, NotFoundError } from '../errors';
+import { agentRepository, companyRepository } from '../repositories';
 import { agentService } from './agentService';
 
 async function assertAgentExists(agentId: string | null | undefined) {
@@ -63,7 +63,8 @@ export const companyService = {
   async removeInterview(id: string, stage: InterviewStage, version: number): Promise<Company> {
     const current = await companyRepository.getOrThrow(id);
     const interviews = (current.interviews ?? []).filter((i) => i.stage !== stage);
-    if (interviews.length === (current.interviews ?? []).length) throw new NotFoundError(`${stage}の日時は登録されていません`);
+    if (interviews.length === (current.interviews ?? []).length)
+      throw new NotFoundError(`${stage}の日時は登録されていません`);
     return companyRepository.update(id, { version, interviews: interviews.length > 0 ? interviews : null });
   },
 

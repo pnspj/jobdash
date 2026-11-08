@@ -1,5 +1,5 @@
-import { AlignmentType, BorderStyle, Document, HeadingLevel, Packer, Paragraph, TextRun } from 'docx';
 import type { ResumeBlock } from '@jobdash/shared';
+import { AlignmentType, BorderStyle, Document, HeadingLevel, Packer, Paragraph, TextRun } from 'docx';
 
 const FONT = 'Yu Gothic';
 
@@ -13,7 +13,14 @@ export function resumeToDocx(blocks: ResumeBlock[]): Promise<Blob> {
   for (const b of blocks) {
     switch (b.type) {
       case 'title':
-        children.push(new Paragraph({ text: b.text, heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER, spacing: { after: 200 } }));
+        children.push(
+          new Paragraph({
+            text: b.text,
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+          }),
+        );
         break;
       case 'meta':
         children.push(new Paragraph({ text: b.text, alignment: AlignmentType.RIGHT }));
@@ -47,7 +54,9 @@ export function resumeToDocx(blocks: ResumeBlock[]): Promise<Blob> {
           }),
         );
         for (const f of b.fields) {
-          children.push(new Paragraph({ children: [new TextRun({ text: `＜${f.label}＞`, bold: true })], indent: { left: 240 } }));
+          children.push(
+            new Paragraph({ children: [new TextRun({ text: `＜${f.label}＞`, bold: true })], indent: { left: 240 } }),
+          );
           children.push(...lines(f.value, 480));
         }
         break;

@@ -1,26 +1,26 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
 import {
   ACTION_STATUSES,
-  SELECTION_PHASES,
-  formatLocalDateTime,
   type ActionStatus,
   type Company,
+  formatLocalDateTime,
+  SELECTION_PHASES,
   type SelectionPhase,
 } from '@jobdash/shared';
-import { ApiError, errorMessage } from '@/lib/apiClient';
-import { returnLabel, useReturnTo } from '@/lib/returnTo';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { Suspense, useMemo, useState } from 'react';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
+import InterviewSchedule from '@/features/calendar/components/InterviewSchedule';
 import { useCompanies, useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
 import CompanyForm from '@/features/companies/components/CompanyForm';
 import NextActionEditor from '@/features/companies/components/NextActionEditor';
 import ResearchEditor from '@/features/companies/components/ResearchEditor';
-import InterviewSchedule from '@/features/calendar/components/InterviewSchedule';
+import { ApiError, errorMessage } from '@/lib/apiClient';
+import { returnLabel, useReturnTo } from '@/lib/returnTo';
 
 const sectionClass = 'rounded-lg border border-slate-200 bg-white p-6 shadow-sm';
 const selectClass = 'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm';
@@ -55,7 +55,7 @@ function CompanyDetailScreen() {
     return (
       <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
         {errorMessage(error, '取得に失敗しました')}
-        <button onClick={() => refetch()} className="ml-3 underline">
+        <button type="button" onClick={() => refetch()} className="ml-3 underline">
           再読み込み
         </button>
       </div>
@@ -103,6 +103,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
         <div className="flex gap-2">
           {!editing && (
             <button
+              type="button"
               onClick={() => setEditing(true)}
               className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
@@ -110,6 +111,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
             </button>
           )}
           <button
+            type="button"
             onClick={handleDelete}
             disabled={busy}
             className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
@@ -120,7 +122,9 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
       </div>
 
       {error && !editing && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage(error, '更新に失敗しました')}</div>
+        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage(error, '更新に失敗しました')}
+        </div>
       )}
 
       {editing ? (

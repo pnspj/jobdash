@@ -1,13 +1,13 @@
-import { Hono } from 'hono';
 import {
-  INTERVIEW_STAGE_KEYS,
   companyImportSchema,
   companyInputSchema,
   companyPatchSchema,
+  INTERVIEW_STAGE_KEYS,
   isInterviewStageKey,
   setInterviewSchema,
   setPreferredSlotsSchema,
 } from '@jobdash/shared';
+import { Hono } from 'hono';
 import { z } from 'zod';
 import { NotFoundError } from '../errors';
 import { companyService } from '../services/companyService';
@@ -48,7 +48,9 @@ export const companiesRoute = new Hono()
 
   .put('/:id/interviews/:stage', zValidator('json', setInterviewSchema), async (c) => {
     const { version, start, end } = c.req.valid('json');
-    return c.json(await companyService.setInterview(c.req.param('id'), stageParam(c.req.param('stage')), { start, end }, version));
+    return c.json(
+      await companyService.setInterview(c.req.param('id'), stageParam(c.req.param('stage')), { start, end }, version),
+    );
   })
 
   .delete('/:id/interviews/:stage', zValidator('query', versionQuery), async (c) => {

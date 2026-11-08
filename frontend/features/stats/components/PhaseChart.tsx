@@ -1,7 +1,17 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from 'recharts';
 import type { PhaseCount, SelectionPhase } from '@jobdash/shared';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  type TooltipContentProps,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 /**
  * Chart tokens (light mode only; the app has no dark theme).
@@ -68,7 +78,11 @@ export default function PhaseChart({ data, includeRejected, maxY, height = 280, 
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={rows} margin={{ top: 20, right: 8, bottom: 0, left: -16 }} barCategoryGap={compact ? '28%' : '36%'}>
+      <BarChart
+        data={rows}
+        margin={{ top: 20, right: 8, bottom: 0, left: -16 }}
+        barCategoryGap={compact ? '28%' : '36%'}
+      >
         <CartesianGrid vertical={false} stroke={INK.grid} />
         <XAxis
           dataKey="phase"
@@ -98,7 +112,15 @@ export default function PhaseChart({ data, includeRejected, maxY, height = 280, 
           radius={top === 'active' ? [4, 4, 0, 0] : 0}
           isAnimationActive={false}
         >
-          {!includeRejected && <LabelList dataKey="total" position="top" fill={INK.secondary} fontSize={12} formatter={(v) => (v ? v : '')} />}
+          {!includeRejected && (
+            <LabelList
+              dataKey="total"
+              position="top"
+              fill={INK.secondary}
+              fontSize={12}
+              formatter={(v) => (v ? v : '')}
+            />
+          )}
         </Bar>
         {includeRejected && (
           <Bar
@@ -110,7 +132,13 @@ export default function PhaseChart({ data, includeRejected, maxY, height = 280, 
             radius={[4, 4, 0, 0]}
             isAnimationActive={false}
           >
-            <LabelList dataKey="total" position="top" fill={INK.secondary} fontSize={12} formatter={(v) => (v ? v : '')} />
+            <LabelList
+              dataKey="total"
+              position="top"
+              fill={INK.secondary}
+              fontSize={12}
+              formatter={(v) => (v ? v : '')}
+            />
           </Bar>
         )}
       </BarChart>

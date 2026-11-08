@@ -48,7 +48,10 @@ export type ResumeBlock =
   | { type: 'project'; name: string; period: string; fields: { label: string; value: string }[] }
   | { type: 'paragraph'; text: string };
 
-const PROJECT_FIELDS: { key: keyof Pick<Project, 'overview' | 'responsibilities' | 'environment' | 'team'>; label: string }[] = [
+const PROJECT_FIELDS: {
+  key: keyof Pick<Project, 'overview' | 'responsibilities' | 'environment' | 'team'>;
+  label: string;
+}[] = [
   { key: 'overview', label: 'プロジェクト概要' },
   { key: 'responsibilities', label: '担当業務' },
   { key: 'environment', label: '言語・環境' },
@@ -56,12 +59,17 @@ const PROJECT_FIELDS: { key: keyof Pick<Project, 'overview' | 'responsibilities'
 ];
 
 const companyDetails = (c: Career) =>
-  [c.employees && `従業員数: ${c.employees}`, c.employmentType && `雇用形態: ${c.employmentType}`].filter(Boolean).join(' / ');
+  [c.employees && `従業員数: ${c.employees}`, c.employmentType && `雇用形態: ${c.employmentType}`]
+    .filter(Boolean)
+    .join(' / ');
 
 /** The resume as an ordered list of blocks. Empty sections are omitted. */
 export function resumeBlocks(r: ResumeContent, today: string): ResumeBlock[] {
   const current = today.slice(0, 7);
-  const blocks: ResumeBlock[] = [{ type: 'title', text: '職務経歴書' }, { type: 'meta', text: formatAsOf(today) }];
+  const blocks: ResumeBlock[] = [
+    { type: 'title', text: '職務経歴書' },
+    { type: 'meta', text: formatAsOf(today) },
+  ];
   if (r.fullName.trim()) blocks.push({ type: 'meta', text: `氏名 ${r.fullName.trim()}` });
 
   const section = (heading: string, body: string) => {
@@ -73,13 +81,21 @@ export function resumeBlocks(r: ResumeContent, today: string): ResumeBlock[] {
   if (r.careers.length > 0) {
     blocks.push({ type: 'heading', text: '職務経歴' });
     for (const c of r.careers) {
-      blocks.push({ type: 'company', name: c.companyName, period: formatPeriod(c.period, { currentYearMonth: current }), details: companyDetails(c) });
+      blocks.push({
+        type: 'company',
+        name: c.companyName,
+        period: formatPeriod(c.period, { currentYearMonth: current }),
+        details: companyDetails(c),
+      });
       for (const p of c.projects) {
         blocks.push({
           type: 'project',
           name: p.name.trim() || '（プロジェクト名未入力）',
           period: formatPeriod(p.period, { currentYearMonth: current }),
-          fields: PROJECT_FIELDS.filter((f) => p[f.key].trim()).map((f) => ({ label: f.label, value: p[f.key].trim() })),
+          fields: PROJECT_FIELDS.filter((f) => p[f.key].trim()).map((f) => ({
+            label: f.label,
+            value: p[f.key].trim(),
+          })),
         });
       }
     }
@@ -139,12 +155,21 @@ export function resumeToMarkdown(r: ResumeContent, today: string): string {
         out.push('', `### ${b.name}（${b.period}）`, '', ...(b.details ? [b.details, ''] : []));
         break;
       case 'project':
-        out.push(`#### ${b.name}`, '', `期間: ${b.period}`, '', ...b.fields.flatMap((f) => [`**${f.label}**  `, md(f.value), '']));
+        out.push(
+          `#### ${b.name}`,
+          '',
+          `期間: ${b.period}`,
+          '',
+          ...b.fields.flatMap((f) => [`**${f.label}**  `, md(f.value), '']),
+        );
         break;
       case 'paragraph':
         out.push(md(b.text));
         break;
     }
   }
-  return `${out.join('\n').replace(/\n{3,}/g, '\n\n').trim()}\n`;
+  return `${out
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()}\n`;
 }

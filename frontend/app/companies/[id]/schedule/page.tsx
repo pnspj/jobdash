@@ -1,14 +1,14 @@
 'use client';
 
-import { Suspense } from 'react';
+import { isInterviewStageKey } from '@jobdash/shared';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { isInterviewStageKey } from '@jobdash/shared';
+import { Suspense } from 'react';
+import { errorBox } from '@/components/ui/styles';
+import ScheduleEditor, { type ScheduleMode } from '@/features/calendar/components/ScheduleEditor';
+import { useCompanies, useCompany } from '@/features/companies/api';
 import { errorMessage } from '@/lib/apiClient';
 import { returnLabel, useReturnTo, withReturnTo } from '@/lib/returnTo';
-import { errorBox } from '@/components/ui/styles';
-import { useCompanies, useCompany } from '@/features/companies/api';
-import ScheduleEditor, { type ScheduleMode } from '@/features/calendar/components/ScheduleEditor';
 
 export default function SchedulePage() {
   return (

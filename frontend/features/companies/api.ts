@@ -1,5 +1,13 @@
+import {
+  type Company,
+  type CompanyImportRecord,
+  type CompanyInput,
+  type CompanyPatch,
+  type InterviewStage,
+  stageKeyOf,
+  type TimeSlot,
+} from '@jobdash/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { stageKeyOf, type Company, type CompanyImportRecord, type CompanyInput, type CompanyPatch, type InterviewStage, type TimeSlot } from '@jobdash/shared';
 import { apiRequest } from '@/lib/apiClient';
 
 const BASE = '/api/companies';
@@ -28,14 +36,18 @@ export const companyApi = {
       method: 'DELETE',
     }),
   setPreferredSlots: (id: string, slots: TimeSlot[], version: number) =>
-    apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}/preferred-slots`, { method: 'PUT', body: { version, slots } }),
+    apiRequest<Company>(`${BASE}/${encodeURIComponent(id)}/preferred-slots`, {
+      method: 'PUT',
+      body: { version, slots },
+    }),
 };
 
 // ---------- hooks ----------
 
 export const useCompanies = () => useQuery({ queryKey: companyKeys.all, queryFn: companyApi.list });
 
-export const useCompany = (id: string) => useQuery({ queryKey: companyKeys.detail(id), queryFn: () => companyApi.get(id) });
+export const useCompany = (id: string) =>
+  useQuery({ queryKey: companyKeys.detail(id), queryFn: () => companyApi.get(id) });
 
 export function useCreateCompany() {
   const qc = useQueryClient();

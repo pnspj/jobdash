@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useId, useState } from 'react';
 
 interface Props {
   value: string[];
@@ -53,12 +53,22 @@ export default function TagInput({ value, onChange, suggestions = [], max = 20, 
           {i === 0 && firstLabel && <span className="text-[10px] text-blue-600">{firstLabel}</span>}
           {tag}
           {i > 0 && !disabled && (
-            <button type="button" onClick={() => moveToFront(tag)} title="先頭に移動" className="text-slate-400 hover:text-blue-600">
+            <button
+              type="button"
+              onClick={() => moveToFront(tag)}
+              title="先頭に移動"
+              className="text-slate-400 hover:text-blue-600"
+            >
               ⇤
             </button>
           )}
           {!disabled && (
-            <button type="button" onClick={() => remove(tag)} aria-label={`${tag} を削除`} className="text-slate-400 hover:text-red-600">
+            <button
+              type="button"
+              onClick={() => remove(tag)}
+              aria-label={`${tag} を削除`}
+              className="text-slate-400 hover:text-red-600"
+            >
               ×
             </button>
           )}

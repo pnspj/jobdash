@@ -1,19 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import {
+  type Company,
   MAX_INTERVIEW_COUNT,
   MAX_TAGS,
-  researchOf,
-  type Company,
   type Rating,
   type Research,
   type ResearchPatch,
+  researchOf,
 } from '@jobdash/shared';
-import { errorMessage } from '@/lib/apiClient';
+import { useMemo, useState } from 'react';
 import StarRating from '@/components/ui/StarRating';
-import TagInput from '@/components/ui/TagInput';
 import { inputClass, labelClass, primaryButton } from '@/components/ui/styles';
+import TagInput from '@/components/ui/TagInput';
+import { errorMessage } from '@/lib/apiClient';
 
 interface Props {
   company: Company;
@@ -22,7 +22,11 @@ interface Props {
   onSave: (patch: ResearchPatch) => Promise<unknown>;
 }
 
-const TEXT_FIELDS: { key: 'motivation' | 'futureVision' | 'reverseQuestions' | 'attractions' | 'concerns'; label: string; hint?: string }[] = [
+const TEXT_FIELDS: {
+  key: 'motivation' | 'futureVision' | 'reverseQuestions' | 'attractions' | 'concerns';
+  label: string;
+  hint?: string;
+}[] = [
   { key: 'motivation', label: '志望理由' },
   { key: 'futureVision', label: '入社後の将来像' },
   { key: 'reverseQuestions', label: '逆質問' },
@@ -125,7 +129,12 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
       <div className="flex items-center justify-end gap-3">
         {dirty && <span className="text-xs text-amber-600">未保存の変更があります</span>}
         {dirty && (
-          <button type="button" onClick={() => setDraft(saved)} disabled={saving} className="text-sm text-slate-500 hover:underline">
+          <button
+            type="button"
+            onClick={() => setDraft(saved)}
+            disabled={saving}
+            className="text-sm text-slate-500 hover:underline"
+          >
             変更を破棄
           </button>
         )}
