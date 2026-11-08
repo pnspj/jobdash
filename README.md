@@ -31,6 +31,7 @@ npm run dev:frontend        # 別ターミナル → http://localhost:3000
 - API は `Host` が `localhost` / `127.0.0.1` 以外のリクエストを拒否します（DNS リバインディング対策）。許可するホストは `ALLOWED_HOSTS` で変更できます。
 - URL 項目は `http(s)://` のみ受け付けます。CSV エクスポートでは数式として解釈される値（`=` `+` `-` `@` で始まる値）を無害化します。
 - リクエストボディは 5MB までです。
+- Next.js の匿名テレメトリ（`frontend` の npm スクリプトで `NEXT_TELEMETRY_DISABLED=1` を指定）とアップグレード通知（`next.config.ts` の `experimental.agentUpgrade: false`）を無効にしています。ただし開発モード（`next dev`）では、Next.js がエラー表示用のバージョン確認のために npm レジストリにアクセスします（無効にする設定がありません）。データは送信しません。
 
 ## テスト
 
