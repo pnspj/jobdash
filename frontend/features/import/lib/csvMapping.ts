@@ -4,8 +4,14 @@ import {
   type ActionStatus,
   joinLocalDateTime,
   splitLocalDateTime,
+  EMPTY_RESEARCH,
+  MAX_INTERVIEW_COUNT,
   normalizeShortName,
+  parseRating,
+  parseTags,
+  researchOf,
   type Agent,
+  type Research,
   type Company,
   type CompanyImportRecordParsed,
   type SelectionPhase,
@@ -22,7 +28,14 @@ export type TargetField =
   | 'action'
   | 'nextActionDate'
   | 'nextActionTime'
-  | 'details';
+  | 'details'
+  | ResearchTextField
+  | 'tags'
+  | 'interviewCount'
+  | 'rating';
+
+type ResearchTextField = 'motivation' | 'futureVision' | 'reverseQuestions' | 'attractions' | 'concerns';
+const RESEARCH_TEXT_FIELDS: ResearchTextField[] = ['motivation', 'futureVision', 'reverseQuestions', 'attractions', 'concerns'];
 
 export const TARGET_FIELDS: { key: TargetField; label: string; required?: boolean; hint?: string }[] = [
   { key: 'companyName', label: '会社名', required: true },
@@ -34,6 +47,14 @@ export const TARGET_FIELDS: { key: TargetField; label: string; required?: boolea
   { key: 'nextActionDate', label: '次回アクション日時', hint: '日付または日時の列（時刻も取り込みます）' },
   { key: 'nextActionTime', label: '次回アクション時刻', hint: '日付列とは別に時刻列がある場合' },
   { key: 'details', label: '詳細' },
+  { key: 'tags', label: 'タグ', hint: 'カンマ・読点・スラッシュ区切りで複数可。先頭が代表タグ' },
+  { key: 'interviewCount', label: '面接回数', hint: '数値' },
+  { key: 'rating', label: '総合評価（志望度）', hint: '1〜3 または ★' },
+  { key: 'motivation', label: '志望理由' },
+  { key: 'futureVision', label: '入社後の将来像' },
+  { key: 'reverseQuestions', label: '逆質問' },
+  { key: 'attractions', label: '魅力的な点' },
+  { key: 'concerns', label: '不安な点' },
 ];
 
 /** Column header labels used by export (and recognized on import for round-tripping). */
@@ -47,6 +68,14 @@ export const EXPORT_HEADERS: Record<TargetField, string> = {
   nextActionDate: '次回アクション日',
   nextActionTime: '次回アクション時刻',
   details: '詳細',
+  tags: 'タグ',
+  interviewCount: '面接回数',
+  rating: '総合評価',
+  motivation: '志望理由',
+  futureVision: '入社後の将来像',
+  reverseQuestions: '逆質問',
+  attractions: '魅力的な点',
+  concerns: '不安な点',
 };
 
 /** Column mapping: target field -> CSV column index (null = not imported). */
@@ -71,6 +100,14 @@ const HEADER_ALIASES: Record<TargetField, string[]> = {
   nextActionDate: ['次回アクション日時', '次回アクション日', '次回アクション', '日付', '日程', '期限', 'date', 'nextactiondate', 'due'],
   nextActionTime: ['次回アクション時刻', '時刻', '時間', 'time', 'nextactiontime'],
   details: ['詳細', 'メモ', '備考', 'note', 'notes', 'details', 'memo', 'comment'],
+  tags: ['タグ', 'tags', 'tag', '業態', '種別', 'カテゴリ', 'category'],
+  interviewCount: ['面接回数', '面接数', 'interviewcount', 'interviews'],
+  rating: ['総合評価', '志望度', '評価', 'rating'],
+  motivation: ['志望理由', '志望動機', 'motivation'],
+  futureVision: ['入社後の将来像', '将来像', 'futurevision'],
+  reverseQuestions: ['逆質問', 'reversequestions'],
+  attractions: ['魅力的な点', '魅力', '良い点', 'attractions'],
+  concerns: ['不安な点', '懸念', '懸念点', '気になる点', 'concerns'],
 };
 
 /** Guess the column mapping from CSV headers (exact alias match, first match wins). */
@@ -260,6 +297,8 @@ export function convertRow(
     else nextActionTime = t;
   }
 
+  const research = convertResearch(row, mapping, errors);
+
   const rawAgent = cell(row, mapping.agent);
   const choice = rawAgent ? (values.agent[rawAgent] ?? NEW_AGENT) : NO_AGENT;
   const agentLink =
@@ -277,8 +316,29 @@ export function convertRow(
       action: action ?? defaults.action,
       nextActionAt: joinLocalDateTime(nextActionDate, nextActionTime ?? ''),
       details: mapping.details === null ? '' : (row[mapping.details] ?? ''),
+      ...(research && { research }),
     },
   };
+}
+
+const RESEARCH_FIELDS: TargetField[] = [...RESEARCH_TEXT_FIELDS, 'tags', 'interviewCount', 'rating'];
+
+/** Research from the mapped columns; undefined when no research column is mapped. */
+function convertResearch(row: string[], mapping: ColumnMapping, errors: string[]): Research | undefined {
+  if (RESEARCH_FIELDS.every((f) => mapping[f] === null)) return undefined;
+  const research: Research = { ...EMPTY_RESEARCH, tags: parseTags(cell(row, mapping.tags)) };
+  for (const f of RESEARCH_TEXT_FIELDS) research[f] = mapping[f] === null ? '' : (row[mapping[f]] ?? '').trim();
+
+  const rawCount = cell(row, mapping.interviewCount).normalize('NFKC').replace(/回$/, '');
+  if (rawCount) {
+    const n = Number(rawCount);
+    if (Number.isInteger(n) && n >= 1 && n <= MAX_INTERVIEW_COUNT) research.interviewCount = n;
+    else errors.push(`面接回数を解釈できません: ${rawCount}`);
+  }
+  const rating = parseRating(cell(row, mapping.rating));
+  if (rating === null) errors.push(`総合評価は1〜3で指定してください: ${cell(row, mapping.rating)}`);
+  else if (rating) research.rating = rating;
+  return research;
 }
 
 /** Distinct non-empty trimmed values of a column, in first-seen order. */
@@ -300,6 +360,7 @@ export { ACTION_STATUSES, SELECTION_PHASES };
 /** CSV column values of a company for each target field (next action split into date and time). */
 function exportValues(c: Company, agentShortName: (id: string | undefined) => string): Record<TargetField, string> {
   const { date, time } = splitLocalDateTime(c.nextActionAt);
+  const research = researchOf(c);
   return {
     companyName: c.companyName,
     companyUrl: c.companyUrl ?? '',
@@ -310,6 +371,14 @@ function exportValues(c: Company, agentShortName: (id: string | undefined) => st
     nextActionDate: date,
     nextActionTime: time,
     details: c.details,
+    tags: research.tags.join(', '),
+    interviewCount: research.interviewCount?.toString() ?? '',
+    rating: research.rating?.toString() ?? '',
+    motivation: research.motivation,
+    futureVision: research.futureVision,
+    reverseQuestions: research.reverseQuestions,
+    attractions: research.attractions,
+    concerns: research.concerns,
   };
 }
 

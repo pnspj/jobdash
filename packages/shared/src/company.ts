@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LOCAL_DATETIME_RE } from './datetime';
 import { ACTION_STATUSES, SELECTION_PHASES } from './enums';
+import { researchPatchSchema, researchSchema } from './research';
 
 /** Trimmed string; empty becomes undefined. */
 const optionalText = z
@@ -26,6 +27,7 @@ export const companyInputSchema = z.object({
   action: z.enum(ACTION_STATUSES),
   nextActionAt: optionalLocalDateTime,
   details: z.string().default(''),
+  research: researchSchema.optional(),
 });
 
 /**
@@ -42,6 +44,8 @@ export const companyPatchSchema = z.object({
   action: companyInputSchema.shape.action.optional(),
   nextActionAt: z.union([z.null(), optionalLocalDateTime]),
   details: z.string().optional(),
+  /** Merged into the stored research: only the given research fields change. */
+  research: researchPatchSchema.optional(),
 });
 
 export const IMPORT_MAX_RECORDS = 1000;
@@ -67,6 +71,7 @@ export const companySchema = z.object({
   action: z.enum(ACTION_STATUSES),
   nextActionAt: z.string().optional(),
   details: z.string(),
+  research: researchSchema.optional(),
   version: z.number().int(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -92,4 +97,5 @@ export const toCompanyInput = (c: Company): CompanyInputParsed => ({
   action: c.action,
   nextActionAt: c.nextActionAt,
   details: c.details,
+  research: c.research,
 });

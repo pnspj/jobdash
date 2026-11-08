@@ -1,4 +1,5 @@
 import {
+  mergeResearch,
   normalizeShortName,
   type Company,
   type CompanyInputParsed,
@@ -29,7 +30,11 @@ export const companyService = {
 
   async update(id: string, patch: CompanyPatchParsed): Promise<Company> {
     await assertAgentExists(patch.agentId);
-    return companyRepository.update(id, patch);
+    if (!patch.research) return companyRepository.update(id, patch);
+    // Research is merged field by field so that saving one section does not wipe the others.
+    // The repository still checks `version`, so a concurrent change is detected.
+    const current = await companyRepository.getOrThrow(id);
+    return companyRepository.update(id, { ...patch, research: mergeResearch(current.research, patch.research) });
   },
 
   delete: (id: string) => companyRepository.delete(id),

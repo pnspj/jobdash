@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -14,10 +14,11 @@ import {
 import { ApiError, errorMessage } from '@/lib/apiClient';
 import ExternalLink from '@/components/ui/ExternalLink';
 import { useAgentLookup } from '@/features/agents/api';
-import { useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
+import { useCompanies, useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
 import CompanyForm from '@/features/companies/components/CompanyForm';
 import NextActionEditor from '@/features/companies/components/NextActionEditor';
+import ResearchEditor from '@/features/companies/components/ResearchEditor';
 
 const sectionClass = 'rounded-lg border border-slate-200 bg-white p-6 shadow-sm';
 const selectClass = 'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm';
@@ -59,6 +60,13 @@ function CompanyDetail({ company }: { company: Company }) {
   const remove = useDeleteCompany();
   const [editing, setEditing] = useState(false);
   const agent = useAgentLookup().get(company.agentId);
+  const { data: allCompanies = [] } = useCompanies();
+  // Tags used anywhere, most frequent first
+  const tagSuggestions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of allCompanies) for (const t of c.research?.tags ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
+  }, [allCompanies]);
   const busy = update.isPending || remove.isPending;
   const error = update.error ?? remove.error;
 
@@ -158,6 +166,16 @@ function CompanyDetail({ company }: { company: Company }) {
                 onSave={(nextActionAt) => update.mutate({ nextActionAt })}
               />
             </div>
+          </section>
+
+          <section className={sectionClass}>
+            <h2 className="mb-4 text-lg font-semibold">会社研究</h2>
+            <ResearchEditor
+              key={company.id}
+              company={company}
+              tagSuggestions={tagSuggestions}
+              onSave={(research) => update.mutateAsync({ research })}
+            />
           </section>
 
           <section className={sectionClass}>

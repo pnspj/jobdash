@@ -134,3 +134,66 @@ test('autoMapAgents prefers short name, then name, else new; overrides win', () 
     SA: NO_AGENT,
   });
 });
+
+test('research columns are imported (tags split, rating stars, interview count)', () => {
+  const [header, ...data] = parseCsv(
+    '会社名,選考フェーズ,アクション,タグ,志望度,面接回数,魅力的な点\n' +
+      'A社,一次面接,要対応,"自社サービス, SaaS",★★,3回,"サービスが先進的\n技術が合う"\n' +
+      'B社,一次面接,要対応,,5,x,\n',
+  );
+  const mapping = guessMapping(header);
+  assert.equal(mapping.tags, 3);
+  assert.equal(mapping.rating, 4);
+  assert.equal(mapping.interviewCount, 5);
+  assert.equal(mapping.attractions, 6);
+  const values = {
+    phase: autoMapEnum(distinctValues(data, mapping.phase), SELECTION_PHASES),
+    action: autoMapEnum(distinctValues(data, mapping.action), ACTION_STATUSES),
+    agent: {},
+  };
+  const defaults = { phase: '書類選考', action: '要対応' } as const;
+
+  const a = convertRow(data[0], 1, mapping, values, defaults);
+  assert.deepEqual(a.errors, []);
+  assert.deepEqual(a.input.research?.tags, ['自社サービス', 'SaaS']);
+  assert.equal(a.input.research?.rating, 2);
+  assert.equal(a.input.research?.interviewCount, 3);
+  assert.equal(a.input.research?.attractions, 'サービスが先進的\n技術が合う');
+
+  const b = convertRow(data[1], 2, mapping, values, defaults);
+  assert.equal(b.errors.length, 2); // invalid rating and interview count
+});
+
+test('rows have no research when no research column is mapped', () => {
+  const mapping = guessMapping(['会社名']);
+  const r = convertRow(['A社'], 1, mapping, { phase: {}, action: {}, agent: {} }, { phase: '書類選考', action: '要対応' });
+  assert.equal(r.input.research, undefined);
+});
+
+test('export writes research columns that import reads back', () => {
+  const company = {
+    id: 'c1',
+    companyName: 'A社',
+    phase: '一次面接',
+    action: '要対応',
+    details: '',
+    research: {
+      motivation: '理由',
+      futureVision: '',
+      reverseQuestions: '',
+      attractions: '良い',
+      concerns: '',
+      tags: ['SI', '受託開発'],
+      interviewCount: 2,
+      rating: 3,
+    },
+    version: 1,
+    createdAt: '',
+    updatedAt: '2026-11-08T00:00:00.000Z',
+  } as const;
+  const rows = parseCsv(toCsv(companiesToCsvRows([{ ...company, research: { ...company.research, tags: [...company.research.tags] } }], () => '')));
+  const mapping = guessMapping(rows[0]);
+  const r = convertRow(rows[1], 1, mapping, { phase: { 一次面接: '一次面接' }, action: { 要対応: '要対応' }, agent: {} }, { phase: '書類選考', action: '要対応' });
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(r.input.research, { ...company.research, tags: ['SI', '受託開発'] });
+});

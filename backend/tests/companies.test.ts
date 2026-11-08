@@ -134,6 +134,42 @@ describe('companies API', () => {
     expect(byName).toEqual({ A: ma.id, B: sa!.id, C: sa!.id, D: undefined });
   });
 
+  test('research: created with the company, merged on patch, cleared with null', async () => {
+    const { body: c } = await call<Company>('POST', BASE, {
+      ...valid,
+      research: { motivation: '理由', tags: ['SI', ' SI ', '自社サービス'], rating: 2 },
+    });
+    expect(c.research).toMatchObject({ motivation: '理由', tags: ['SI', '自社サービス'], rating: 2, concerns: '' });
+
+    const patched = await call<Company>('PATCH', `${BASE}/${c.id}`, {
+      version: 1,
+      research: { concerns: '残業が多そう', interviewCount: 3, rating: null },
+    });
+    expect(patched.status).toBe(200);
+    expect(patched.body.research).toEqual({
+      motivation: '理由',
+      futureVision: '',
+      reverseQuestions: '',
+      attractions: '',
+      concerns: '残業が多そう',
+      tags: ['SI', '自社サービス'],
+      interviewCount: 3,
+    });
+
+    // Companies created without research get one on the first research patch
+    const { body: plain } = await call<Company>('POST', BASE, valid);
+    expect(plain.research).toBeUndefined();
+    const first = await call<Company>('PATCH', `${BASE}/${plain.id}`, { version: 1, research: { tags: ['SES'] } });
+    expect(first.body.research?.tags).toEqual(['SES']);
+  });
+
+  test('research validation and stale version', async () => {
+    const { body: c } = await call<Company>('POST', BASE, valid);
+    expect((await call('PATCH', `${BASE}/${c.id}`, { version: 1, research: { rating: 5 } })).status).toBe(400);
+    await call('PATCH', `${BASE}/${c.id}`, { version: 1, phase: '一次面接' });
+    expect((await call('PATCH', `${BASE}/${c.id}`, { version: 1, research: { motivation: 'x' } })).status).toBe(409);
+  });
+
   test('CORS allows the frontend origin', async () => {
     const { app } = await import('./helpers');
     const res = await app.request(BASE, { headers: { Origin: 'http://localhost:3000' } });
