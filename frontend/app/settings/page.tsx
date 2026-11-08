@@ -4,14 +4,7 @@ import { sampleBackup } from '@jobdash/shared/sample';
 import { type ChangeEvent, useState } from 'react';
 import { PAGE_ICONS } from '@/components/layout/nav';
 import PageTitle from '@/components/layout/PageTitle';
-import {
-  dangerButton,
-  inputBaseClass,
-  inputClass,
-  primaryButton,
-  secondaryButton,
-  sectionClass,
-} from '@/components/ui/styles';
+import { dangerButton, inputBaseClass, primaryButton, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { backupApi, useDeleteAllData, useRestoreBackup } from '@/features/backup/api';
 import { errorMessage } from '@/lib/apiClient';
 

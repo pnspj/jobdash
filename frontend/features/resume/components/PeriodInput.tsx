@@ -1,7 +1,7 @@
 'use client';
 
 import type { Period } from '@jobdash/shared';
-import { inputBaseClass, inputClass } from '@/components/ui/styles';
+import { inputBaseClass } from '@/components/ui/styles';
 
 interface Props {
   value: Period;
