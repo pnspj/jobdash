@@ -27,7 +27,7 @@ export const TARGET_FIELDS: { key: TargetField; label: string; required?: boolea
   { key: 'agentJobUrl', label: 'エージェント求人URL' },
   { key: 'phase', label: '選考フェーズ', hint: '値の対応付けが必要' },
   { key: 'action', label: 'アクション', hint: '値の対応付けが必要' },
-  { key: 'nextActionDate', label: '次回アクション日', hint: '時刻を含む場合は時刻も取り込みます' },
+  { key: 'nextActionDate', label: '次回アクション日時', hint: '日付または日時の列（時刻も取り込みます）' },
   { key: 'nextActionTime', label: '次回アクション時刻', hint: '日付列とは別に時刻列がある場合' },
   { key: 'details', label: '詳細' },
 ];
@@ -64,7 +64,7 @@ const HEADER_ALIASES: Record<TargetField, string[]> = {
   agentJobUrl: ['エージェント求人url', '求人url', 'url', 'agentjoburl', 'joburl', 'link', 'リンク'],
   phase: ['選考フェーズ', 'フェーズ', '選考状況', 'ステータス', 'phase', 'status'],
   action: ['アクション', '次のアクション', 'action', 'todo'],
-  nextActionDate: ['次回アクション日', '次回アクション', '日付', '日程', '期限', 'date', 'nextactiondate', 'due'],
+  nextActionDate: ['次回アクション日時', '次回アクション日', '次回アクション', '日付', '日程', '期限', 'date', 'nextactiondate', 'due'],
   nextActionTime: ['次回アクション時刻', '時刻', '時間', 'time', 'nextactiontime'],
   details: ['詳細', 'メモ', '備考', 'note', 'notes', 'details', 'memo', 'comment'],
 };

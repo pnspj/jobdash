@@ -360,7 +360,7 @@ export default function ImportPage() {
                     <th className="px-3 py-2">エージェント</th>
                     <th className="px-3 py-2">フェーズ</th>
                     <th className="px-3 py-2">アクション</th>
-                    <th className="px-3 py-2">次回アクション</th>
+                    <th className="px-3 py-2">次回アクション日時</th>
                     <th className="px-3 py-2">状態</th>
                   </tr>
                 </thead>

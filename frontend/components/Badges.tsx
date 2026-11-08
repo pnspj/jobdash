@@ -11,7 +11,6 @@ const PHASE_STYLES: Record<SelectionPhase, string> = {
 
 const ACTION_STYLES: Record<ActionStatus, string> = {
   要日程調整: 'bg-amber-50 text-amber-800 ring-amber-300',
-  要連絡: 'bg-amber-50 text-amber-800 ring-amber-300',
   要本番準備: 'bg-orange-50 text-orange-800 ring-orange-300',
   要対応: 'bg-red-50 text-red-700 ring-red-300',
   日程調整待ち: 'bg-slate-50 text-slate-600 ring-slate-200',

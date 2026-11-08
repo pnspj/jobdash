@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createCompany, fetchCompanies } from '@/lib/api';
 import { downloadCsv } from '@/lib/csv';
 import { companiesToCsvRows } from '@/lib/csvMapping';
+import { compareCompanies, formatNextAction } from '@/lib/sort';
 import type { CompanyInput, CompanyRecord } from '@/lib/types';
 import { ActionBadge, PhaseBadge, isActionRequired } from '@/components/Badges';
 import CompanyForm from '@/components/CompanyForm';
@@ -13,17 +14,24 @@ import Modal from '@/components/Modal';
 
 const today = () => new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local time
 
-/** Sort by next action date ascending; records without a date go last. */
-const byNextActionDate = (a: CompanyRecord, b: CompanyRecord) => {
-  if (!a.nextActionDate && !b.nextActionDate) return b.updatedAt.localeCompare(a.updatedAt);
-  if (!a.nextActionDate) return 1;
-  if (!b.nextActionDate) return -1;
+/** External link that does not trigger the row's navigation to the detail page. */
+function RowLink({ href, children }: { href?: string; children: React.ReactNode }) {
+  if (!href) return <>{children}</>;
   return (
-    a.nextActionDate.localeCompare(b.nextActionDate) ||
-    // Within the same day, timed entries come first in time order
-    (a.nextActionTime ?? '99:99').localeCompare(b.nextActionTime ?? '99:99')
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="text-blue-700 hover:underline"
+    >
+      {children}
+      <span className="ml-0.5 text-xs text-slate-400" aria-hidden>
+        ↗
+      </span>
+    </a>
   );
-};
+}
 
 export default function CompanyListPage() {
   const router = useRouter();
@@ -50,7 +58,7 @@ export default function CompanyListPage() {
   }, [load]);
 
   const visible = useMemo(
-    () => companies.filter((c) => showClosed || c.action !== '辞退/不通過').sort(byNextActionDate),
+    () => companies.filter((c) => showClosed || c.action !== '辞退/不通過').sort(compareCompanies),
     [companies, showClosed],
   );
   const closedCount = companies.filter((c) => c.action === '辞退/不通過').length;
@@ -64,7 +72,7 @@ export default function CompanyListPage() {
   const todayStr = today();
 
   const handleExport = () => {
-    const sorted = [...companies].sort(byNextActionDate);
+    const sorted = [...companies].sort(compareCompanies);
     downloadCsv(`jobdash-${todayStr.replaceAll('-', '')}.csv`, companiesToCsvRows(sorted));
   };
 
@@ -128,8 +136,7 @@ export default function CompanyListPage() {
                 <th className="px-4 py-3">エージェント</th>
                 <th className="px-4 py-3">選考フェーズ</th>
                 <th className="px-4 py-3">アクション</th>
-                <th className="px-4 py-3">次回アクション日</th>
-                <th className="px-4 py-3">更新日時</th>
+                <th className="px-4 py-3">次回アクション日時</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -143,14 +150,14 @@ export default function CompanyListPage() {
                     className={`cursor-pointer hover:bg-blue-50/50 ${c.action === '辞退/不通過' ? 'opacity-60' : ''}`}
                   >
                     <td className="px-4 py-3 font-medium text-slate-900">
-                      <Link href={`/companies/${c.id}`} onClick={(e) => e.stopPropagation()} className="hover:underline">
-                        {c.companyName}
-                      </Link>
+                      <RowLink href={c.companyUrl}>{c.companyName}</RowLink>
                       {isActionRequired(c.action) && (
                         <span className="ml-2 inline-block h-2 w-2 rounded-full bg-red-500" title="要対応" />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{c.agent || '-'}</td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {c.agent ? <RowLink href={c.agentJobUrl}>{c.agent}</RowLink> : c.agentJobUrl ? <RowLink href={c.agentJobUrl}>求人</RowLink> : '-'}
+                    </td>
                     <td className="px-4 py-3">
                       <PhaseBadge phase={c.phase} />
                     </td>
@@ -162,13 +169,9 @@ export default function CompanyListPage() {
                         overdue ? 'font-semibold text-red-600' : isToday ? 'font-semibold text-amber-600' : 'text-slate-700'
                       }`}
                     >
-                      {c.nextActionDate || '-'}
-                      {c.nextActionDate && c.nextActionTime && <span className="ml-1">{c.nextActionTime}</span>}
+                      {formatNextAction(c) || '-'}
                       {overdue && <span className="ml-1 text-xs">(期限切れ)</span>}
                       {isToday && <span className="ml-1 text-xs">(今日)</span>}
-                    </td>
-                    <td className="px-4 py-3 tabular-nums text-slate-500">
-                      {new Date(c.updatedAt).toLocaleString('ja-JP')}
                     </td>
                   </tr>
                 );

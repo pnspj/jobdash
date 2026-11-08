@@ -7,6 +7,8 @@ import { ApiError, deleteCompany, fetchCompany, toInput, updateCompany } from '@
 import { ACTION_STATUSES, SELECTION_PHASES, type CompanyInput, type CompanyRecord } from '@/lib/types';
 import { ActionBadge, PhaseBadge } from '@/components/Badges';
 import CompanyForm from '@/components/CompanyForm';
+import TimeSelect from '@/components/TimeSelect';
+import { formatNextAction } from '@/lib/sort';
 
 export default function CompanyDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -145,7 +147,7 @@ export default function CompanyDetailPage() {
               選考状況の更新
               {saving && <span className="ml-3 text-sm font-normal text-slate-400">保存中...</span>}
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_minmax(22rem,1.5fr)]">
               <label className="block">
                 <span className="mb-1 block text-sm font-medium text-slate-700">選考フェーズ</span>
                 <select
@@ -172,30 +174,13 @@ export default function CompanyDetailPage() {
                   ))}
                 </select>
               </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium text-slate-700">次回アクション日時</span>
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    disabled={saving}
-                    value={company.nextActionDate}
-                    onChange={(e) => quickUpdate({ nextActionDate: e.target.value })}
-                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                  />
-                  <input
-                    type="time"
-                    aria-label="次回アクション時刻"
-                    disabled={saving || !company.nextActionDate}
-                    defaultValue={company.nextActionTime ?? ''}
-                    key={`${company.updatedAt}-time`}
-                    // Save on blur: onChange fires per segment while typing a time
-                    onBlur={(e) => {
-                      if (e.target.value !== (company.nextActionTime ?? '')) void quickUpdate({ nextActionTime: e.target.value });
-                    }}
-                    className="w-28 shrink-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                  />
-                </div>
-              </label>
+              <NextActionEditor
+                key={`${company.nextActionDate}|${company.nextActionTime ?? ""}`}
+                date={company.nextActionDate}
+                time={company.nextActionTime ?? ''}
+                disabled={saving}
+                onSave={(nextActionDate, nextActionTime) => quickUpdate({ nextActionDate, nextActionTime })}
+              />
             </div>
           </section>
 
@@ -225,10 +210,8 @@ export default function CompanyDetailPage() {
               <dt className="font-medium text-slate-500">アクション</dt>
               <dd>{company.action}</dd>
 
-              <dt className="font-medium text-slate-500">次回アクション日</dt>
-              <dd className="tabular-nums">
-                {company.nextActionDate ? `${company.nextActionDate} ${company.nextActionTime ?? ''}`.trim() : '-'}
-              </dd>
+              <dt className="font-medium text-slate-500">次回アクション日時</dt>
+              <dd className="tabular-nums">{formatNextAction(company) || '-'}</dd>
 
               <dt className="font-medium text-slate-500">詳細</dt>
               <dd className="whitespace-pre-wrap break-words">{company.details || '-'}</dd>
@@ -242,6 +225,81 @@ export default function CompanyDetailPage() {
           </section>
         </>
       )}
+    </div>
+  );
+}
+
+/** Date + time editor with an explicit save, so partially typed values are never persisted. */
+function NextActionEditor({
+  date,
+  time,
+  disabled,
+  onSave,
+}: {
+  date: string;
+  time: string;
+  disabled: boolean;
+  onSave: (date: string, time: string) => void;
+}) {
+  const [draftDate, setDraftDate] = useState(date);
+  const [draftTime, setDraftTime] = useState(time);
+  const effectiveTime = draftDate ? draftTime : '';
+  const dirty = draftDate !== date || effectiveTime !== time;
+
+  const save = () => {
+    if (dirty && !disabled) onSave(draftDate, effectiveTime);
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      save();
+    }
+  };
+  const inputClass = 'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-400';
+
+  return (
+    <div>
+      <span className="mb-1 block text-sm font-medium text-slate-700">次回アクション日時</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="date"
+          aria-label="次回アクション日"
+          disabled={disabled}
+          value={draftDate}
+          onChange={(e) => setDraftDate(e.target.value)}
+          onKeyDown={onKeyDown}
+          className={`${inputClass} w-40`}
+        />
+        <TimeSelect
+          disabled={disabled || !draftDate}
+          value={effectiveTime}
+          onChange={setDraftTime}
+          onKeyDown={onKeyDown}
+          className={`${inputClass} w-28`}
+        />
+        <button
+          type="button"
+          onClick={save}
+          disabled={!dirty || disabled}
+          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40"
+        >
+          保存
+        </button>
+        {(draftDate || draftTime) && (
+          <button
+            type="button"
+            onClick={() => {
+              setDraftDate('');
+              setDraftTime('');
+            }}
+            disabled={disabled}
+            className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+          >
+            クリア
+          </button>
+        )}
+      </div>
+      {dirty && <p className="mt-1 text-xs text-amber-600">未保存の変更があります</p>}
     </div>
   );
 }

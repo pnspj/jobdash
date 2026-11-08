@@ -9,7 +9,6 @@ export const SELECTION_PHASES = [
 
 export const ACTION_STATUSES = [
   '要日程調整',
-  '要連絡',
   '要本番準備',
   '要対応',
   '日程調整待ち',

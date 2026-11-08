@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import TimeSelect from './TimeSelect';
 import { ACTION_STATUSES, SELECTION_PHASES, type CompanyInput } from '@/lib/types';
 
 export const EMPTY_INPUT: CompanyInput = {
@@ -136,7 +137,7 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
 
         <div>
           <label className={labelClass} htmlFor="nextActionDate">
-            次回アクション日
+            次回アクション日時
           </label>
           <div className="flex gap-2">
             <input
@@ -146,14 +147,12 @@ export default function CompanyForm({ initialValue = EMPTY_INPUT, submitLabel, o
               value={value.nextActionDate}
               onChange={(e) => set('nextActionDate', e.target.value)}
             />
-            <input
+            <TimeSelect
               id="nextActionTime"
-              type="time"
-              aria-label="次回アクション時刻"
-              className={`${inputClass} max-w-32`}
+              className={`${inputClass} w-28 shrink-0`}
               disabled={!value.nextActionDate}
               value={value.nextActionTime ?? ''}
-              onChange={(e) => set('nextActionTime', e.target.value)}
+              onChange={(v) => set('nextActionTime', v)}
             />
           </div>
         </div>
