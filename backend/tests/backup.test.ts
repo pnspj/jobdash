@@ -39,3 +39,11 @@ test('restore rejects an invalid backup and keeps existing data', async () => {
   expect((await call('POST', '/api/backup/restore', dangling)).status).toBe(400);
   expect((await call<Company[]>('GET', '/api/companies')).body).toHaveLength(1);
 });
+
+test('the bundled sample can be restored', async () => {
+  const { sampleBackup } = await import('@jobdash/shared/sample');
+  const res = await call<{ restored: Record<string, number> }>('POST', '/api/backup/restore', sampleBackup());
+  expect(res.status).toBe(200);
+  expect(res.body.restored).toEqual({ companies: 30, agents: 3 });
+  expect((await call<Company[]>('GET', '/api/companies')).body).toHaveLength(30);
+});

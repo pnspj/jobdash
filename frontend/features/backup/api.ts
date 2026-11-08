@@ -6,13 +6,22 @@ export const backupApi = {
   export: () => apiRequest<Backup>('/api/backup'),
   restore: (backup: unknown) =>
     apiRequest<{ restored: Record<string, number> }>('/api/backup/restore', { method: 'POST', body: backup }),
+  deleteAll: () =>
+    apiRequest<{ deleted: Record<string, number> }>('/api/data?confirm=DELETE_ALL', { method: 'DELETE' }),
 };
 
-export function useRestoreBackup() {
+/** Every cached entity may have changed after these operations. */
+function useInvalidateAll() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: backupApi.restore,
-    // Every cached entity may have changed
-    onSuccess: () => qc.invalidateQueries(),
-  });
+  return () => qc.invalidateQueries();
+}
+
+export function useRestoreBackup() {
+  const invalidateAll = useInvalidateAll();
+  return useMutation({ mutationFn: backupApi.restore, onSuccess: invalidateAll });
+}
+
+export function useDeleteAllData() {
+  const invalidateAll = useInvalidateAll();
+  return useMutation({ mutationFn: backupApi.deleteAll, onSuccess: invalidateAll });
 }

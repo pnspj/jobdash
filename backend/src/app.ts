@@ -5,6 +5,7 @@ import { HTTPException } from 'hono/http-exception';
 import { backupRoute } from './routes/backup';
 import { agentsRoute } from './routes/agents';
 import { companiesRoute } from './routes/companies';
+import { dataRoute } from './routes/data';
 import { BadRequestError, ConflictError, NotFoundError, VersionConflictError } from './errors';
 
 export function createApp({ log = true }: { log?: boolean } = {}) {
@@ -17,6 +18,7 @@ export function createApp({ log = true }: { log?: boolean } = {}) {
   app.route('/api/companies', companiesRoute);
   app.route('/api/agents', agentsRoute);
   app.route('/api/backup', backupRoute);
+  app.route('/api/data', dataRoute);
 
   app.onError((err, c) => {
     if (err instanceof NotFoundError) return c.json({ message: err.message }, 404);

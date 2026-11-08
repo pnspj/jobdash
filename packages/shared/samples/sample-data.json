@@ -1,0 +1,645 @@
+{
+  "app": "jobdash",
+  "schemaVersion": 3,
+  "exportedAt": "2026-11-08T03:00:00.000Z",
+  "companies": [
+    {
+      "id": "sample-company-01",
+      "companyName": "オムライスソリューションズ株式会社",
+      "companyUrl": "https://company-01.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1000",
+      "phase": "オファー/内定",
+      "action": "要対応",
+      "nextActionAt": "2026-11-13T18:00",
+      "details": "内定通知を受領。回答期限は 11/13（金）18:00。オファー面談で年収・入社日を確認済み。",
+      "research": {
+        "motivation": "自社 SaaS の開発に、要件定義から運用まで一貫して関われるため。",
+        "futureVision": "3 年以内にプロダクトの技術選定をリードできるエンジニアになる。",
+        "reverseQuestions": "入社後 3 か月の期待値\nチームのコードレビューの進め方",
+        "attractions": "プロダクトの成長性が高い\n開発チームの裁量が大きい\nフルリモート可",
+        "concerns": "組織が急拡大しており、評価制度が整備途中",
+        "tags": [
+          "自社サービス",
+          "SaaS"
+        ],
+        "interviewCount": 3,
+        "rating": 3
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-10-14T10:00",
+          "end": "2026-10-14T11:00"
+        },
+        {
+          "stage": "二次面接",
+          "start": "2026-10-22T15:00",
+          "end": "2026-10-22T16:00"
+        },
+        {
+          "stage": "最終面接",
+          "start": "2026-10-30T13:00",
+          "end": "2026-10-30T14:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-01T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-02",
+      "companyName": "カレーライスシステム株式会社",
+      "companyUrl": "https://company-02.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1001",
+      "phase": "オファー/内定",
+      "action": "日程調整待ち",
+      "details": "内定。オファー面談の日程をエージェント経由で調整中。",
+      "research": {
+        "motivation": "大規模システムの開発経験を積みたい。",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "研修制度が充実している\n福利厚生が手厚い",
+        "concerns": "客先常駐の可能性がある",
+        "tags": [
+          "SI"
+        ],
+        "interviewCount": 2,
+        "rating": 2
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-10-16T14:00",
+          "end": "2026-10-16T15:00"
+        },
+        {
+          "stage": "最終面接",
+          "start": "2026-10-28T10:00",
+          "end": "2026-10-28T11:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-02T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-03",
+      "companyName": "ラーメンプラットフォーム株式会社",
+      "companyUrl": "https://company-03.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1002",
+      "phase": "最終面接",
+      "action": "要本番準備",
+      "nextActionAt": "2026-11-12T14:00",
+      "details": "最終面接は役員 2 名。事業戦略への理解を問われる見込み。",
+      "research": {
+        "motivation": "利用者の多い自社サービスで、パフォーマンス改善に取り組みたい。",
+        "futureVision": "バックエンドのテックリードとして、開発基盤の改善を主導する。",
+        "reverseQuestions": "今後 1 年の事業上の重点\nエンジニアの評価の観点",
+        "attractions": "サービスが先進的\n技術スタックが自分に合っている",
+        "concerns": "残業が多そう",
+        "tags": [
+          "自社サービス",
+          "BtoC"
+        ],
+        "interviewCount": 3,
+        "rating": 3
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-10-20T11:00",
+          "end": "2026-10-20T12:00"
+        },
+        {
+          "stage": "二次面接",
+          "start": "2026-10-29T16:00",
+          "end": "2026-10-29T17:00"
+        },
+        {
+          "stage": "最終面接",
+          "start": "2026-11-12T14:00",
+          "end": "2026-11-12T15:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-03T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-04",
+      "companyName": "唐揚げテクノロジー株式会社",
+      "companyUrl": "https://company-04.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1003",
+      "phase": "二次面接",
+      "action": "選考結果待ち",
+      "details": "",
+      "research": {
+        "motivation": "",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "多様な業界の案件に関われる",
+        "concerns": "面接官が無愛想",
+        "tags": [
+          "受託開発"
+        ],
+        "interviewCount": 2,
+        "rating": 2
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-10-27T10:00",
+          "end": "2026-10-27T11:00"
+        },
+        {
+          "stage": "二次面接",
+          "start": "2026-11-06T15:00",
+          "end": "2026-11-06T16:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-04T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-05",
+      "companyName": "餃子ソリューションズ株式会社",
+      "companyUrl": "https://company-05.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1004",
+      "phase": "一次面接",
+      "action": "要本番準備",
+      "nextActionAt": "2026-11-10T16:00",
+      "details": "",
+      "research": {
+        "motivation": "",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "",
+        "concerns": "配属先が面談まで決まらない",
+        "tags": [
+          "SES"
+        ],
+        "interviewCount": 2,
+        "rating": 1
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-11-10T16:00",
+          "end": "2026-11-10T17:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-05T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-06",
+      "companyName": "プリンテクノロジー株式会社",
+      "companyUrl": "https://company-06.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1005",
+      "phase": "一次面接",
+      "action": "要本番準備",
+      "nextActionAt": "2026-11-11T10:00",
+      "details": "一次面接はオンライン。カジュアル面談に近い形式とのこと。",
+      "research": {
+        "motivation": "ユーザーとの距離が近い開発がしたい。",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "デザインと開発の連携が密",
+        "concerns": "",
+        "tags": [
+          "自社サービス"
+        ],
+        "interviewCount": 3,
+        "rating": 2
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-11-11T10:00",
+          "end": "2026-11-11T11:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-06T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-07",
+      "companyName": "パンケーキシステム株式会社",
+      "companyUrl": "https://company-07.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1006",
+      "phase": "一次面接",
+      "action": "日程調整待ち",
+      "details": "希望日時をエージェントに送付済み。",
+      "research": {
+        "motivation": "",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "",
+        "concerns": "",
+        "tags": [
+          "SaaS"
+        ],
+        "interviewCount": 2
+      },
+      "preferredSlots": [
+        {
+          "start": "2026-11-16T13:00",
+          "end": "2026-11-16T17:00"
+        },
+        {
+          "start": "2026-11-17T10:00",
+          "end": "2026-11-17T12:00"
+        },
+        {
+          "start": "2026-11-18T15:00",
+          "end": "2026-11-18T18:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-07T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-08",
+      "companyName": "たい焼きネットワークス株式会社",
+      "companyUrl": "https://company-08.example.com/",
+      "phase": "一次面接",
+      "action": "要日程調整",
+      "nextActionAt": "2026-11-10",
+      "details": "直接応募。採用担当から面接日程の候補を求められている。",
+      "research": {
+        "motivation": "",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "",
+        "concerns": "",
+        "tags": [
+          "自社サービス"
+        ]
+      },
+      "version": 1,
+      "createdAt": "2026-10-08T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-09",
+      "companyName": "マカロンソリューションズ株式会社",
+      "companyUrl": "https://company-09.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1008",
+      "phase": "試験/課題",
+      "action": "要対応",
+      "nextActionAt": "2026-11-14T23:00",
+      "details": "コーディング課題（提出期限 11/14 23:00）。",
+      "research": {
+        "motivation": "",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "",
+        "concerns": "",
+        "tags": [
+          "SI"
+        ],
+        "interviewCount": 2
+      },
+      "version": 1,
+      "createdAt": "2026-10-09T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-10",
+      "companyName": "お味噌汁システム株式会社",
+      "companyUrl": "https://company-10.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1009",
+      "phase": "書類選考",
+      "action": "選考結果待ち",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-10T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-11",
+      "companyName": "コロッケテクノロジー株式会社",
+      "companyUrl": "https://company-11.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1010",
+      "phase": "書類選考",
+      "action": "選考結果待ち",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-11T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-12",
+      "companyName": "シュークリームシステム株式会社",
+      "companyUrl": "https://company-12.example.com/",
+      "phase": "書類選考",
+      "action": "選考結果待ち",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-12T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-13",
+      "companyName": "焼きそばテクノロジー株式会社",
+      "companyUrl": "https://company-13.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1012",
+      "phase": "一次面接",
+      "action": "不通過",
+      "details": "",
+      "research": {
+        "motivation": "",
+        "futureVision": "",
+        "reverseQuestions": "",
+        "attractions": "",
+        "concerns": "",
+        "tags": [
+          "SES"
+        ]
+      },
+      "interviews": [
+        {
+          "stage": "一次面接",
+          "start": "2026-10-21T13:00",
+          "end": "2026-10-21T14:00"
+        }
+      ],
+      "version": 1,
+      "createdAt": "2026-10-13T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-14",
+      "companyName": "チャーハンネットワークス株式会社",
+      "companyUrl": "https://company-14.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1013",
+      "phase": "一次面接",
+      "action": "辞退",
+      "details": "他社の選考を優先するため辞退。",
+      "version": 1,
+      "createdAt": "2026-10-14T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-15",
+      "companyName": "冷奴ネットワークス株式会社",
+      "companyUrl": "https://company-15.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1014",
+      "phase": "一次面接",
+      "action": "辞退",
+      "details": "勤務地の条件が合わず辞退。",
+      "version": 1,
+      "createdAt": "2026-10-15T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-16",
+      "companyName": "株式会社うどんシステムズ",
+      "companyUrl": "https://company-16.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1015",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-16T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-17",
+      "companyName": "ナポリタンテクノロジー株式会社",
+      "companyUrl": "https://company-17.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1016",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-17T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-18",
+      "companyName": "おにぎりソリューションズ株式会社",
+      "companyUrl": "https://company-18.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1017",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-18T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-19",
+      "companyName": "ピザインフォメーション株式会社",
+      "companyUrl": "https://company-19.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1018",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-19T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-20",
+      "companyName": "ハンバーガーシステム株式会社",
+      "companyUrl": "https://company-20.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1019",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-20T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-21",
+      "companyName": "肉じゃがシステムズ株式会社",
+      "companyUrl": "https://company-21.example.com/",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-01T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-22",
+      "companyName": "茶碗蒸しソリューションズ株式会社",
+      "companyUrl": "https://company-22.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1021",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-02T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-23",
+      "companyName": "エビフライシステム株式会社",
+      "companyUrl": "https://company-23.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1022",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-03T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-24",
+      "companyName": "焼き鳥インフォメーション株式会社",
+      "companyUrl": "https://company-24.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1023",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-04T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-25",
+      "companyName": "麻婆豆腐テクノロジー株式会社",
+      "companyUrl": "https://company-25.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1024",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-05T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-26",
+      "companyName": "マヨネーズテクノロジー株式会社",
+      "companyUrl": "https://company-26.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1025",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-06T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-27",
+      "companyName": "わさびソリューションズ株式会社",
+      "companyUrl": "https://company-27.example.com/",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-07T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-28",
+      "companyName": "チョコレートシステム株式会社",
+      "companyUrl": "https://company-28.example.com/",
+      "agentId": "sample-agent-ma",
+      "agentJobUrl": "https://agent-ma.example.com/jobs/1027",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-08T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-29",
+      "companyName": "かき氷インフォメーション株式会社",
+      "companyUrl": "https://company-29.example.com/",
+      "agentId": "sample-agent-sa",
+      "agentJobUrl": "https://agent-sa.example.com/jobs/1028",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-09T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    },
+    {
+      "id": "sample-company-30",
+      "companyName": "ケチャップテクノロジー株式会社",
+      "companyUrl": "https://company-30.example.com/",
+      "agentId": "sample-agent-ba",
+      "agentJobUrl": "https://agent-ba.example.com/jobs/1029",
+      "phase": "書類選考",
+      "action": "不通過",
+      "details": "",
+      "version": 1,
+      "createdAt": "2026-10-10T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
+    }
+  ],
+  "agents": [
+    {
+      "id": "sample-agent-ma",
+      "name": "○○エージェント",
+      "shortName": "MA",
+      "contactName": "佐藤 花子",
+      "contactEmail": "contact@agent-ma.example.com",
+      "contactPhone": "03-0000-0001",
+      "url": "https://agent-ma.example.com/",
+      "memo": "連絡は平日10時〜18時。返信が早い。",
+      "version": 1,
+      "createdAt": "2026-09-20T00:00:00.000Z",
+      "updatedAt": "2026-09-20T00:00:00.000Z"
+    },
+    {
+      "id": "sample-agent-sa",
+      "name": "△△エージェント",
+      "shortName": "SA",
+      "contactName": "鈴木 一郎",
+      "contactEmail": "contact@agent-sa.example.com",
+      "contactPhone": "03-0000-0002",
+      "url": "https://agent-sa.example.com/",
+      "memo": "求人紹介が多め。面接対策の模擬面接あり。",
+      "version": 1,
+      "createdAt": "2026-09-21T00:00:00.000Z",
+      "updatedAt": "2026-09-21T00:00:00.000Z"
+    },
+    {
+      "id": "sample-agent-ba",
+      "name": "××エージェント",
+      "shortName": "BA",
+      "contactName": "高橋 次郎",
+      "contactEmail": "contact@agent-ba.example.com",
+      "contactPhone": "03-0000-0003",
+      "url": "https://agent-ba.example.com/",
+      "memo": "",
+      "version": 1,
+      "createdAt": "2026-09-22T00:00:00.000Z",
+      "updatedAt": "2026-09-22T00:00:00.000Z"
+    }
+  ]
+}

@@ -37,6 +37,12 @@ npm run typecheck           # 全 workspace の型チェック
 ## データ管理
 
 - **バックアップ / 復元**: 画面上部の「データ管理」から、全データを JSON でダウンロード・復元できます。復元すると現在のデータはすべて置き換えられます。
+- **サンプルデータ**: `packages/shared/samples/sample-data.json` に架空の企業 30 社・エージェント 3 件のデータがあります（実在の企業名・URL は含みません）。「データ管理」の「サンプルデータを読み込む」、またはコマンドで読み込めます。面接などの日付は、読み込み時に週単位でずらし、今後の予定が必ず未来になるようにします（曜日は変わりません）。**現在のデータはすべて置き換えられます。**
+  ```bash
+  npm run seed:sample -w backend -- --yes        # サンプルで全データを置き換え
+  npm run sample:generate -w @jobdash/shared     # 生成スクリプトから JSON を作り直す
+  ```
+- **全データの削除**: 「データ管理」の最下部から。確認のため「削除」と入力する必要があります。API は `DELETE /api/data?confirm=DELETE_ALL`。
 - **データ移行**: スキーマを変えたときは `backend/scripts/` の移行スクリプトを使います。既定は変更内容の表示（dry run）のみで、`--apply` を付けると `backups/` に JSON を書き出してから適用します。
   ```bash
   npm run migrate:v3 -w backend               # dry run
