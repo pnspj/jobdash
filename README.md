@@ -11,14 +11,23 @@
 
 ## セットアップと起動
 
-npm workspaces によるモノレポです。以下のコマンドは**リポジトリのルートで**実行してください（`frontend/` などの中で `npm run dev:frontend` を実行すると「Missing script」になります。各ディレクトリの中では `npm run dev` で起動できます）。
+必要なもの: Node.js 24 以上、Docker（Docker Desktop など。Windows は WSL 上で使う）
+
+npm workspaces によるモノレポです。以下のコマンドは**リポジトリのルートで**実行してください。
 
 ```bash
-npm install                 # ルートで実行（全 workspace）
-docker compose up -d        # DynamoDB Local
+npm install                 # 初回のみ（全 workspace）
+npm start                   # → http://localhost:3000
+```
 
-npm run dev:backend         # API（起動時に JobHuntingTable が無ければ自動作成）
-npm run dev:frontend        # 別ターミナル → http://localhost:3000
+`npm start` は DynamoDB Local（Docker）を起動し、フロントエンドをビルドしてから、API とフロントエンドを本番モードで起動します。Ctrl+C で API・フロントエンド・DynamoDB Local をまとめて停止します（データは Docker の volume に残ります）。API は起動時に `JobHuntingTable` が無ければ作成します。
+
+開発するときは `npm run dev` で、同じ構成を開発モード（ファイル変更の自動反映あり）で起動できます。個別に起動する場合は次のとおりです（`frontend/` などの中で `npm run dev:frontend` を実行すると「Missing script」になります。各ディレクトリの中では `npm run dev` で起動できます）。
+
+```bash
+docker compose up -d        # DynamoDB Local
+npm run dev:backend         # API
+npm run dev:frontend        # 別ターミナルでフロントエンド
 ```
 
 テーブルだけを作成したい場合: `npm run init-table -w backend`

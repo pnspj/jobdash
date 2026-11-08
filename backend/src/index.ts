@@ -8,6 +8,13 @@ const HOST = process.env.HOST ?? '127.0.0.1';
 
 await ensureTable();
 
-serve({ fetch: createApp().fetch, port: PORT, hostname: HOST }, (info) => {
+const server = serve({ fetch: createApp().fetch, port: PORT, hostname: HOST }, (info) => {
   console.log(`API server listening on http://${HOST}:${info.port}`);
 });
+
+// Exit cleanly when stopped (e.g. by `npm start`), so npm does not report a failure
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, () => {
+    server.close(() => process.exit(0));
+  });
+}
