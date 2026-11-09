@@ -27,7 +27,6 @@ interface FormValues {
   action: ActionStatus;
   nextActionDate: string;
   nextActionTime: string;
-  details: string;
 }
 
 function toFormValues(c?: Company): FormValues {
@@ -41,7 +40,6 @@ function toFormValues(c?: Company): FormValues {
     action: c?.action ?? '選考結果待ち',
     nextActionDate: date,
     nextActionTime: time,
-    details: c?.details ?? '',
   };
 }
 
@@ -205,19 +203,6 @@ export default function CompanyForm({ company, submitLabel, onSubmit, onCancel }
               onChange={(v) => set('nextActionTime', v)}
             />
           </div>
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className={labelClass} htmlFor="details">
-            詳細
-          </label>
-          <textarea
-            id="details"
-            rows={6}
-            className={inputClass}
-            value={value.details}
-            onChange={(e) => set('details', e.target.value)}
-          />
         </div>
       </div>
 

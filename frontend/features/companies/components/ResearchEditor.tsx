@@ -19,7 +19,8 @@ interface Props {
   company: Company;
   /** Tags used by other companies, offered as suggestions. */
   tagSuggestions: string[];
-  onSave: (patch: ResearchPatch) => Promise<unknown>;
+  /** Called with only the changed parts: the company's `details` and/or a research patch. */
+  onSave: (patch: { details?: string; research?: ResearchPatch }) => Promise<unknown>;
 }
 
 const TEXT_FIELDS: {
@@ -27,11 +28,11 @@ const TEXT_FIELDS: {
   label: string;
   hint?: string;
 }[] = [
+  { key: 'attractions', label: '魅力的な点', hint: '1行に1項目' },
+  { key: 'concerns', label: '不安な点', hint: '1行に1項目' },
   { key: 'motivation', label: '志望理由' },
   { key: 'futureVision', label: '入社後の将来像' },
   { key: 'reverseQuestions', label: '逆質問' },
-  { key: 'attractions', label: '魅力的な点', hint: '1行に1項目' },
-  { key: 'concerns', label: '不安な点', hint: '1行に1項目' },
 ];
 
 /** Only the fields that differ from the saved research; cleared numbers are sent as null. */
@@ -46,18 +47,25 @@ function diff(saved: Research, draft: Research): ResearchPatch {
 export default function ResearchEditor({ company, tagSuggestions, onSave }: Props) {
   const saved = useMemo(() => researchOf(company), [company]);
   const [draft, setDraft] = useState<Research>(saved);
+  // `details` is a company field, but it is edited here as part of the research
+  const [details, setDetails] = useState(company.details);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const patch = diff(saved, draft);
-  const dirty = Object.keys(patch).length > 0;
+  const researchDirty = Object.keys(patch).length > 0;
+  const detailsDirty = details !== company.details;
+  const dirty = researchDirty || detailsDirty;
   const set = <K extends keyof Research>(key: K, value: Research[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     try {
-      await onSave(patch);
+      await onSave({
+        ...(detailsDirty && { details }),
+        ...(researchDirty && { research: patch }),
+      });
     } catch (err) {
       setError(errorMessage(err, '保存に失敗しました'));
     } finally {
@@ -106,6 +114,20 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="md:col-span-2">
+          <label className={labelClass} htmlFor="research-details">
+            企業メモ
+            <span className="ml-2 text-xs font-normal text-slate-400">事業内容・求人情報など</span>
+          </label>
+          <textarea
+            id="research-details"
+            rows={6}
+            disabled={saving}
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            className={inputClass}
+          />
+        </div>
         {TEXT_FIELDS.map((f) => (
           <div key={f.key}>
             <label className={labelClass} htmlFor={`research-${f.key}`}>
@@ -131,7 +153,10 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
         {dirty && (
           <button
             type="button"
-            onClick={() => setDraft(saved)}
+            onClick={() => {
+              setDraft(saved);
+              setDetails(company.details);
+            }}
             disabled={saving}
             className="text-sm text-slate-500 hover:underline"
           >

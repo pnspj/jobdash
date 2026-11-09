@@ -4,7 +4,6 @@ import {
   ACTION_STATUSES,
   type ActionStatus,
   type Company,
-  formatLocalDateTime,
   SELECTION_PHASES,
   type SelectionPhase,
 } from '@jobdash/shared';
@@ -14,7 +13,7 @@ import { Suspense, useMemo, useState } from 'react';
 import { PAGE_ICONS } from '@/components/layout/nav';
 import PageTitle from '@/components/layout/PageTitle';
 import ExternalLink from '@/components/ui/ExternalLink';
-import { agentDisplayName, useAgentLookup } from '@/features/agents/api';
+import { useAgentLookup } from '@/features/agents/api';
 import InterviewSchedule from '@/features/calendar/components/InterviewSchedule';
 import { useCompanies, useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
 import { ActionBadge, PhaseBadge } from '@/features/companies/components/Badges';
@@ -72,7 +71,6 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
   const update = useUpdateCompany(company);
   const remove = useDeleteCompany();
   const [editing, setEditing] = useState(false);
-  const agent = useAgentLookup().get(company.agentId);
   const { data: allCompanies = [] } = useCompanies();
   // Tags used anywhere, most frequent first
   const tagSuggestions = useMemo(() => {
@@ -97,9 +95,12 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <PageTitle icon={PAGE_ICONS.companies}>{company.companyName}</PageTitle>
-          <div className="mt-2 flex gap-2">
-            <PhaseBadge phase={company.phase} />
-            <ActionBadge action={company.action} />
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex gap-2">
+              <PhaseBadge phase={company.phase} />
+              <ActionBadge action={company.action} />
+            </div>
+            <CompanyLinks company={company} />
           </div>
         </div>
         <div className="flex gap-2">
@@ -196,60 +197,41 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
               key={company.id}
               company={company}
               tagSuggestions={tagSuggestions}
-              onSave={(research) => update.mutateAsync({ research })}
+              onSave={(patch) => update.mutateAsync(patch)}
             />
-          </section>
-
-          <section className={sectionClass}>
-            <h2 className="mb-4 text-lg font-semibold">企業情報</h2>
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-[10rem_1fr]">
-              <dt className="font-medium text-slate-500">企業名</dt>
-              <dd>{company.companyName}</dd>
-
-              <dt className="font-medium text-slate-500">企業URL</dt>
-              <dd className="break-all">
-                <ExternalLink href={company.companyUrl} />
-              </dd>
-
-              <dt className="font-medium text-slate-500">担当エージェント</dt>
-              <dd>
-                {agent ? (
-                  <Link href={`/agents/${agent.id}`} className="text-blue-700 hover:underline">
-                    {agentDisplayName(agent)}
-                  </Link>
-                ) : company.agentId ? (
-                  '（不明なエージェント）'
-                ) : (
-                  '-'
-                )}
-              </dd>
-
-              <dt className="font-medium text-slate-500">エージェント求人URL</dt>
-              <dd className="break-all">
-                <ExternalLink href={company.agentJobUrl} />
-              </dd>
-
-              <dt className="font-medium text-slate-500">選考フェーズ</dt>
-              <dd>{company.phase}</dd>
-
-              <dt className="font-medium text-slate-500">アクション</dt>
-              <dd>{company.action}</dd>
-
-              <dt className="font-medium text-slate-500">次回アクション日時</dt>
-              <dd className="tabular-nums">{formatLocalDateTime(company.nextActionAt) || '-'}</dd>
-
-              <dt className="font-medium text-slate-500">詳細</dt>
-              <dd className="whitespace-pre-wrap break-words">{company.details || '-'}</dd>
-
-              <dt className="font-medium text-slate-500">更新日時</dt>
-              <dd className="tabular-nums">{new Date(company.updatedAt).toLocaleString('ja-JP')}</dd>
-
-              <dt className="font-medium text-slate-500">ID</dt>
-              <dd className="font-mono text-xs text-slate-400">{company.id}</dd>
-            </dl>
           </section>
         </>
       )}
     </div>
   );
+}
+
+/** Links to the company site, the job posting and the agent; only the available ones are shown. */
+function CompanyLinks({ company }: { company: Company }) {
+  const agent = useAgentLookup().get(company.agentId);
+  const links = [
+    company.companyUrl && (
+      <ExternalLink key="company" href={company.companyUrl} marker>
+        企業URL
+      </ExternalLink>
+    ),
+    company.agentJobUrl && (
+      <ExternalLink key="job" href={company.agentJobUrl} marker>
+        求人URL
+      </ExternalLink>
+    ),
+    agent ? (
+      <Link key="agent" href={`/agents/${agent.id}`} title={agent.name} className="text-blue-700 hover:underline">
+        {agent.shortName}
+      </Link>
+    ) : (
+      company.agentId && (
+        <span key="agent" className="text-slate-400">
+          （不明なエージェント）
+        </span>
+      )
+    ),
+  ].filter(Boolean);
+  if (links.length === 0) return null;
+  return <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">{links}</div>;
 }
