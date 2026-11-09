@@ -157,9 +157,9 @@ export default function ReportsPage() {
         <>
           <ReportBlock
             title="面接予定"
-            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）には先頭のタグ、企業研究の面接回数、面接の選考段階を出せます。チェックで出力する項目を切り替えられます。"
+            description="今日以降の面接日時（辞退・不通過の企業を除く）と、日程調整中（要日程調整・日程調整待ち）の企業。（）には先頭のタグ、企業研究の面接回数、面接の選考段階を出せます。チェックで出力する項目を切り替えられます。"
             text={schedule}
-            empty="今日以降の面接予定はありません"
+            empty="今日以降の面接予定・日程調整中の企業はありません"
           >
             <Toggles
               value={settings.schedule}

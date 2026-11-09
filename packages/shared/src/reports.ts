@@ -3,7 +3,7 @@
  * Pure functions: callers filter companies (e.g. by agent) and pass "today".
  */
 import type { Company } from './company';
-import { isClosedAction, SELECTION_PHASES, type SelectionPhase } from './enums';
+import { type ActionStatus, isClosedAction, SELECTION_PHASES, type SelectionPhase } from './enums';
 import { formatRating, RATINGS, researchOf, splitLines } from './research';
 import { formatSlot } from './schedule';
 import { companyComparator } from './sort';
@@ -51,22 +51,34 @@ export interface InterviewScheduleOptions extends LabelOptions {
   stage?: boolean;
 }
 
+const SCHEDULING_ACTIONS: readonly ActionStatus[] = ['要日程調整', '日程調整待ち'];
+
 /**
- * Upcoming interviews (start date >= today) of open companies, soonest first:
+ * Upcoming interviews (start date >= today) of open companies, soonest first,
+ * then the companies whose interview is being scheduled (stage = their current phase):
  *   11/4（水）16:00 A社（SI、面接2回）
  *   11/4（水）16:00 A社（SI、面接2回、一次面接）   (stage: true)
+ *
+ *   日程調整中
+ *   B社（SES、面接2回、二次面接）   (stage: true)
  */
 export function interviewScheduleText(
   companies: ReportCompany[],
   today: string,
   { stage = false, ...label }: InterviewScheduleOptions = {},
 ): string {
-  return companies
+  const upcoming = companies
     .filter((c) => !isClosedAction(c.action))
     .flatMap((c) => (c.interviews ?? []).filter((i) => i.start.slice(0, 10) >= today).map((i) => ({ c, i })))
     .sort((a, b) => a.i.start.localeCompare(b.i.start))
-    .map(({ c, i }) => `${formatSlot(i, '{月}/{日}（{曜}）{開始}')} ${companyLabel(c, label, [stage && i.stage])}`)
-    .join('\n');
+    .map(({ c, i }) => `${formatSlot(i, '{月}/{日}（{曜}）{開始}')} ${companyLabel(c, label, [stage && i.stage])}`);
+  const scheduling = companies
+    .filter((c) => SCHEDULING_ACTIONS.includes(c.action))
+    .sort(byListOrder)
+    .map((c) => companyLabel(c, label, [stage && c.phase]));
+  return [upcoming.join('\n'), scheduling.length > 0 ? ['日程調整中', ...scheduling].join('\n') : '']
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 // ---------- selection status ----------

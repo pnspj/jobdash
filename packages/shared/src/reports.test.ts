@@ -80,6 +80,33 @@ test('interviewScheduleText: upcoming interviews of open companies, soonest firs
   expect(interviewScheduleText(companies, '2026-11-06')).toBe('');
 });
 
+test('interviewScheduleText: companies being scheduled follow the interviews', () => {
+  const interviewed = make(
+    'B社',
+    '一次面接',
+    '要本番準備',
+    { tags: ['SES'], interviewCount: 1 },
+    { interviews: [{ stage: '一次面接', start: '2026-11-05T17:00', end: '2026-11-05T18:00' }] },
+  );
+  const companies = [
+    interviewed,
+    make('A社', '二次面接', '要日程調整', { tags: ['SES'], interviewCount: 2 }),
+    make('C社', '一次面接', '日程調整待ち'),
+    make('D社', '一次面接', '選考結果待ち'), // not being scheduled
+  ];
+  expect(interviewScheduleText(companies, '2026-11-04', { stage: true })).toBe(
+    [
+      '11/5（木）17:00 B社（SES、面接1回、一次面接）',
+      '',
+      '日程調整中',
+      'A社（SES、面接2回、二次面接）',
+      'C社（一次面接）',
+    ].join('\n'),
+  );
+  // Only companies being scheduled
+  expect(interviewScheduleText(companies.slice(1), '2026-11-04')).toBe('日程調整中\nA社（SES、面接2回）\nC社');
+});
+
 describe('selectionStatusText', () => {
   // The example from the requirements
   const companies = [
