@@ -33,7 +33,7 @@ function make(
 
 test('companyLabel', () => {
   expect(companyLabel(make('A社', '一次面接', '要対応', { tags: ['SI', 'SES'], interviewCount: 2 }))).toBe(
-    'A社（SI）面接2回',
+    'A社（SI、面接2回）',
   );
   expect(companyLabel(make('B社', '一次面接', '要対応'))).toBe('B社');
   expect(
@@ -75,7 +75,7 @@ test('interviewScheduleText: upcoming interviews of open companies, soonest firs
     ),
   ];
   expect(interviewScheduleText(companies, '2026-11-04')).toBe(
-    '11/4（水）16:00 A社（SI）面接2回\n11/5（木）17:00 B社（SES）面接1回',
+    '11/4（水）16:00 A社（SI、面接2回）\n11/5（木）17:00 B社（SES、面接1回）',
   );
   expect(interviewScheduleText(companies, '2026-11-06')).toBe('');
 });
@@ -106,14 +106,14 @@ describe('selectionStatusText', () => {
     expect(selectionStatusText(companies)).toBe(
       [
         '◇内定',
-        'C社（受託開発）面接1回',
+        'C社（受託開発、面接1回）',
         '',
         '◇二次面接待ち',
-        'E社（自社サービス）面接3回',
-        'A社（SES）面接2回',
+        'E社（自社サービス、面接3回）',
+        'A社（SES、面接2回）',
         '',
         '◇一次面接結果待ち',
-        'H社（SES）面接2回',
+        'H社（SES、面接2回）',
         '',
         '◇一次面接待ち',
         'S社（自社サービス）',
@@ -195,10 +195,10 @@ describe('label options', () => {
   );
 
   test.each([
-    [{}, '11/10（火）16:00 餃子ソリューションズ株式会社（SES）面接2回'],
-    [{ stage: true }, '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社（SES）面接2回'],
+    [{}, '11/10（火）16:00 餃子ソリューションズ株式会社（SES、面接2回）'],
+    [{ stage: true }, '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社（SES、面接2回）'],
     [{ stage: true, tag: false, interviewCount: false }, '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社'],
-    [{ tag: false }, '11/10（火）16:00 餃子ソリューションズ株式会社面接2回'],
+    [{ tag: false }, '11/10（火）16:00 餃子ソリューションズ株式会社（面接2回）'],
   ])('interview schedule %j', (options, expected) => {
     expect(interviewScheduleText([gyoza], '2026-11-10', options)).toBe(expected);
   });
@@ -226,7 +226,7 @@ describe('honorific (様)', () => {
 
   test('interview schedule and selection status put 様 right after the name', () => {
     expect(interviewScheduleText([gyoza], '2026-11-10', { honorific: true, stage: true })).toBe(
-      '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社様（SES）面接2回',
+      '11/10（火）16:00 一次面接 餃子ソリューションズ株式会社様（SES、面接2回）',
     );
     expect(selectionStatusText([gyoza], { honorific: true, tag: false, interviewCount: false })).toBe(
       '◇一次面接待ち\n餃子ソリューションズ株式会社様',

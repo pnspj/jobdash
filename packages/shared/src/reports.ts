@@ -28,15 +28,14 @@ export interface LabelOptions {
 
 const nameOf = (c: Pick<Company, 'companyName'>, honorific = false) => `${c.companyName}${honorific ? '様' : ''}`;
 
-/** "A社（SI）面接2回": first tag in parentheses, interview count when known; "A社様（SI）…" with honorific. */
+/** "A社（SI、面接2回）": first tag and interview count (when known) in parentheses; "A社様（SI、…）" with honorific. */
 export function companyLabel(
   c: Pick<Company, 'companyName' | 'research'>,
   { tag = true, interviewCount = true, honorific = false }: LabelOptions = {},
 ): string {
   const r = researchOf(c);
-  const tagText = tag && r.tags[0] ? `（${r.tags[0]}）` : '';
-  const countText = interviewCount && r.interviewCount ? `面接${r.interviewCount}回` : '';
-  return `${nameOf(c, honorific)}${tagText}${countText}`;
+  const notes = [tag && r.tags[0], interviewCount && r.interviewCount && `面接${r.interviewCount}回`].filter(Boolean);
+  return `${nameOf(c, honorific)}${notes.length ? `（${notes.join('、')}）` : ''}`;
 }
 
 // ---------- interview schedule ----------
@@ -48,8 +47,8 @@ export interface InterviewScheduleOptions extends LabelOptions {
 
 /**
  * Upcoming interviews (start date >= today) of open companies, soonest first:
- *   11/4（水）16:00 A社（SI）面接2回
- *   11/4（水）16:00 一次面接 A社（SI）面接2回   (stage: true)
+ *   11/4（水）16:00 A社（SI、面接2回）
+ *   11/4（水）16:00 一次面接 A社（SI、面接2回）   (stage: true)
  */
 export function interviewScheduleText(
   companies: ReportCompany[],
@@ -127,7 +126,7 @@ function heading(g: StatusGroup, count: number): string {
 /**
  * Selection status grouped by heading. Document screening is excluded; rejected (and declined) are counts only.
  *   ◇内定
- *   C社（受託開発）面接1回
+ *   C社（受託開発、面接1回）
  *
  *   ◇一次面接不採用 2社
  */
