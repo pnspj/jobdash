@@ -26,7 +26,7 @@ interface ReportSettings {
   includeDeclined: boolean;
   schedule: { stage: boolean; tag: boolean; interviewCount: boolean; honorific: boolean };
   status: { tag: boolean; interviewCount: boolean; honorific: boolean };
-  motivation: { honorific: boolean };
+  motivation: { tag: boolean; interviewCount: boolean; status: boolean; honorific: boolean };
 }
 
 const DEFAULT_SETTINGS: ReportSettings = {
@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: ReportSettings = {
   includeDeclined: false,
   schedule: { stage: false, tag: true, interviewCount: true, honorific: false },
   status: { tag: true, interviewCount: true, honorific: false },
-  motivation: { honorific: false },
+  motivation: { tag: false, interviewCount: false, status: false, honorific: false },
 };
 
 /** Settings saved by an older version may lack newer keys: fill them from the defaults. */
@@ -157,16 +157,16 @@ export default function ReportsPage() {
         <>
           <ReportBlock
             title="面接予定"
-            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）は先頭のタグ、「面接N回」は企業研究の面接回数です。チェックで出力する項目を切り替えられます。"
+            description="今日以降の面接日時（辞退・不通過の企業を除く）。（）には先頭のタグ、企業研究の面接回数、面接の選考段階を出せます。チェックで出力する項目を切り替えられます。"
             text={schedule}
             empty="今日以降の面接予定はありません"
           >
             <Toggles
               value={settings.schedule}
               labels={[
-                ['stage', '選考段階（一次面接など）'],
                 ['tag', 'タグ'],
                 ['interviewCount', '面接回数'],
+                ['stage', '選考段階（一次面接など）'],
                 ['honorific', '企業名に「様」を付ける'],
               ]}
               onChange={(schedule) => setSettings((s) => ({ ...s, schedule }))}
@@ -199,7 +199,12 @@ export default function ReportsPage() {
           >
             <Toggles
               value={settings.motivation}
-              labels={[['honorific', '企業名に「様」を付ける']]}
+              labels={[
+                ['tag', 'タグ'],
+                ['interviewCount', '面接回数'],
+                ['status', '選考状況（一次面接待ちなど）'],
+                ['honorific', '企業名に「様」を付ける'],
+              ]}
               onChange={(motivation) => setSettings((s) => ({ ...s, motivation }))}
             />
             {unrated.length > 0 && (

@@ -28,13 +28,19 @@ export interface LabelOptions {
 
 const nameOf = (c: Pick<Company, 'companyName'>, honorific = false) => `${c.companyName}${honorific ? '様' : ''}`;
 
-/** "A社（SI、面接2回）": first tag and interview count (when known) in parentheses; "A社様（SI、…）" with honorific. */
+/**
+ * "A社（SI、面接2回）": first tag and interview count (when known) in parentheses; "A社様（SI、…）" with honorific.
+ * `extra` notes (e.g. the interview stage) follow the interview count.
+ */
 export function companyLabel(
   c: Pick<Company, 'companyName' | 'research'>,
   { tag = true, interviewCount = true, honorific = false }: LabelOptions = {},
+  extra: (string | false | undefined)[] = [],
 ): string {
   const r = researchOf(c);
-  const notes = [tag && r.tags[0], interviewCount && r.interviewCount && `面接${r.interviewCount}回`].filter(Boolean);
+  const notes = [tag && r.tags[0], interviewCount && r.interviewCount && `面接${r.interviewCount}回`, ...extra].filter(
+    Boolean,
+  );
   return `${nameOf(c, honorific)}${notes.length ? `（${notes.join('、')}）` : ''}`;
 }
 
@@ -48,7 +54,7 @@ export interface InterviewScheduleOptions extends LabelOptions {
 /**
  * Upcoming interviews (start date >= today) of open companies, soonest first:
  *   11/4（水）16:00 A社（SI、面接2回）
- *   11/4（水）16:00 一次面接 A社（SI、面接2回）   (stage: true)
+ *   11/4（水）16:00 A社（SI、面接2回、一次面接）   (stage: true)
  */
 export function interviewScheduleText(
   companies: ReportCompany[],
@@ -59,9 +65,7 @@ export function interviewScheduleText(
     .filter((c) => !isClosedAction(c.action))
     .flatMap((c) => (c.interviews ?? []).filter((i) => i.start.slice(0, 10) >= today).map((i) => ({ c, i })))
     .sort((a, b) => a.i.start.localeCompare(b.i.start))
-    .map(({ c, i }) =>
-      [formatSlot(i, '{月}/{日}（{曜}）{開始}'), stage && i.stage, companyLabel(c, label)].filter(Boolean).join(' '),
-    )
+    .map(({ c, i }) => `${formatSlot(i, '{月}/{日}（{曜}）{開始}')} ${companyLabel(c, label, [stage && i.stage])}`)
     .join('\n');
 }
 
@@ -108,20 +112,25 @@ function groupRank(g: StatusGroup): number {
   }
 }
 
-function heading(g: StatusGroup, count: number): string {
+/** "一次面接結果待ち" etc. */
+function statusLabel(g: StatusGroup): string {
   switch (g.kind) {
     case 'offer':
-      return '◇内定';
+      return '内定';
     case 'result':
-      return `◇${g.phase}結果待ち`;
+      return `${g.phase}結果待ち`;
     case 'waiting':
-      return `◇${g.phase}待ち`;
+      return `${g.phase}待ち`;
     case 'rejected':
-      return `◇${g.phase}不採用 ${count}社`;
+      return `${g.phase}不採用`;
     case 'declined':
-      return `◇辞退 ${count}社`;
+      return '辞退';
   }
 }
+
+const isCountOnly = (g: StatusGroup) => g.kind === 'rejected' || g.kind === 'declined';
+
+const heading = (g: StatusGroup, count: number) => `◇${statusLabel(g)}${isCountOnly(g) ? ` ${count}社` : ''}`;
 
 /**
  * Selection status grouped by heading. Document screening is excluded; rejected (and declined) are counts only.
@@ -142,17 +151,24 @@ export function selectionStatusText(companies: ReportCompany[], options: Selecti
   return [...groups.values()]
     .sort((a, b) => groupRank(a.group) - groupRank(b.group))
     .map(({ group, companies: list }) => {
-      const countOnly = group.kind === 'rejected' || group.kind === 'declined';
-      return [heading(group, list.length), ...(countOnly ? [] : list.map((c) => companyLabel(c, options)))].join('\n');
+      const names = isCountOnly(group) ? [] : list.map((c) => companyLabel(c, options));
+      return [heading(group, list.length), ...names].join('\n');
     })
     .join('\n\n');
 }
 
 // ---------- motivation (志望度) ----------
 
+export interface MotivationOptions extends LabelOptions {
+  /** "一次面接待ち": the selection status, as headed in selectionStatusText (off by default) */
+  status?: boolean;
+}
+
 /**
- * Companies by rating (highest first), excluding document screening, closed and unrated companies:
+ * Companies by rating (highest first), excluding document screening, closed and unrated companies.
+ * Tag, interview count and status are off by default ("◇A社（SI、面接2回、一次面接待ち）" when on):
  *   志望度★★★
+ *
  *   ◇A社
  *   魅力的な点
  *   ・サービスが先進的
@@ -161,7 +177,7 @@ export function selectionStatusText(companies: ReportCompany[], options: Selecti
  */
 export function motivationText(
   companies: ReportCompany[],
-  { honorific = false }: Pick<LabelOptions, 'honorific'> = {},
+  { tag = false, interviewCount = false, honorific = false, status = false }: MotivationOptions = {},
 ): string {
   const eligible = [...companies].filter((c) => c.phase !== '書類選考' && !isClosedAction(c.action)).sort(byListOrder);
   return [...RATINGS]
@@ -171,17 +187,19 @@ export function motivationText(
       if (rated.length === 0) return '';
       const blocks = rated.map((c) => {
         const r = researchOf(c);
+        const group = status && statusGroupOf(c);
         const section = (title: string, text: string) => {
           const lines = splitLines(text);
           return lines.length > 0 ? [title, ...lines.map((l) => `・${l}`)] : [];
         };
         return [
-          `◇${nameOf(c, honorific)}`,
+          `◇${companyLabel(c, { tag, interviewCount, honorific }, [group && statusLabel(group)])}`,
           ...section('魅力的な点', r.attractions),
           ...section('不安な点', r.concerns),
         ].join('\n');
       });
-      return [`志望度${formatRating(rating)}`, ...blocks].join('\n');
+      // Blank line before each company
+      return [`志望度${formatRating(rating)}`, ...blocks].join('\n\n');
     })
     .filter((s) => s !== '')
     .join('\n\n');
