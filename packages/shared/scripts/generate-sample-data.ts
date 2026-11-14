@@ -296,11 +296,10 @@ const active: CompanyDef[] = [
   {
     name: '餃子ソリューションズ株式会社',
     phase: '一次面接',
-    action: '要本番準備',
+    action: '選考結果待ち',
     agent: 'sa',
-    nextActionAt: '2026-11-10T16:00',
     research: { tags: ['SES'], rating: 1, interviewCount: 2, concerns: '配属先が面談まで決まらない' },
-    interviews: [iv('一次面接', '2026-11-10', '16:00', '17:00')],
+    interviews: [iv('一次面接', '2026-11-05', '16:00', '17:00')],
   },
   {
     name: 'プリンテクノロジー株式会社',
@@ -468,21 +467,21 @@ const todoDefs: TodoDef[] = [
     details: 'ラーメンプラットフォームの最終面接に向けた模擬面接',
     nextActionAt: '2026-11-11T19:00',
   },
-  { agent: 'ma', title: '進捗連絡・相談', details: 'オファーの回答期限について相談', nextActionAt: '2026-11-12' },
+  { agent: 'ma', title: '進捗連絡・相談', details: 'オファーの回答期限について相談', done: '2026-11-06' },
   { agent: 'sa', title: 'エージェント登録', done: '2026-09-21' },
   { agent: 'sa', title: '面談', done: '2026-09-25' },
   {
     agent: 'sa',
     title: '求人確認・応募依頼',
     details: '紹介された 5 件を確認して、応募するものを返信する',
-    nextActionAt: '2026-11-13T12:00',
+    done: '2026-11-05',
   },
   { agent: 'ba', title: 'エージェント登録', done: '2026-09-22' },
-  { agent: 'ba', title: '進捗連絡・相談', details: '他社の選考状況を共有する' },
+  { agent: 'ba', title: '進捗連絡・相談', details: '他社の選考状況を共有する', done: '2026-11-04' },
   // Dashboard to-dos
   { title: 'エージェントに登録する', done: '2026-09-20' },
   { title: '職務経歴書に現在の業務を書く', done: '2026-09-27' },
-  { title: '現職の有給休暇の残りを確認する', details: '面接日程の調整に使う', nextActionAt: '2026-11-10T12:00' },
+  { title: '現職の有給休暇の残りを確認する', details: '面接日程の調整に使う', done: '2026-11-02' },
   { title: '個人開発の Web サービスの README を整える', details: 'ポートフォリオとして面接で見せられるように' },
 ];
 

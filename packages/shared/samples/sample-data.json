@@ -172,8 +172,7 @@
       "agentId": "sample-agent-sa",
       "agentJobUrl": "https://agent-sa.example.com/jobs/1004",
       "phase": "一次面接",
-      "action": "要本番準備",
-      "nextActionAt": "2026-11-10T16:00",
+      "action": "選考結果待ち",
       "details": "",
       "research": {
         "motivation": "",
@@ -190,8 +189,8 @@
       "interviews": [
         {
           "stage": "一次面接",
-          "start": "2026-11-10T16:00",
-          "end": "2026-11-10T17:00"
+          "start": "2026-11-05T16:00",
+          "end": "2026-11-05T17:00"
         }
       ],
       "version": 1,
@@ -803,12 +802,12 @@
       "id": "sample-todo-05",
       "title": "進捗連絡・相談",
       "details": "オファーの回答期限について相談",
-      "nextActionAt": "2026-11-12",
-      "status": "open",
+      "status": "done",
+      "completedAt": "2026-11-06T09:00:00.000Z",
       "agentId": "sample-agent-ma",
       "version": 1,
-      "createdAt": "2026-10-14T00:00:00.000Z",
-      "updatedAt": "2026-10-14T09:00:00.000Z"
+      "createdAt": "2026-11-06T00:00:00.000Z",
+      "updatedAt": "2026-11-06T09:00:00.000Z"
     },
     {
       "id": "sample-todo-06",
@@ -836,12 +835,12 @@
       "id": "sample-todo-08",
       "title": "求人確認・応募依頼",
       "details": "紹介された 5 件を確認して、応募するものを返信する",
-      "nextActionAt": "2026-11-13T12:00",
-      "status": "open",
+      "status": "done",
+      "completedAt": "2026-11-05T09:00:00.000Z",
       "agentId": "sample-agent-sa",
       "version": 1,
-      "createdAt": "2026-10-17T00:00:00.000Z",
-      "updatedAt": "2026-10-17T09:00:00.000Z"
+      "createdAt": "2026-11-05T00:00:00.000Z",
+      "updatedAt": "2026-11-05T09:00:00.000Z"
     },
     {
       "id": "sample-todo-09",
@@ -858,11 +857,12 @@
       "id": "sample-todo-10",
       "title": "進捗連絡・相談",
       "details": "他社の選考状況を共有する",
-      "status": "open",
+      "status": "done",
+      "completedAt": "2026-11-04T09:00:00.000Z",
       "agentId": "sample-agent-ba",
       "version": 1,
-      "createdAt": "2026-10-19T00:00:00.000Z",
-      "updatedAt": "2026-10-19T09:00:00.000Z"
+      "createdAt": "2026-11-04T00:00:00.000Z",
+      "updatedAt": "2026-11-04T09:00:00.000Z"
     },
     {
       "id": "sample-todo-11",
@@ -888,11 +888,11 @@
       "id": "sample-todo-13",
       "title": "現職の有給休暇の残りを確認する",
       "details": "面接日程の調整に使う",
-      "nextActionAt": "2026-11-10T12:00",
-      "status": "open",
+      "status": "done",
+      "completedAt": "2026-11-02T09:00:00.000Z",
       "version": 1,
-      "createdAt": "2026-10-22T00:00:00.000Z",
-      "updatedAt": "2026-10-22T09:00:00.000Z"
+      "createdAt": "2026-11-02T00:00:00.000Z",
+      "updatedAt": "2026-11-02T09:00:00.000Z"
     },
     {
       "id": "sample-todo-14",

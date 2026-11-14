@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import sampleJson from '../samples/sample-data.json';
 import { backupSchema } from './backup';
+import { dashboardRows } from './dashboard';
 import { SAMPLE_BASE_DATE, sampleBackup, shiftBackupDates, weekShiftDays } from './sample';
 import { fromLocalDateTime } from './schedule';
 
@@ -85,6 +86,12 @@ describe('sample data', () => {
     expect(todos.some((t) => !t.agentId && t.status === 'open')).toBe(true);
     expect(todos.some((t) => !t.agentId && t.status === 'open' && !t.nextActionAt)).toBe(true); // undated
     for (const t of todos) expect(Boolean(t.completedAt)).toBe(t.status === 'done');
+  });
+
+  test('the dashboard stays short: 5 companies and 2 to-dos', () => {
+    const rows = dashboardRows(sample.companies, sample.todos ?? []);
+    expect(rows.filter((r) => r.kind === 'company')).toHaveLength(5);
+    expect(rows.filter((r) => r.kind !== 'company')).toHaveLength(2);
   });
 });
 
