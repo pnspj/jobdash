@@ -2,6 +2,7 @@
 
 import { type Career, emptyCareer, emptyProject, type Project, type ResumeContent } from '@jobdash/shared';
 import type { ReactNode } from 'react';
+import AutoTextarea from '@/components/ui/AutoTextarea';
 import { inputClass, labelClass, secondaryButton, sectionClass } from '@/components/ui/styles';
 import PeriodInput from './PeriodInput';
 
@@ -54,7 +55,13 @@ function TextArea({
         {label}
         {hint && <span className="ml-2 text-xs font-normal text-slate-400">{hint}</span>}
       </label>
-      <textarea id={id} rows={rows} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass} />
+      <AutoTextarea
+        id={id}
+        rows={rows}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputClass}
+      />
     </div>
   );
 }
