@@ -40,7 +40,8 @@ export default function ResumeDocument({ blocks, compact = false }: { blocks: Re
             );
           case 'company':
             return (
-              <div key={i} className="mt-3 break-inside-avoid">
+              // Keep the company header with its first project
+              <div key={i} className="mt-3 break-inside-avoid break-after-avoid">
                 <h3 className="font-bold">
                   ◆{b.name}
                   <span className="ml-2 font-normal">{b.period}</span>
@@ -52,8 +53,11 @@ export default function ResumeDocument({ blocks, compact = false }: { blocks: Re
             );
           case 'project':
             return (
-              <section key={i} className="mt-2 ml-3 break-inside-avoid rounded border border-slate-300 p-2">
-                <h4 className="font-bold">
+              // A long project may split across pages instead of leaving a large gap; each fragment gets its own
+              // border and padding (box-decoration-break: clone), and the title stays with the first field.
+              // Fields must not use break-inside: avoid; in a grid it pushes the whole row (label and value) to the next page.
+              <section key={i} className="mt-2 ml-3 box-decoration-clone rounded border border-slate-300 p-2">
+                <h4 className="font-bold break-after-avoid">
                   【{b.name}】<span className="font-normal">{b.period}</span>
                 </h4>
                 <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">

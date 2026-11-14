@@ -114,7 +114,7 @@ body {
   padding-right: 0.5rem;
 }
 
-/* Printing (resume PDF): A4, white background, keep blocks together */
+/* Printing (resume PDF): A4, white background (page-break rules live in ResumeDocument) */
 @media print {
   @page {
     size: A4;
