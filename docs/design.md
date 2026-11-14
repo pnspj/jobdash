@@ -156,8 +156,14 @@ interface Resume {
   careers: {
     companyName: string;
     period: { from: string; to?: string }; // YYYY-MM。to が未設定 = 現在
+    // 企業詳細（すべて任意の自由入力。「3,000万円（退職時点）」のような注釈も書ける）
+    businessDescription?: string; // 事業内容
+    listing?: string; // 上場区分（候補: 東証プライム上場 / 東証スタンダード上場 / 東証グロース上場 / 未上場）
+    capital?: string; // 資本金
+    revenue?: string; // 売上高
     employees?: string; // 従業員数
     employmentType?: string; // 雇用形態
+    department?: string; // 所属部署
     interviewNotes: { reasonForJoining: string; reasonForLeaving: string }; // 入社理由・転職理由（出力しない）
     projects: {
       name: string;
@@ -186,6 +192,8 @@ interface Resume {
 - 転職理由は会社ごとに持つ。以前の全体の転職理由（`interviewNotes.reasonForChange`）は、読み込み時（API・バックアップ復元）に直近の会社（在籍中 → 終了年月 → 開始年月の新しい順）の転職理由へ移す。職務経歴が 1 件もないときはそのまま残し、編集画面の全体メモに表示する。
 - プレビュー・出力画面で文字サイズを「標準（10.5pt）」「小さめ（9pt）」から選べる（ブラウザごとに保存）。PDF（印刷）と Word に反映する。
 - 期間には在籍期間を併記する（例: 2020年4月～2023年9月（3年6か月））。「現在」の期間は今月まで数える。
+- 企業詳細は編集画面ではアコーディオン（既定で閉じる。入力の有無とは連動しない）にまとめ、3 段で並べる: ① 事業内容 ② 上場区分・資本金・売上高・従業員数 ③ 雇用形態・所属部署。出力も同じ 3 段で、入力のある項目だけを「ラベル: 値」の形でスラッシュ区切りにして出す（空の段は出さない）。上場区分・雇用形態は候補から選ぶか自由入力。
+- 企業詳細の項目追加では、以前のデータの未設定の項目は空文字として読み込む（移行は不要）。
 - バックアップに `resume` を任意項目として追加した（以前のバックアップもそのまま復元できるため、スキーマバージョンは 3 のまま）。全データ削除の対象にも含む。
 - サンプルデータには、ペルソナ（[sample-persona.md](sample-persona.md)）の職務経歴書を含める。
 

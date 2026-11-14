@@ -50,7 +50,7 @@ export function resumeToDocx(blocks: ResumeBlock[], { compact = false } = {}): P
             children: [new TextRun({ text: b.name, bold: true }), new TextRun({ text: `　${b.period}` })],
           }),
         );
-        if (b.details) children.push(new Paragraph({ text: b.details }));
+        for (const d of b.details) children.push(new Paragraph({ text: d }));
         break;
       case 'project':
         children.push(

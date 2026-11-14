@@ -44,7 +44,7 @@ export type ResumeBlock =
   | { type: 'title'; text: string }
   | { type: 'meta'; text: string } // right-aligned line (date, name)
   | { type: 'heading'; text: string } // section: 職務要約, 職務経歴, ...
-  | { type: 'company'; name: string; period: string; details: string } // career header
+  | { type: 'company'; name: string; period: string; details: string[] } // career header; details = one line per row
   | { type: 'project'; name: string; period: string; fields: { label: string; value: string }[] }
   | { type: 'paragraph'; text: string };
 
@@ -58,10 +58,31 @@ const PROJECT_FIELDS: {
   { key: 'team', label: 'チーム構成' },
 ];
 
-const companyDetails = (c: Career) =>
-  [c.employees && `従業員数: ${c.employees}`, c.employmentType && `雇用形態: ${c.employmentType}`]
-    .filter(Boolean)
-    .join(' / ');
+/** 企業詳細 rows, in the same order as the editor. Empty fields and rows are omitted. */
+const COMPANY_DETAIL_ROWS: { key: keyof Career; label: string }[][] = [
+  [{ key: 'businessDescription', label: '事業内容' }],
+  [
+    { key: 'listing', label: '上場区分' },
+    { key: 'capital', label: '資本金' },
+    { key: 'revenue', label: '売上高' },
+    { key: 'employees', label: '従業員数' },
+  ],
+  [
+    { key: 'employmentType', label: '雇用形態' },
+    { key: 'department', label: '所属部署' },
+  ],
+];
+
+const companyDetails = (c: Career): string[] =>
+  COMPANY_DETAIL_ROWS.map((row) =>
+    row
+      .map(({ key, label }) => {
+        const v = String(c[key] ?? '').trim();
+        return v && `${label}: ${v}`;
+      })
+      .filter(Boolean)
+      .join(' / '),
+  ).filter(Boolean);
 
 /** The resume as an ordered list of blocks. Empty sections are omitted. */
 export function resumeBlocks(r: ResumeContent, today: string): ResumeBlock[] {
@@ -123,7 +144,7 @@ export function resumeToPlainText(r: ResumeContent, today: string): string {
         out.push('', `■${b.text}`);
         break;
       case 'company':
-        out.push('', `◆${b.name}（${b.period}）`, ...(b.details ? [b.details] : []));
+        out.push('', `◆${b.name}（${b.period}）`, ...b.details);
         break;
       case 'project':
         out.push('', `【${b.name}】${b.period}`, ...b.fields.flatMap((f) => [`＜${f.label}＞`, f.value]));
@@ -152,7 +173,7 @@ export function resumeToMarkdown(r: ResumeContent, today: string): string {
         out.push('', `## ${b.text}`, '');
         break;
       case 'company':
-        out.push('', `### ${b.name}（${b.period}）`, '', ...(b.details ? [b.details, ''] : []));
+        out.push('', `### ${b.name}（${b.period}）`, '', ...(b.details.length ? [b.details.join('  \n'), ''] : []));
         break;
       case 'project':
         out.push(

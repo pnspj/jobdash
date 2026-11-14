@@ -513,8 +513,11 @@ const resume: Resume = {
       {
         companyName: 'すき焼きソフトウェア株式会社',
         period: { from: '2023-10' },
-        employees: '約80名',
+        businessDescription: '受託開発（Web アプリケーション・業務システム）',
+        listing: '未上場',
+        employees: '80名',
         employmentType: '正社員',
+        department: '開発部',
         projects: [
           {
             name: '製造業向け需要予測ダッシュボードの開発',
@@ -550,8 +553,11 @@ const resume: Resume = {
       {
         companyName: '株式会社おでんシステムズ',
         period: { from: '2020-04', to: '2023-09' },
-        employees: '約300名',
+        businessDescription: 'システムエンジニアリングサービス（SES）',
+        listing: '未上場',
+        employees: '300名（2023年時点）',
         employmentType: '正社員',
+        department: 'システム開発事業部',
         projects: [
           {
             name: '小売業向けポイントシステムのリプレース',

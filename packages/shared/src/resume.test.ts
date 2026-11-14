@@ -25,8 +25,11 @@ const resume: ResumeContent = resumeContentSchema.parse({
     {
       companyName: '株式会社おでんシステムズ',
       period: { from: '2020-04', to: '2023-09' },
-      employees: '約300名',
+      businessDescription: 'SES',
+      capital: '1億円（退職時点）',
+      employees: '300名',
       employmentType: '正社員',
+      department: '開発部',
       projects: [
         {
           name: '案件A',
@@ -160,7 +163,7 @@ describe('outputs', () => {
     expect(text).toContain('職務経歴書\n2026年11月8日現在\n氏名 序部 大介');
     expect(text).toContain('■職務要約\n要約1行目\n要約2行目');
     expect(text).toContain(
-      '◆株式会社おでんシステムズ（2020年4月～2023年9月（3年6か月））\n従業員数: 約300名 / 雇用形態: 正社員',
+      '◆株式会社おでんシステムズ（2020年4月～2023年9月（3年6か月））\n事業内容: SES\n資本金: 1億円（退職時点） / 従業員数: 300名\n雇用形態: 正社員 / 所属部署: 開発部',
     );
     expect(text).toContain(
       '【案件A】2020年7月～2021年9月（1年3か月）\n＜プロジェクト概要＞\n概要A\n＜担当業務＞\n設計\n実装\n＜言語・環境＞\nJava',
@@ -174,7 +177,9 @@ describe('outputs', () => {
     const md = resumeToMarkdown(resume, today);
     expect(md.startsWith('# 職務経歴書\n\n2026年11月8日現在  \n氏名 序部 大介  \n')).toBe(true);
     expect(md).toContain('## 職務経歴');
-    expect(md).toContain('### 株式会社おでんシステムズ（2020年4月～2023年9月（3年6か月））');
+    expect(md).toContain(
+      '### 株式会社おでんシステムズ（2020年4月～2023年9月（3年6か月））\n\n事業内容: SES  \n資本金: 1億円（退職時点） / 従業員数: 300名  \n雇用形態: 正社員 / 所属部署: 開発部\n\n',
+    );
     expect(md).toContain('#### 案件A\n\n期間: 2020年7月～2021年9月（1年3か月）');
     expect(md).toContain('**担当業務**  \n設計  \n実装');
     expect(md).not.toMatch(/\n{3,}/);

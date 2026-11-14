@@ -8,6 +8,7 @@ import PeriodInput from './PeriodInput';
 type Update = (fn: (r: ResumeContent) => ResumeContent) => void;
 
 const EMPLOYMENT_TYPES = ['正社員', '契約社員', '派遣社員', '業務委託', 'アルバイト'];
+const LISTING_TYPES = ['東証プライム上場', '東証スタンダード上場', '東証グロース上場', '未上場'];
 
 const move = <T,>(list: T[], from: number, to: number): T[] => {
   if (to < 0 || to >= list.length) return list;
@@ -54,6 +55,39 @@ function TextArea({
         {hint && <span className="ml-2 text-xs font-normal text-slate-400">{hint}</span>}
       </label>
       <textarea id={id} rows={rows} value={value} onChange={(e) => onChange(e.target.value)} className={inputClass} />
+    </div>
+  );
+}
+
+/** Single-line text input; `list` points to a <datalist> for combobox-style suggestions. */
+function TextInput({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  list,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  list?: string;
+}) {
+  return (
+    <div>
+      <label className={labelClass} htmlFor={id}>
+        {label}
+      </label>
+      <input
+        id={id}
+        list={list}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputClass}
+      />
     </div>
   );
 }
@@ -177,32 +211,64 @@ function CareerEditor({ career, index, onChange }: { career: Career; index: numb
           <PeriodInput idPrefix={`${id}-period`} value={career.period} onChange={(v) => set('period', v)} />
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className={labelClass} htmlFor={`${id}-employees`}>
-            従業員数
-          </label>
-          <input
-            id={`${id}-employees`}
-            value={career.employees}
-            placeholder="約300名"
-            onChange={(e) => set('employees', e.target.value)}
-            className={inputClass}
+      <details className="rounded-md border border-slate-200">
+        <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          企業詳細
+        </summary>
+        <div className="space-y-3 border-t border-slate-200 p-3">
+          <TextInput
+            id={`${id}-business`}
+            label="事業内容"
+            value={career.businessDescription}
+            onChange={(v) => set('businessDescription', v)}
           />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <TextInput
+              id={`${id}-listing`}
+              label="上場区分"
+              list="listing-types"
+              value={career.listing}
+              onChange={(v) => set('listing', v)}
+            />
+            <TextInput
+              id={`${id}-capital`}
+              label="資本金"
+              value={career.capital}
+              placeholder="1億円"
+              onChange={(v) => set('capital', v)}
+            />
+            <TextInput
+              id={`${id}-revenue`}
+              label="売上高"
+              value={career.revenue}
+              placeholder="50億円"
+              onChange={(v) => set('revenue', v)}
+            />
+            <TextInput
+              id={`${id}-employees`}
+              label="従業員数"
+              value={career.employees}
+              placeholder="300名"
+              onChange={(v) => set('employees', v)}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <TextInput
+              id={`${id}-type`}
+              label="雇用形態"
+              list="employment-types"
+              value={career.employmentType}
+              onChange={(v) => set('employmentType', v)}
+            />
+            <TextInput
+              id={`${id}-department`}
+              label="所属部署"
+              value={career.department}
+              onChange={(v) => set('department', v)}
+            />
+          </div>
         </div>
-        <div>
-          <label className={labelClass} htmlFor={`${id}-type`}>
-            雇用形態
-          </label>
-          <input
-            id={`${id}-type`}
-            list="employment-types"
-            value={career.employmentType}
-            onChange={(e) => set('employmentType', e.target.value)}
-            className={inputClass}
-          />
-        </div>
-      </div>
+      </details>
 
       <NotesBox title="面接対策メモ">
         <TextArea
@@ -267,6 +333,11 @@ export default function ResumeEditor({ value, update }: { value: ResumeContent; 
     <div className="space-y-6">
       <datalist id="employment-types">
         {EMPLOYMENT_TYPES.map((t) => (
+          <option key={t} value={t} />
+        ))}
+      </datalist>
+      <datalist id="listing-types">
+        {LISTING_TYPES.map((t) => (
           <option key={t} value={t} />
         ))}
       </datalist>

@@ -45,7 +45,9 @@ export default function ResumeDocument({ blocks, compact = false }: { blocks: Re
                   ◆{b.name}
                   <span className="ml-2 font-normal">{b.period}</span>
                 </h3>
-                {b.details && <p>{b.details}</p>}
+                {b.details.map((d) => (
+                  <p key={d}>{d}</p>
+                ))}
               </div>
             );
           case 'project':

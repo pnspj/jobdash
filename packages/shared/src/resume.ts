@@ -25,8 +25,14 @@ export const projectSchema = z.object({
 export const careerSchema = z.object({
   companyName: z.string().trim().min(1, '企業名は必須です'),
   period: periodSchema,
-  employees: text, // 従業員数 (free text, e.g. "約300名")
+  // 企業詳細: all optional free text (values may carry notes such as "3,000万円（退職時点）")
+  businessDescription: text, // 事業内容
+  listing: text, // 上場区分
+  capital: text, // 資本金
+  revenue: text, // 売上高
+  employees: text, // 従業員数
   employmentType: text, // 雇用形態
+  department: text, // 所属部署
   projects: z.array(projectSchema).default([]),
   /** 面接対策メモ: never included in outputs. */
   interviewNotes: z
@@ -116,8 +122,13 @@ export const emptyProject = (from: string): Project => projectSchema.parse({ per
 export const emptyCareer = (from: string): Career => ({
   companyName: '',
   period: { from },
+  businessDescription: '',
+  listing: '',
+  capital: '',
+  revenue: '',
   employees: '',
   employmentType: '',
+  department: '',
   projects: [],
   interviewNotes: { reasonForJoining: '', reasonForLeaving: '' },
 });
