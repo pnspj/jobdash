@@ -13,6 +13,7 @@ import { Suspense, useMemo, useState } from 'react';
 import { PAGE_ICONS } from '@/components/layout/nav';
 import PageTitle from '@/components/layout/PageTitle';
 import ExternalLink from '@/components/ui/ExternalLink';
+import SaveStatus from '@/components/ui/SaveStatus';
 import { useAgentLookup } from '@/features/agents/api';
 import InterviewSchedule from '@/features/calendar/components/InterviewSchedule';
 import { useCompanies, useCompany, useDeleteCompany, useUpdateCompany } from '@/features/companies/api';
@@ -68,7 +69,9 @@ function CompanyDetailScreen() {
 
 function CompanyDetail({ company, returnTo }: { company: Company; returnTo: string | undefined }) {
   const router = useRouter();
-  const update = useUpdateCompany(company);
+  const update = useUpdateCompany(company); // the edit form
+  // Autosaves of the status section (phase, action, next action), reported in its own heading
+  const status = useUpdateCompany(company);
   const remove = useDeleteCompany();
   const [editing, setEditing] = useState(false);
   const { data: allCompanies = [] } = useCompanies();
@@ -78,8 +81,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
     for (const c of allCompanies) for (const t of c.research?.tags ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
   }, [allCompanies]);
-  const busy = update.isPending || remove.isPending;
-  const error = update.error ?? remove.error;
+  const busy = status.isPending || remove.isPending;
 
   const handleDelete = () => {
     if (!window.confirm(`「${company.companyName}」を削除しますか？この操作は取り消せません。`)) return;
@@ -124,9 +126,9 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
         </div>
       </div>
 
-      {error && !editing && (
+      {remove.error && !editing && (
         <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage(error, '更新に失敗しました')}
+          {errorMessage(remove.error, '削除に失敗しました')}
         </div>
       )}
 
@@ -146,17 +148,22 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
       ) : (
         <>
           <section className={sectionClass}>
-            <h2 className="mb-4 text-lg font-semibold">
-              選考状況の更新
-              {update.isPending && <span className="ml-3 text-sm font-normal text-slate-400">保存中...</span>}
-            </h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold">選考状況の更新</h2>
+              <SaveStatus
+                pending={status.isPending}
+                error={status.isError ? errorMessage(status.error, '保存に失敗しました') : null}
+                saved={status.isSuccess}
+                onRetry={() => status.variables && status.mutate(status.variables)}
+              />
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_minmax(22rem,1.5fr)]">
               <label className="block">
                 <span className="mb-1 block text-sm font-medium text-slate-700">選考フェーズ</span>
                 <select
                   disabled={busy}
                   value={company.phase}
-                  onChange={(e) => update.mutate({ phase: e.target.value as SelectionPhase })}
+                  onChange={(e) => status.mutate({ phase: e.target.value as SelectionPhase })}
                   className={selectClass}
                 >
                   {SELECTION_PHASES.map((p) => (
@@ -169,7 +176,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
                 <select
                   disabled={busy}
                   value={company.action}
-                  onChange={(e) => update.mutate({ action: e.target.value as ActionStatus })}
+                  onChange={(e) => status.mutate({ action: e.target.value as ActionStatus })}
                   className={selectClass}
                 >
                   {ACTION_STATUSES.map((a) => (
@@ -178,10 +185,9 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
                 </select>
               </label>
               <NextActionEditor
-                key={company.nextActionAt ?? ''}
                 value={company.nextActionAt}
-                disabled={busy}
-                onSave={(nextActionAt) => update.mutate({ nextActionAt })}
+                disabled={remove.isPending}
+                onSave={(nextActionAt) => status.mutate({ nextActionAt })}
               />
             </div>
           </section>

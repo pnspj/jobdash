@@ -9,9 +9,9 @@ import {
   type ResearchPatch,
   researchOf,
 } from '@jobdash/shared';
-import { Check } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AutoTextarea from '@/components/ui/AutoTextarea';
+import SaveStatus from '@/components/ui/SaveStatus';
 import StarRating from '@/components/ui/StarRating';
 import { inputBaseClass, inputClass, labelClass } from '@/components/ui/styles';
 import TagInput from '@/components/ui/TagInput';
@@ -123,10 +123,11 @@ export default function ResearchEditor({ company, tagSuggestions }: Props) {
         <h2 className="text-lg font-semibold">企業研究</h2>
         <SaveStatus
           pending={update.isPending}
-          error={update.isError && !update.isPending ? errorMessage(update.error, '保存に失敗しました') : null}
+          error={update.isError ? errorMessage(update.error, '保存に失敗しました') : null}
           dirty={dirty}
-          savedOnce={update.isSuccess}
+          saved={update.isSuccess}
           onRetry={save}
+          idleText="変更は自動で保存されます"
         />
       </div>
 
@@ -204,38 +205,4 @@ export default function ResearchEditor({ company, tagSuggestions }: Props) {
       </div>
     </div>
   );
-}
-
-function SaveStatus({
-  pending,
-  error,
-  dirty,
-  savedOnce,
-  onRetry,
-}: {
-  pending: boolean;
-  error: string | null;
-  dirty: boolean;
-  savedOnce: boolean;
-  onRetry: () => void;
-}) {
-  if (pending) return <span className="text-xs text-slate-500">保存中...</span>;
-  if (error)
-    return (
-      <span className="flex items-center gap-2 text-xs text-red-700">
-        {error}
-        <button type="button" onClick={onRetry} className="rounded border border-red-300 px-2 py-0.5 hover:bg-red-50">
-          再試行
-        </button>
-      </span>
-    );
-  if (dirty) return <span className="text-xs text-slate-400">未保存の変更があります</span>;
-  if (savedOnce)
-    return (
-      <span className="flex items-center gap-1 text-xs text-emerald-700">
-        <Check size={14} aria-hidden />
-        保存しました
-      </span>
-    );
-  return <span className="text-xs text-slate-400">変更は自動で保存されます</span>;
 }
