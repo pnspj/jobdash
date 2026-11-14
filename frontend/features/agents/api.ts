@@ -60,9 +60,12 @@ export function useCreateAgent() {
 export function useUpdateAgent(agent: Agent | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    // One update of an agent at a time, each with the latest known version (see useUpdateCompany)
+    scope: agent && { id: `agent:${agent.id}` },
     mutationFn: (patch: Omit<AgentPatch, 'version'>) => {
       if (!agent) throw new Error('Agent is not loaded');
-      return agentApi.update(agent.id, { ...patch, version: agent.version });
+      const latest = qc.getQueryData<Agent>(agentKeys.detail(agent.id)) ?? agent;
+      return agentApi.update(agent.id, { ...patch, version: latest.version });
     },
     onSuccess: (updated) => {
       qc.setQueryData(agentKeys.detail(updated.id), updated);

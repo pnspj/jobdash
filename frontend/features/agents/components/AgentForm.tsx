@@ -5,7 +5,8 @@ import { type FormEvent, useState } from 'react';
 import { inputClass, labelClass, primaryButton, secondaryButton } from '@/components/ui/styles';
 import { errorMessage } from '@/lib/apiClient';
 
-type FormValues = Required<{ [K in keyof AgentInput]: string }>;
+/** The memo is not part of the form: it is edited (and autosaved) on the agent page. */
+type FormValues = Required<{ [K in Exclude<keyof AgentInput, 'memo'>]: string }>;
 
 const toFormValues = (a?: Agent): FormValues => ({
   name: a?.name ?? '',
@@ -14,7 +15,6 @@ const toFormValues = (a?: Agent): FormValues => ({
   contactEmail: a?.contactEmail ?? '',
   contactPhone: a?.contactPhone ?? '',
   url: a?.url ?? '',
-  memo: a?.memo ?? '',
 });
 
 interface Props {
@@ -88,12 +88,6 @@ export default function AgentForm({ agent, submitLabel, onSubmit, onCancel }: Pr
             エージェントURL
           </label>
           <input type="url" placeholder="https://" {...field('url')} />
-        </div>
-        <div className="sm:col-span-2">
-          <label className={labelClass} htmlFor="agent-memo">
-            メモ
-          </label>
-          <textarea rows={5} {...field('memo')} />
         </div>
       </div>
 

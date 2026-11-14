@@ -9,24 +9,22 @@ import {
   type ResearchPatch,
   researchOf,
 } from '@jobdash/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import AutoTextarea from '@/components/ui/AutoTextarea';
+import MemoField from '@/components/ui/MemoField';
 import SaveStatus from '@/components/ui/SaveStatus';
 import StarRating from '@/components/ui/StarRating';
 import { inputBaseClass, inputClass, labelClass } from '@/components/ui/styles';
 import TagInput from '@/components/ui/TagInput';
 import { errorMessage } from '@/lib/apiClient';
+import { useAutosave } from '@/lib/useAutosave';
 import { useUpdateCompany } from '../api';
-import MemoField from './MemoField';
 
 interface Props {
   company: Company;
   /** Tags used by other companies, offered as suggestions. */
   tagSuggestions: string[];
 }
-
-/** Text is saved after this much idle time while typing (and right away on blur). */
-const AUTOSAVE_DELAY_MS = 2000;
 
 const isValidInterviewCount = (n: number | undefined) =>
   n === undefined || (Number.isInteger(n) && n >= 1 && n <= MAX_INTERVIEW_COUNT);
@@ -72,48 +70,15 @@ export default function ResearchEditor({ company, tagSuggestions }: Props) {
   const detailsDirty = details !== company.details;
   const dirty = researchDirty || detailsDirty;
 
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const saveSoon = useRef(false);
-  const send = () => update.mutate({ ...(detailsDirty && { details }), ...(researchDirty && { research: patch }) });
-  const save = () => {
-    clearTimeout(timer.current);
-    if (!dirty) return;
-    // One save at a time: the effect below runs again when the response updates the company
-    if (update.isPending) {
-      saveSoon.current = true;
-      return;
-    }
-    send();
-  };
-  const latest = useRef({ save, dirty, send });
-  latest.current = { save, dirty, send };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reschedule on every edit and after each save
-  useEffect(() => {
-    if (!dirty) return;
-    const delay = saveSoon.current ? 0 : AUTOSAVE_DELAY_MS;
-    saveSoon.current = false;
-    timer.current = setTimeout(() => latest.current.save(), delay);
-    return () => clearTimeout(timer.current);
-  }, [dirty, draft, details, company.version]);
-
-  // Save what is left when leaving through the app (e.g. a link); queued after any save in flight
-  useEffect(
-    () => () => {
-      if (latest.current.dirty) latest.current.send();
-    },
-    [],
-  );
-  // Closing or reloading the tab cannot save, so warn instead
-  useEffect(() => {
-    if (!dirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [dirty]);
+  const { save, saveSoon } = useAutosave({
+    dirty,
+    pending: update.isPending,
+    send: () => update.mutate({ ...(detailsDirty && { details }), ...(researchDirty && { research: patch }) }),
+    watch: [draft, details, company.version],
+  });
 
   const set = <K extends keyof Research>(key: K, value: Research[K], { now = false } = {}) => {
-    if (now) saveSoon.current = true;
+    if (now) saveSoon();
     setDraft((d) => ({ ...d, [key]: value }));
   };
 

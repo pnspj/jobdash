@@ -10,6 +10,7 @@ import ExternalLink from '@/components/ui/ExternalLink';
 import { dangerButton, errorBox, secondaryButton, sectionClass } from '@/components/ui/styles';
 import { useAgent, useDeleteAgent, useUpdateAgent } from '@/features/agents/api';
 import AgentForm from '@/features/agents/components/AgentForm';
+import AgentMemo from '@/features/agents/components/AgentMemo';
 import { useCompanies } from '@/features/companies/api';
 import CompanyTable from '@/features/companies/components/CompanyTable';
 import { useTodos } from '@/features/todos/api';
@@ -138,8 +139,6 @@ function AgentDetail({ agent, returnTo }: { agent: Agent; returnTo: string }) {
             <dd className="break-all">
               <ExternalLink href={agent.url} />
             </dd>
-            <dt className="font-medium text-slate-500">メモ</dt>
-            <dd className="whitespace-pre-wrap break-words">{agent.memo || '-'}</dd>
           </dl>
         </section>
       )}
@@ -158,6 +157,10 @@ function AgentDetail({ agent, returnTo }: { agent: Agent; returnTo: string }) {
           agentId={agent.id}
           onClose={() => setDialogTodo(undefined)}
         />
+      </section>
+
+      <section className={sectionClass}>
+        <AgentMemo key={agent.id} agent={agent} />
       </section>
 
       <section>

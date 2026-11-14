@@ -2,13 +2,14 @@
 
 import { Pencil } from 'lucide-react';
 import { useState } from 'react';
-import AutoTextarea from '@/components/ui/AutoTextarea';
-import MarkdownView from '@/components/ui/MarkdownView';
-import { inputClass } from '@/components/ui/styles';
+import AutoTextarea from './AutoTextarea';
+import MarkdownView from './MarkdownView';
+import { inputClass } from './styles';
 
 interface Props {
   id: string;
-  label: string;
+  /** Omit when a section heading already names the memo; the hint is shown instead. */
+  label?: string;
   hint?: string;
   value: string;
   onChange: (value: string) => void;
@@ -43,7 +44,7 @@ export default function MemoField({ id, label, hint, value, onChange, onCommit, 
       <div className="mb-1 flex items-center justify-between gap-2">
         <label className="block text-sm font-medium text-slate-700" htmlFor={editing && !preview ? id : undefined}>
           {label}
-          {hint && <span className="ml-2 text-xs font-normal text-slate-400">{hint}</span>}
+          {hint && <span className={`text-xs font-normal text-slate-400 ${label ? 'ml-2' : ''}`}>{hint}</span>}
         </label>
         {editing ? (
           <div className="flex items-center gap-2">
