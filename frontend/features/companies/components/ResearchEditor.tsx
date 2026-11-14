@@ -9,21 +9,27 @@ import {
   type ResearchPatch,
   researchOf,
 } from '@jobdash/shared';
-import { useMemo, useState } from 'react';
+import { Check } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AutoTextarea from '@/components/ui/AutoTextarea';
 import StarRating from '@/components/ui/StarRating';
-import { inputBaseClass, inputClass, labelClass, primaryButton } from '@/components/ui/styles';
+import { inputBaseClass, inputClass, labelClass } from '@/components/ui/styles';
 import TagInput from '@/components/ui/TagInput';
 import { errorMessage } from '@/lib/apiClient';
+import { useUpdateCompany } from '../api';
 import MemoField from './MemoField';
 
 interface Props {
   company: Company;
   /** Tags used by other companies, offered as suggestions. */
   tagSuggestions: string[];
-  /** Called with only the changed parts: the company's `details` and/or a research patch. */
-  onSave: (patch: { details?: string; research?: ResearchPatch }) => Promise<unknown>;
 }
+
+/** Text is saved after this much idle time while typing (and right away on blur). */
+const AUTOSAVE_DELAY_MS = 2000;
+
+const isValidInterviewCount = (n: number | undefined) =>
+  n === undefined || (Number.isInteger(n) && n >= 1 && n <= MAX_INTERVIEW_COUNT);
 
 const TEXT_FIELDS: {
   key: 'motivation' | 'futureVision' | 'reverseQuestions' | 'attractions' | 'concerns';
@@ -46,46 +52,92 @@ function diff(saved: Research, draft: Research): ResearchPatch {
   return patch as ResearchPatch;
 }
 
-export default function ResearchEditor({ company, tagSuggestions, onSave }: Props) {
+/**
+ * Company research, saved automatically: text fields on blur or after a pause in typing,
+ * tags and the rating as soon as they change. Each save sends every field that differs from the saved data,
+ * so a failed save is retried with the next one.
+ */
+export default function ResearchEditor({ company, tagSuggestions }: Props) {
+  // Its own mutation so autosaves do not disable or report into the status section above
+  const update = useUpdateCompany(company);
   const saved = useMemo(() => researchOf(company), [company]);
   const [draft, setDraft] = useState<Research>(saved);
   // `details` is a company field, but it is edited here as part of the research
   const [details, setDetails] = useState(company.details);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const patch = diff(saved, draft);
+  const countValid = isValidInterviewCount(draft.interviewCount);
+  // An invalid interview count is left out (and shown as an error) instead of failing the whole save
+  const patch = diff(saved, countValid ? draft : { ...draft, interviewCount: saved.interviewCount });
   const researchDirty = Object.keys(patch).length > 0;
   const detailsDirty = details !== company.details;
   const dirty = researchDirty || detailsDirty;
-  const set = <K extends keyof Research>(key: K, value: Research[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
-  const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      await onSave({
-        ...(detailsDirty && { details }),
-        ...(researchDirty && { research: patch }),
-      });
-    } catch (err) {
-      setError(errorMessage(err, '保存に失敗しました'));
-    } finally {
-      setSaving(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const saveSoon = useRef(false);
+  const send = () => update.mutate({ ...(detailsDirty && { details }), ...(researchDirty && { research: patch }) });
+  const save = () => {
+    clearTimeout(timer.current);
+    if (!dirty) return;
+    // One save at a time: the effect below runs again when the response updates the company
+    if (update.isPending) {
+      saveSoon.current = true;
+      return;
     }
+    send();
+  };
+  const latest = useRef({ save, dirty, send });
+  latest.current = { save, dirty, send };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reschedule on every edit and after each save
+  useEffect(() => {
+    if (!dirty) return;
+    const delay = saveSoon.current ? 0 : AUTOSAVE_DELAY_MS;
+    saveSoon.current = false;
+    timer.current = setTimeout(() => latest.current.save(), delay);
+    return () => clearTimeout(timer.current);
+  }, [dirty, draft, details, company.version]);
+
+  // Save what is left when leaving through the app (e.g. a link); queued after any save in flight
+  useEffect(
+    () => () => {
+      if (latest.current.dirty) latest.current.send();
+    },
+    [],
+  );
+  // Closing or reloading the tab cannot save, so warn instead
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [dirty]);
+
+  const set = <K extends keyof Research>(key: K, value: Research[K], { now = false } = {}) => {
+    if (now) saveSoon.current = true;
+    setDraft((d) => ({ ...d, [key]: value }));
   };
 
   return (
     <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">企業研究</h2>
+        <SaveStatus
+          pending={update.isPending}
+          error={update.isError && !update.isPending ? errorMessage(update.error, '保存に失敗しました') : null}
+          dirty={dirty}
+          savedOnce={update.isSuccess}
+          onRetry={save}
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_auto_auto]">
         <div>
           <span className={labelClass}>タグ</span>
           <TagInput
             value={draft.tags}
-            onChange={(tags) => set('tags', tags)}
+            onChange={(tags) => set('tags', tags, { now: true })}
             suggestions={tagSuggestions}
             max={MAX_TAGS}
-            disabled={saving}
             firstLabel="代表"
           />
           <p className="mt-1 text-xs text-slate-500">先頭のタグは連絡用テキストで「A社（SI）」のように使われます。</p>
@@ -100,18 +152,25 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
               type="number"
               min={1}
               max={MAX_INTERVIEW_COUNT}
-              disabled={saving}
               value={draft.interviewCount ?? ''}
               onChange={(e) => set('interviewCount', e.target.value === '' ? undefined : Number(e.target.value))}
+              onBlur={save}
+              aria-invalid={!countValid}
               className={`${inputBaseClass} w-20`}
             />
             <span className="text-sm text-slate-500">回</span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">求人情報より</p>
+          {countValid ? (
+            <p className="mt-1 text-xs text-slate-500">求人情報より</p>
+          ) : (
+            <p className="mt-1 text-xs text-red-600">
+              1〜{MAX_INTERVIEW_COUNT} の整数で入力してください（保存されません）
+            </p>
+          )}
         </div>
         <div>
           <span className={labelClass}>総合評価（志望度）</span>
-          <StarRating value={draft.rating} onChange={(v) => set('rating', v as Rating | undefined)} disabled={saving} />
+          <StarRating value={draft.rating} onChange={(v) => set('rating', v as Rating | undefined, { now: true })} />
         </div>
       </div>
 
@@ -123,7 +182,7 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
             hint="事業内容・求人情報など"
             value={details}
             onChange={setDetails}
-            disabled={saving}
+            onCommit={save}
           />
         </div>
         {TEXT_FIELDS.map((f) => (
@@ -135,36 +194,48 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
             <AutoTextarea
               id={`research-${f.key}`}
               rows={5}
-              disabled={saving}
               value={draft[f.key]}
               onChange={(e) => set(f.key, e.target.value)}
+              onBlur={save}
               className={inputClass}
             />
           </div>
         ))}
       </div>
-
-      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-
-      <div className="flex items-center justify-end gap-3">
-        {dirty && <span className="text-xs text-amber-600">未保存の変更があります</span>}
-        {dirty && (
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(saved);
-              setDetails(company.details);
-            }}
-            disabled={saving}
-            className="text-sm text-slate-500 hover:underline"
-          >
-            変更を破棄
-          </button>
-        )}
-        <button type="button" onClick={handleSave} disabled={!dirty || saving} className={primaryButton}>
-          {saving ? '保存中...' : '企業研究を保存'}
-        </button>
-      </div>
     </div>
   );
+}
+
+function SaveStatus({
+  pending,
+  error,
+  dirty,
+  savedOnce,
+  onRetry,
+}: {
+  pending: boolean;
+  error: string | null;
+  dirty: boolean;
+  savedOnce: boolean;
+  onRetry: () => void;
+}) {
+  if (pending) return <span className="text-xs text-slate-500">保存中...</span>;
+  if (error)
+    return (
+      <span className="flex items-center gap-2 text-xs text-red-700">
+        {error}
+        <button type="button" onClick={onRetry} className="rounded border border-red-300 px-2 py-0.5 hover:bg-red-50">
+          再試行
+        </button>
+      </span>
+    );
+  if (dirty) return <span className="text-xs text-slate-400">未保存の変更があります</span>;
+  if (savedOnce)
+    return (
+      <span className="flex items-center gap-1 text-xs text-emerald-700">
+        <Check size={14} aria-hidden />
+        保存しました
+      </span>
+    );
+  return <span className="text-xs text-slate-400">変更は自動で保存されます</span>;
 }

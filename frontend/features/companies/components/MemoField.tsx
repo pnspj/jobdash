@@ -12,6 +12,8 @@ interface Props {
   hint?: string;
   value: string;
   onChange: (value: string) => void;
+  /** Called when editing pauses: the textarea loses focus or editing is finished. */
+  onCommit?: () => void;
   disabled?: boolean;
 }
 
@@ -20,11 +22,16 @@ const tabClass = (active: boolean) =>
 
 /**
  * Free-form memo shown as rendered Markdown, switched to an auto-growing textarea for editing.
- * Leaving edit mode only changes the view; saving is done by the surrounding form.
+ * Saving is up to the parent, notified through `onCommit`.
  */
-export default function MemoField({ id, label, hint, value, onChange, disabled }: Props) {
+export default function MemoField({ id, label, hint, value, onChange, onCommit, disabled }: Props) {
   const [editing, setEditing] = useState(false);
   const [preview, setPreview] = useState(false);
+
+  const finish = () => {
+    setEditing(false);
+    onCommit?.();
+  };
 
   const startEditing = () => {
     setPreview(false);
@@ -50,7 +57,7 @@ export default function MemoField({ id, label, hint, value, onChange, disabled }
             </div>
             <button
               type="button"
-              onClick={() => setEditing(false)}
+              onClick={finish}
               className="rounded-md px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50"
             >
               完了
@@ -98,7 +105,8 @@ export default function MemoField({ id, label, hint, value, onChange, disabled }
             disabled={disabled}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Escape' && setEditing(false)}
+            onBlur={onCommit}
+            onKeyDown={(e) => e.key === 'Escape' && finish()}
             className={inputClass}
           />
           <p className="mt-1 text-xs text-slate-500">

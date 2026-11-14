@@ -192,13 +192,7 @@ function CompanyDetail({ company, returnTo }: { company: Company; returnTo: stri
           </section>
 
           <section className={sectionClass}>
-            <h2 className="mb-4 text-lg font-semibold">企業研究</h2>
-            <ResearchEditor
-              key={company.id}
-              company={company}
-              tagSuggestions={tagSuggestions}
-              onSave={(patch) => update.mutateAsync(patch)}
-            />
+            <ResearchEditor key={company.id} company={company} tagSuggestions={tagSuggestions} />
           </section>
         </>
       )}

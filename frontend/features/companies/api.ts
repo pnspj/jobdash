@@ -65,13 +65,18 @@ export function useImportCompanies() {
   });
 }
 
-/** Partial update of one company. The current `version` is attached automatically. */
+/**
+ * Partial update of one company. Updates of the same company run one at a time (even across hook instances),
+ * and each takes the latest known `version` when it starts, so quick successive saves do not conflict.
+ */
 export function useUpdateCompany(company: Company | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    scope: company && { id: `company:${company.id}` },
     mutationFn: (patch: Omit<CompanyPatch, 'version'>) => {
       if (!company) throw new Error('Company is not loaded');
-      return companyApi.update(company.id, { ...patch, version: company.version });
+      const latest = qc.getQueryData<Company>(companyKeys.detail(company.id)) ?? company;
+      return companyApi.update(company.id, { ...patch, version: latest.version });
     },
     onSuccess: (updated) => {
       qc.setQueryData(companyKeys.detail(updated.id), updated);
