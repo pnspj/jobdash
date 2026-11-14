@@ -4,6 +4,80 @@ body {
   @apply bg-slate-50 text-slate-800;
 }
 
+/* Rendered Markdown memos (MarkdownView) */
+.jd-markdown > * + * {
+  margin-top: 0.5rem;
+}
+.jd-markdown h1,
+.jd-markdown h2,
+.jd-markdown h3,
+.jd-markdown h4 {
+  @apply font-semibold text-slate-900;
+}
+.jd-markdown h1 {
+  @apply text-lg;
+}
+.jd-markdown h2 {
+  @apply border-b border-slate-200 pb-0.5 text-base;
+}
+.jd-markdown h3,
+.jd-markdown h4 {
+  @apply text-sm;
+}
+.jd-markdown * + h1,
+.jd-markdown * + h2,
+.jd-markdown * + h3,
+.jd-markdown * + h4 {
+  margin-top: 1rem;
+}
+.jd-markdown ul {
+  @apply list-disc pl-5;
+}
+.jd-markdown ol {
+  @apply list-decimal pl-5;
+}
+.jd-markdown li > ul,
+.jd-markdown li > ol {
+  margin-top: 0.25rem;
+}
+.jd-markdown li.task-list-item {
+  @apply list-none;
+}
+.jd-markdown ul:has(> li.task-list-item) {
+  @apply pl-1;
+}
+.jd-markdown li input[type="checkbox"] {
+  @apply mr-1.5 align-middle;
+}
+.jd-markdown strong {
+  @apply font-semibold text-slate-900;
+}
+.jd-markdown blockquote {
+  @apply border-l-4 border-slate-300 pl-3 text-slate-600;
+}
+.jd-markdown code {
+  @apply rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.85em];
+}
+.jd-markdown pre {
+  @apply overflow-x-auto rounded bg-slate-100 p-3;
+}
+.jd-markdown pre code {
+  @apply bg-transparent p-0;
+}
+.jd-markdown table {
+  @apply block max-w-full overflow-x-auto border-collapse;
+}
+.jd-markdown th,
+.jd-markdown td {
+  @apply border border-slate-300 px-2 py-1 text-left align-top;
+}
+.jd-markdown th {
+  @apply bg-slate-100 font-semibold;
+}
+.jd-markdown hr {
+  @apply border-slate-200;
+}
+
 /* Calendar: preferred slots are tentative (dashed); replaced interviews are faded */
 .fc .jd-preferred {
   border-style: dashed;

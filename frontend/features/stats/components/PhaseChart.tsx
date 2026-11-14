@@ -40,7 +40,7 @@ export function niceTicks(max: number): number[] {
   return Array.from({ length: top / step + 1 }, (_, i) => i * step);
 }
 
-function PhaseTooltip({ active, payload }: TooltipContentProps<number, string>) {
+function PhaseTooltip({ active, payload }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
   const row = payload[0].payload as Row;
   return (

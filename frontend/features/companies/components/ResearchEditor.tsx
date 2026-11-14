@@ -10,10 +10,12 @@ import {
   researchOf,
 } from '@jobdash/shared';
 import { useMemo, useState } from 'react';
+import AutoTextarea from '@/components/ui/AutoTextarea';
 import StarRating from '@/components/ui/StarRating';
 import { inputBaseClass, inputClass, labelClass, primaryButton } from '@/components/ui/styles';
 import TagInput from '@/components/ui/TagInput';
 import { errorMessage } from '@/lib/apiClient';
+import MemoField from './MemoField';
 
 interface Props {
   company: Company;
@@ -115,17 +117,13 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div className="md:col-span-2">
-          <label className={labelClass} htmlFor="research-details">
-            企業メモ
-            <span className="ml-2 text-xs font-normal text-slate-400">事業内容・求人情報など</span>
-          </label>
-          <textarea
+          <MemoField
             id="research-details"
-            rows={6}
-            disabled={saving}
+            label="企業メモ"
+            hint="事業内容・求人情報など"
             value={details}
-            onChange={(e) => setDetails(e.target.value)}
-            className={inputClass}
+            onChange={setDetails}
+            disabled={saving}
           />
         </div>
         {TEXT_FIELDS.map((f) => (
@@ -134,7 +132,7 @@ export default function ResearchEditor({ company, tagSuggestions, onSave }: Prop
               {f.label}
               {f.hint && <span className="ml-2 text-xs font-normal text-slate-400">{f.hint}</span>}
             </label>
-            <textarea
+            <AutoTextarea
               id={`research-${f.key}`}
               rows={5}
               disabled={saving}
