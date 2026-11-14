@@ -1,6 +1,6 @@
 'use client';
 
-import { STARTER_TODOS } from '@jobdash/shared';
+import { STARTER_TODOS, type TodoInput } from '@jobdash/shared';
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { primaryButton, secondaryButton } from '@/components/ui/styles';
@@ -22,15 +22,16 @@ export default function TutorialDialog({ open, onDismiss, onDone }: Props) {
   const [error, setError] = useState<string | null>(null);
   const busy = createMany.isPending || restore.isPending;
 
-  const start = async () => {
+  const start = async (todo: TodoInput) => {
     setError(null);
     try {
-      await createMany.mutateAsync(STARTER_TODOS);
+      await createMany.mutateAsync([todo]);
       onDone();
     } catch (err) {
       setError(errorMessage(err, 'ToDoの登録に失敗しました'));
     }
   };
+  const isStarting = (todo: TodoInput) => createMany.isPending && createMany.variables?.[0] === todo;
 
   const loadSample = async () => {
     setError(null);
@@ -47,18 +48,23 @@ export default function TutorialDialog({ open, onDismiss, onDone }: Props) {
   return (
     <Modal open={open} title="転職活動を始めましょう" onClose={onDismiss}>
       <div className="space-y-5">
-        <section className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <h3 className="font-semibold text-blue-900">さっそく始める</h3>
-          <p className="mt-1 text-sm text-slate-700">ToDoを登録して、最初の一歩を踏み出しましょう。</p>
-          <ul className="mt-2 list-inside list-disc text-sm text-slate-700">
-            {STARTER_TODOS.map((t) => (
-              <li key={t.title}>{t.title}</li>
-            ))}
-          </ul>
-          <button type="button" onClick={start} disabled={busy} className={`${primaryButton} mt-3`}>
-            {createMany.isPending ? '登録中...' : 'このToDoで始める'}
-          </button>
-        </section>
+        <StartOption
+          title="さっそく始める"
+          message="まずはエージェントに登録して、最初の一歩を踏み出しましょう。"
+          todo={STARTER_TODOS.start}
+          primary
+          busy={busy}
+          pending={isStarting(STARTER_TODOS.start)}
+          onStart={start}
+        />
+        <StartOption
+          title="まだ考え中"
+          message="現在の業務から、自分の経歴を振り返ってみましょう。"
+          todo={STARTER_TODOS.consider}
+          busy={busy}
+          pending={isStarting(STARTER_TODOS.consider)}
+          onStart={start}
+        />
 
         <section className="rounded-lg border border-slate-200 p-4">
           <h3 className="font-semibold text-slate-900">サンプルを見る</h3>
@@ -77,5 +83,42 @@ export default function TutorialDialog({ open, onDismiss, onDone }: Props) {
         </div>
       </div>
     </Modal>
+  );
+}
+
+/** A tutorial choice that registers one starter to-do. */
+function StartOption({
+  title,
+  message,
+  todo,
+  primary = false,
+  busy,
+  pending,
+  onStart,
+}: {
+  title: string;
+  message: string;
+  todo: TodoInput;
+  primary?: boolean;
+  busy: boolean;
+  pending: boolean;
+  onStart: (todo: TodoInput) => void;
+}) {
+  return (
+    <section className={`rounded-lg border p-4 ${primary ? 'border-blue-200 bg-blue-50' : 'border-slate-200'}`}>
+      <h3 className={`font-semibold ${primary ? 'text-blue-900' : 'text-slate-900'}`}>{title}</h3>
+      <p className="mt-1 text-sm text-slate-700">{message}</p>
+      <ul className="mt-2 list-inside list-disc text-sm text-slate-700">
+        <li>{todo.title}</li>
+      </ul>
+      <button
+        type="button"
+        onClick={() => onStart(todo)}
+        disabled={busy}
+        className={`${primary ? primaryButton : secondaryButton} mt-3`}
+      >
+        {pending ? '登録中...' : 'このToDoで始める'}
+      </button>
+    </section>
   );
 }

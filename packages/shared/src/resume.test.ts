@@ -1,7 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import sampleJson from '../samples/sample-data.json';
 import { backupSchema } from './backup';
-import { EMPTY_RESUME_CONTENT, type ResumeContent, resumeContentSchema, resumePutSchema } from './resume';
+import {
+  EMPTY_RESUME_CONTENT,
+  latestCareerIndex,
+  type ResumeContent,
+  resumeContentSchema,
+  resumePutSchema,
+  resumeSchema,
+} from './resume';
 import {
   formatDuration,
   formatPeriod,
@@ -32,11 +39,16 @@ const resume: ResumeContent = resumeContentSchema.parse({
         },
       ],
     },
-    { companyName: 'すき焼きソフトウェア株式会社', period: { from: '2023-10' }, projects: [] },
+    {
+      companyName: 'すき焼きソフトウェア株式会社',
+      period: { from: '2023-10' },
+      projects: [],
+      interviewNotes: { reasonForJoining: 'SECRET-JOINING', reasonForLeaving: 'SECRET-LEAVING' },
+    },
   ],
   skills: 'スキル',
   selfPr: '',
-  interviewNotes: { strengths: 'SECRET-STRENGTH', weaknesses: 'SECRET-WEAK', reasonForChange: 'SECRET-REASON' },
+  interviewNotes: { strengths: 'SECRET-STRENGTH', weaknesses: 'SECRET-WEAK' },
 });
 
 describe('schema', () => {
@@ -47,8 +59,12 @@ describe('schema', () => {
       careers: [],
       skills: '',
       selfPr: '',
-      interviewNotes: { strengths: '', weaknesses: '', reasonForChange: '' },
+      interviewNotes: { strengths: '', weaknesses: '' },
     });
+  });
+
+  test('career notes default to empty', () => {
+    expect(resume.careers[0].interviewNotes).toEqual({ reasonForJoining: '', reasonForLeaving: '' });
   });
 
   test.each([
@@ -62,6 +78,63 @@ describe('schema', () => {
   test('put requires version', () => {
     expect(resumePutSchema.safeParse({}).success).toBe(false);
     expect(resumePutSchema.safeParse({ version: 0 }).success).toBe(true);
+  });
+});
+
+describe('legacy reasonForChange', () => {
+  const legacy = (careers: unknown[], reasonForChange = '旧転職理由') => ({
+    careers,
+    interviewNotes: { strengths: '強み', weaknesses: '弱み', reasonForChange },
+  });
+  const odn = { companyName: 'おでん', period: { from: '2020-04', to: '2023-09' } };
+  const suki = { companyName: 'すき焼き', period: { from: '2023-10' } };
+
+  test('moves to the most recent career regardless of order', () => {
+    for (const careers of [
+      [odn, suki],
+      [suki, odn],
+    ]) {
+      const r = resumeContentSchema.parse(legacy(careers));
+      expect(r.interviewNotes).toEqual({ strengths: '強み', weaknesses: '弱み' });
+      expect(r.careers.find((c) => c.companyName === 'すき焼き')?.interviewNotes.reasonForLeaving).toBe('旧転職理由');
+      expect(r.careers.find((c) => c.companyName === 'おでん')?.interviewNotes.reasonForLeaving).toBe('');
+    }
+  });
+
+  test('appends to an existing reason', () => {
+    const r = resumeContentSchema.parse(
+      legacy([{ ...suki, interviewNotes: { reasonForJoining: '入社', reasonForLeaving: '既存' } }]),
+    );
+    expect(r.careers[0].interviewNotes).toEqual({ reasonForJoining: '入社', reasonForLeaving: '既存\n旧転職理由' });
+  });
+
+  test('empty legacy value is dropped', () => {
+    expect(resumeContentSchema.parse(legacy([suki], '')).interviewNotes).toEqual({
+      strengths: '強み',
+      weaknesses: '弱み',
+    });
+  });
+
+  test('kept when there is no career', () => {
+    expect(resumeContentSchema.parse(legacy([])).interviewNotes.reasonForChange).toBe('旧転職理由');
+  });
+
+  test('stored resumes and PUT bodies are migrated too', () => {
+    const stored = resumeSchema.parse({ ...legacy([odn]), version: 3, updatedAt: '2026-11-01T00:00:00.000Z' });
+    expect(stored.careers[0].interviewNotes.reasonForLeaving).toBe('旧転職理由');
+    const put = resumePutSchema.parse({ ...legacy([odn]), version: 3 });
+    expect(put.careers[0].interviewNotes.reasonForLeaving).toBe('旧転職理由');
+  });
+
+  test('latestCareerIndex', () => {
+    expect(latestCareerIndex([])).toBe(-1);
+    expect(latestCareerIndex([odn, suki])).toBe(1);
+    expect(
+      latestCareerIndex([
+        { period: { from: '2019-04', to: '2023-09' } },
+        { period: { from: '2021-04', to: '2023-09' } },
+      ]),
+    ).toBe(1);
   });
 });
 
@@ -120,15 +193,22 @@ describe('outputs', () => {
 test('sample resume is valid and outputs cleanly', () => {
   const sample = backupSchema.parse(sampleJson);
   expect(sample.resume?.fullName).toBe('序部 大介');
+  // Newest first, both companies and projects
   expect(sample.resume?.careers.map((c) => c.companyName)).toEqual([
-    '株式会社おでんシステムズ',
     'すき焼きソフトウェア株式会社',
+    '株式会社おでんシステムズ',
   ]);
+  for (const c of sample.resume!.careers) {
+    const starts = c.projects.map((p) => p.period.from);
+    expect(starts).toEqual([...starts].sort().reverse());
+  }
   expect(sample.resume?.careers.flatMap((c) => c.projects)).toHaveLength(5);
   const text = resumeToPlainText(sample.resume!, '2026-11-08');
   for (const note of [
     sample.resume!.interviewNotes.strengths,
     sample.resume!.careers[0].projects[0].interviewNotes.hardships,
+    sample.resume!.careers[0].interviewNotes.reasonForJoining,
+    sample.resume!.careers[0].interviewNotes.reasonForLeaving,
   ]) {
     expect(text).not.toContain(note.split('\n')[0]);
   }

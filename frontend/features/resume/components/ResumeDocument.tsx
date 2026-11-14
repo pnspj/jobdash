@@ -2,15 +2,24 @@ import type { ResumeBlock } from '@jobdash/shared';
 
 const Lines = ({ text }: { text: string }) => <p className="whitespace-pre-wrap break-words">{text}</p>;
 
+/** Font sizes per layout: standard, or compact to fit more on a page. */
+const SIZES = {
+  standard: { body: 'text-[10.5pt] leading-relaxed', title: 'text-[16pt]', heading: 'text-[12pt]' },
+  compact: { body: 'text-[9pt] leading-normal', title: 'text-[14pt]', heading: 'text-[10.5pt]' },
+};
+
 /** HTML rendering of the resume blocks, used for the preview and for printing to PDF. */
-export default function ResumeDocument({ blocks }: { blocks: ResumeBlock[] }) {
+export default function ResumeDocument({ blocks, compact = false }: { blocks: ResumeBlock[]; compact?: boolean }) {
+  const size = SIZES[compact ? 'compact' : 'standard'];
   return (
-    <article className="jd-resume mx-auto max-w-[210mm] space-y-1 bg-white p-[15mm] text-[10.5pt] leading-relaxed text-slate-900 shadow-sm print:max-w-none print:p-0 print:shadow-none">
+    <article
+      className={`jd-resume mx-auto max-w-[210mm] space-y-1 bg-white p-[15mm] ${size.body} text-slate-900 shadow-sm print:max-w-none print:p-0 print:shadow-none`}
+    >
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'title':
             return (
-              <h1 key={i} className="mb-2 text-center text-[16pt] font-bold tracking-widest">
+              <h1 key={i} className={`mb-2 text-center ${size.title} font-bold tracking-widest`}>
                 {b.text}
               </h1>
             );
@@ -22,7 +31,10 @@ export default function ResumeDocument({ blocks }: { blocks: ResumeBlock[] }) {
             );
           case 'heading':
             return (
-              <h2 key={i} className="mt-5 border-b border-slate-400 pb-0.5 text-[12pt] font-bold break-after-avoid">
+              <h2
+                key={i}
+                className={`mt-5 border-b border-slate-400 pb-0.5 ${size.heading} font-bold break-after-avoid`}
+              >
                 ■{b.text}
               </h2>
             );

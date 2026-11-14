@@ -204,6 +204,23 @@ function CareerEditor({ career, index, onChange }: { career: Career; index: numb
         </div>
       </div>
 
+      <NotesBox title="面接対策メモ">
+        <TextArea
+          id={`${id}-joining`}
+          label="入社理由"
+          value={career.interviewNotes.reasonForJoining}
+          onChange={(v) => set('interviewNotes', { ...career.interviewNotes, reasonForJoining: v })}
+          rows={3}
+        />
+        <TextArea
+          id={`${id}-leaving`}
+          label="転職理由"
+          value={career.interviewNotes.reasonForLeaving}
+          onChange={(v) => set('interviewNotes', { ...career.interviewNotes, reasonForLeaving: v })}
+          rows={3}
+        />
+      </NotesBox>
+
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-slate-700">プロジェクト（{career.projects.length}）</h4>
         {career.projects.map((p, pi) => (
@@ -334,12 +351,15 @@ export default function ResumeEditor({ value, update }: { value: ResumeContent; 
           value={value.interviewNotes.weaknesses}
           onChange={(v) => setField('interviewNotes', { ...value.interviewNotes, weaknesses: v })}
         />
-        <TextArea
-          id="reasonForChange"
-          label="転職理由"
-          value={value.interviewNotes.reasonForChange}
-          onChange={(v) => setField('interviewNotes', { ...value.interviewNotes, reasonForChange: v })}
-        />
+        {value.interviewNotes.reasonForChange !== undefined && (
+          <TextArea
+            id="reasonForChange"
+            label="転職理由"
+            hint="職務経歴を追加して保存すると、直近の会社の転職理由に移ります"
+            value={value.interviewNotes.reasonForChange}
+            onChange={(v) => setField('interviewNotes', { ...value.interviewNotes, reasonForChange: v })}
+          />
+        )}
       </NotesBox>
     </div>
   );

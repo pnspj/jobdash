@@ -149,6 +149,7 @@ interface Resume {
     period: { from: string; to?: string }; // YYYY-MM。to が未設定 = 現在
     employees?: string; // 従業員数
     employmentType?: string; // 雇用形態
+    interviewNotes: { reasonForJoining: string; reasonForLeaving: string }; // 入社理由・転職理由（出力しない）
     projects: {
       name: string;
       period: { from: string; to?: string };
@@ -161,7 +162,7 @@ interface Resume {
   }[];
   skills: string; // 活かせる経験・スキル
   selfPr: string; // 自己PR
-  interviewNotes: { strengths: string; weaknesses: string; reasonForChange: string }; // 出力しない
+  interviewNotes: { strengths: string; weaknesses: string }; // 出力しない
 }
 ```
 
@@ -173,6 +174,8 @@ interface Resume {
 
 - API: `GET /api/resume`（未保存なら空の内容と `version: 0`）、`PUT /api/resume`（文書全体を置き換え。`version` で楽観ロック、0 は初回保存）。
 - 出力は共通の中間表現（`resumeBlocks()`）から作る。テキスト・Markdown は shared、Word は `docx` ライブラリ、PDF はプレビューを印刷用 CSS（A4）でブラウザ印刷する。どの形式も未保存の編集内容で出力できる。
+- 転職理由は会社ごとに持つ。以前の全体の転職理由（`interviewNotes.reasonForChange`）は、読み込み時（API・バックアップ復元）に直近の会社（在籍中 → 終了年月 → 開始年月の新しい順）の転職理由へ移す。職務経歴が 1 件もないときはそのまま残し、編集画面の全体メモに表示する。
+- プレビュー・出力画面で文字サイズを「標準（10.5pt）」「小さめ（9pt）」から選べる（ブラウザごとに保存）。PDF（印刷）と Word に反映する。
 - 期間には在籍期間を併記する（例: 2020年4月～2023年9月（3年6か月））。「現在」の期間は今月まで数える。
 - バックアップに `resume` を任意項目として追加した（以前のバックアップもそのまま復元できるため、スキーマバージョンは 3 のまま）。全データ削除の対象にも含む。
 - サンプルデータには、ペルソナ（[sample-persona.md](sample-persona.md)）の職務経歴書を含める。
@@ -218,7 +221,7 @@ interface Todo {
 
 - API: `PUT /api/companies/:id/interviews/:stage`（stage は `first` / `second` / `final`）、`DELETE /api/companies/:id/interviews/:stage?version=N`、`PUT /api/companies/:id/preferred-slots`。面接・希望日時は PATCH では変更できない。
 - 上記のルール（希望日時の削除、次回アクション日時の自動設定）はバックエンドの `companyService` が適用する。面接日時を変更した場合も、希望日時は消える。
-- 登録画面（`/companies/:id/schedule?mode=first|second|final|preferred`）では、他社の面接を灰色で表示する。面接日時の登録中は、その企業の希望日時をクリックするとその日時を選択できる。
+- 登録画面（`/companies/:id/schedule?mode=first|second|final|preferred`）では、他社の面接と面接希望日時を灰色で表示する（辞退・不通過の企業は除く）。面接日時の登録中は、その企業の希望日時をクリックするとその日時を選択できる。
 - 土日・祝日は同じ薄いグレーで表示する（営業日かどうかだけが関心事のため、赤・青は使わない）。祝日の判定は `@holiday-jp/holiday_jp`（2050 年まで収録）を使い、祝日名は表示しない。土日・祝日でも面接は登録できる。今日は背景色を付けず、日付の数字を青い丸で強調する。
 - 週の開始は日曜がデフォルト。カレンダー画面と登録画面で月曜開始に切り替えられ、設定はブラウザ（localStorage）に保存して両画面で共有する。
 - 戻り先: 企業詳細へ移る画面は `?from=<自分のURL>` を付ける（カレンダー、エージェント詳細）。企業詳細と、そこから開く日程登録画面は、戻るリンクをその URL に向ける。カレンダーは表示中のビューと日付を `?view=&date=` で URL に保持するので、同じ表示に戻れる。`from` は同一オリジンのパス（`/` で始まり `//` で始まらない）だけを受け付ける。
@@ -269,7 +272,8 @@ B社（SES、面接2回）
 - 期限切れ・今日の項目は企業一覧と同じように強調する。
 - ダッシュボードの ToDo は「ToDo を追加」ダイアログと「ToDo 一覧」ダイアログで扱う。一覧ダイアログからも追加・編集でき、完了した ToDo はこの一覧ダイアログでだけ表示する（完了日時の新しい順）。
 - チュートリアル: 企業・エージェント・ToDo がすべて 0 件のときに表示する。
-  - 「さっそく始める」: ダッシュボードの ToDo として「エージェントに登録する」「職務経歴書に現在の業務を書く」を登録する
+  - 「さっそく始める」: ダッシュボードの ToDo として「エージェントに登録する」を登録する
+  - 「まだ考え中」: ダッシュボードの ToDo として「職務経歴書に現在の業務を書く」を登録する
   - 「サンプルを見る」: サンプルデータを読み込む
   - 「キャンセル」: そのブラウザでは再表示しない（localStorage）
 - エージェント詳細画面に ToDo の一覧を置き、チェックで完了にできる。追加・編集もここで行う。カレンダーとは関連させない。
@@ -329,4 +333,4 @@ B社（SES、面接2回）
 1. ToDo の状態は「未完了・完了」の 2 つ。
 2. 次回アクション日時のない未完了 ToDo は、ダッシュボードの末尾に表示する。
 3. ToDo のあるエージェントを削除するときは、ToDo も一緒に削除する。
-4. チュートリアルの「さっそく始める」は例の 2 件を自動登録する。表示は企業・エージェント・ToDo がすべて 0 件のときだけ。
+4. チュートリアルの「さっそく始める」「まだ考え中」は、それぞれ例の ToDo を 1 件自動登録する。表示は企業・エージェント・ToDo がすべて 0 件のときだけ。

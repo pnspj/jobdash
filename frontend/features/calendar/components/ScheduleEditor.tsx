@@ -32,6 +32,8 @@ const MODES: { key: ScheduleMode; label: string }[] = [
 ];
 
 const NEW_INTERVIEW_COLOR = '#16a34a'; // green-600
+const OTHER_PREFERRED_BG = '#f1f5f9'; // slate-100
+const OTHER_PREFERRED_TEXT = '#475569'; // slate-600
 
 /** Event kinds used only on this screen. */
 type Kind = 'other' | 'interview' | 'replaced' | 'pick' | 'draft-slot' | 'draft-interview';
@@ -52,7 +54,7 @@ interface Props {
 /**
  * Week calendar for registering one company's interview of a stage or its preferred slots.
  * Drag on the calendar to create; drag/resize drafts to adjust; click a draft slot to remove it.
- * Other companies' interviews are shown in gray for reference.
+ * Other companies' interviews and preferred slots are shown in gray for reference.
  */
 export default function ScheduleEditor({ company, others, mode, onModeChange }: Props) {
   const stage = mode === 'preferred' ? undefined : INTERVIEW_STAGE_KEYS[mode];
@@ -91,6 +93,15 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
       if (isClosedAction(o.action)) continue;
       for (const i of o.interviews ?? [])
         list.push({ ...interviewEvent(o, i, OTHER_COLOR), extendedProps: { kind: 'other' } });
+      (o.preferredSlots ?? []).forEach((s, index) => {
+        list.push({
+          ...preferredEvent(o, s, index),
+          backgroundColor: OTHER_PREFERRED_BG,
+          borderColor: OTHER_COLOR,
+          textColor: OTHER_PREFERRED_TEXT,
+          extendedProps: { kind: 'other' },
+        });
+      });
     }
     for (const i of company.interviews ?? []) {
       const replaced = i.stage === stage && draftInterview && !sameSlot(draftInterview, i);
@@ -218,7 +229,7 @@ export default function ScheduleEditor({ company, others, mode, onModeChange }: 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-slate-500">
               ドラッグで{mode === 'preferred' ? '希望日時を追加' : '面接日時を選択'}
-              します。作成した予定はドラッグで移動、下端で時間を変更できます。灰色は他社の面接です。
+              します。作成した予定はドラッグで移動、下端で時間を変更できます。灰色は他社の面接・面接希望日時です。
             </p>
             <WeekStartToggle
               weekStartsOnMonday={settings.weekStartsOnMonday}

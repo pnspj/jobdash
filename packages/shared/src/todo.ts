@@ -52,11 +52,11 @@ export const todoListQuerySchema = z.object({
   scope: z.enum(['all', 'agent', 'dashboard']).default('all'),
 });
 
-/** The two example to-dos registered by the tutorial's "さっそく始める". */
-export const STARTER_TODOS: TodoInput[] = [
-  { title: 'エージェントに登録する' },
-  { title: '職務経歴書に現在の業務を書く' },
-];
+/** First to-dos offered by the tutorial: one for starting right away, one for those still thinking it over. */
+export const STARTER_TODOS = {
+  start: { title: 'エージェントに登録する' },
+  consider: { title: '職務経歴書に現在の業務を書く' },
+} as const satisfies Record<string, TodoInput>;
 
 /** Open first; open ones by next action (undated last); done ones by completion, newest first. */
 export function compareTodos(a: Todo, b: Todo): number {

@@ -19,6 +19,7 @@ import ResumeDocument from '@/features/resume/components/ResumeDocument';
 import ResumeEditor from '@/features/resume/components/ResumeEditor';
 import { resumeToDocx } from '@/features/resume/lib/toDocx';
 import { errorMessage } from '@/lib/apiClient';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 const contentOf = ({ version: _v, updatedAt: _u, ...content }: Resume): ResumeContent => content;
 
@@ -52,6 +53,7 @@ function ResumeScreen({ saved }: { saved: Resume }) {
   const initialTab = useSearchParams().get('tab') === 'preview' ? 'preview' : 'edit';
   const [tab, setTab] = useState<'edit' | 'preview'>(initialTab);
   const dirty = JSON.stringify(draft) !== JSON.stringify(contentOf(saved));
+  const [layout, setLayout] = usePersistentState('jobdash.resumeLayout', { compact: false });
 
   useEffect(() => {
     if (!dirty) return;
@@ -66,7 +68,7 @@ function ResumeScreen({ saved }: { saved: Resume }) {
   const markdown = useMemo(() => resumeToMarkdown(draft, today), [draft, today]);
   const baseName = `職務経歴書_${draft.fullName.replace(/\s/g, '') || '未入力'}_${today.replaceAll('-', '')}`;
 
-  const handleWord = async () => download(`${baseName}.docx`, await resumeToDocx(blocks));
+  const handleWord = async () => download(`${baseName}.docx`, await resumeToDocx(blocks, { compact: layout.compact }));
   const handlePdf = () => {
     setTab('preview');
     // Let the preview render before opening the print dialog
@@ -113,6 +115,29 @@ function ResumeScreen({ saved }: { saved: Resume }) {
               {dirty && <span className="ml-1 text-amber-700">未保存の編集内容で出力します。</span>}
             </p>
             <div className="flex flex-wrap items-center gap-2">
+              <span className="w-24 text-sm font-medium text-slate-700">文字サイズ</span>
+              <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+                {(
+                  [
+                    [false, '標準'],
+                    [true, '小さめ'],
+                  ] as const
+                ).map(([compact, label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setLayout({ compact })}
+                    className={`rounded-md px-3 py-1 text-sm font-medium ${layout.compact === compact ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs text-slate-500">
+                Word・PDF に反映されます。小さめにすると 1 ページの情報量が増えます。
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <span className="w-24 text-sm font-medium text-slate-700">テキスト</span>
               <CopyButton text={plainText} label="コピー" />
               <button type="button" onClick={() => download(`${baseName}.txt`, plainText)} className={secondaryButton}>
@@ -142,7 +167,7 @@ function ResumeScreen({ saved }: { saved: Resume }) {
             </div>
           </section>
           <div className="rounded-lg bg-slate-200 p-4 print:bg-white print:p-0">
-            <ResumeDocument blocks={blocks} />
+            <ResumeDocument blocks={blocks} compact={layout.compact} />
           </div>
         </>
       )}
@@ -172,7 +197,13 @@ function ResumeScreen({ saved }: { saved: Resume }) {
           )}
           <button
             type="button"
-            onClick={() => save.mutate({ content: draft, version: saved.version })}
+            onClick={() =>
+              save.mutate(
+                { content: draft, version: saved.version },
+                // The server may normalize the document (e.g. legacy notes); adopt it unless edited meanwhile
+                { onSuccess: (result) => setDraft((d) => (d === draft ? contentOf(result) : d)) },
+              )
+            }
             disabled={!dirty || save.isPending}
             className={primaryButton}
           >

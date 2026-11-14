@@ -1,5 +1,7 @@
 import type { Backup, Resume } from '@jobdash/shared';
 import { beforeEach, expect, test } from 'vitest';
+import { itemKey } from '../src/db/keys';
+import { batchPut } from '../src/db/operations';
 import { call, clearTable } from './helpers';
 
 beforeEach(clearTable);
@@ -59,4 +61,23 @@ test('resume is included in backups and removed by delete-all', async () => {
 
   await call('POST', '/api/backup/restore', backup);
   expect((await call<Resume>('GET', '/api/resume')).body.fullName).toBe('序部 大介');
+});
+
+test('a resume saved with the legacy resume-wide reasonForChange is upgraded on read', async () => {
+  await batchPut([
+    {
+      ...itemKey('RESUME', 'main'),
+      type: 'RESUME',
+      ...content,
+      skills: '',
+      selfPr: '',
+      interviewNotes: { strengths: '強み', weaknesses: '弱み', reasonForChange: '旧転職理由' },
+      version: 4,
+      updatedAt: '2026-11-01T00:00:00.000Z',
+    },
+  ]);
+  const { body } = await call<Resume>('GET', '/api/resume');
+  expect(body.version).toBe(4);
+  expect(body.interviewNotes).toEqual({ strengths: '強み', weaknesses: '弱み' });
+  expect(body.careers[0].interviewNotes).toEqual({ reasonForJoining: '', reasonForLeaving: '旧転職理由' });
 });

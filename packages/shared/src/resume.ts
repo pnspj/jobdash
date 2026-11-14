@@ -28,10 +28,13 @@ export const careerSchema = z.object({
   employees: text, // 従業員数 (free text, e.g. "約300名")
   employmentType: text, // 雇用形態
   projects: z.array(projectSchema).default([]),
+  /** 面接対策メモ: never included in outputs. */
+  interviewNotes: z
+    .object({ reasonForJoining: text, reasonForLeaving: text }) // 入社理由・転職理由
+    .default({ reasonForJoining: '', reasonForLeaving: '' }),
 });
 
-/** Editable content of the resume. */
-export const resumeContentSchema = z.object({
+const resumeContentObject = z.object({
   fullName: text, // 氏名
   summary: text, // 職務要約
   careers: z.array(careerSchema).default([]), // 職務経歴 (newest or oldest first, as the user orders them)
@@ -39,24 +42,71 @@ export const resumeContentSchema = z.object({
   selfPr: text, // 自己PR
   /** 面接対策メモ: never included in outputs. */
   interviewNotes: z
-    .object({ strengths: text, weaknesses: text, reasonForChange: text }) // 強み・弱み・転職理由
-    .default({ strengths: '', weaknesses: '', reasonForChange: '' }),
+    .object({
+      strengths: text, // 強み
+      weaknesses: text, // 弱み
+      /** Legacy resume-wide 転職理由, kept only while there is no career to move it to (see migrateLegacyResume). */
+      reasonForChange: z.string().optional(),
+    })
+    .default({ strengths: '', weaknesses: '' }),
 });
+
+/** Index of the most recent career: ongoing first, then by end month, then by start month. -1 when there is none. */
+export function latestCareerIndex(careers: { period?: { from?: string; to?: string } }[]): number {
+  const key = (c: { period?: { from?: string; to?: string } }) =>
+    `${c.period?.to ?? '9999-99'}|${c.period?.from ?? ''}`;
+  return careers.reduce((best, c, i) => (best < 0 || key(c) > key(careers[best]) ? i : best), -1);
+}
+
+/**
+ * Move the legacy resume-wide `interviewNotes.reasonForChange` to the most recent career's 転職理由.
+ * Applied whenever a resume is parsed, so stored documents and old backups are upgraded on read.
+ */
+function migrateLegacyResume(raw: unknown): unknown {
+  if (typeof raw !== 'object' || raw === null) return raw;
+  const r = raw as { interviewNotes?: { reasonForChange?: unknown }; careers?: unknown };
+  const legacy = r.interviewNotes?.reasonForChange;
+  if (typeof legacy !== 'string' || !Array.isArray(r.careers)) return raw;
+  const { reasonForChange: _, ...notes } = r.interviewNotes ?? {};
+  if (!legacy.trim()) return { ...r, interviewNotes: notes };
+  const careers = r.careers as { period?: { from?: string; to?: string }; interviewNotes?: Record<string, unknown> }[];
+  const target = latestCareerIndex(careers);
+  if (target < 0) return raw; // nowhere to move it yet; kept as is
+  return {
+    ...r,
+    interviewNotes: notes,
+    careers: careers.map((c, i) => {
+      if (i !== target) return c;
+      const current = String(c.interviewNotes?.reasonForLeaving ?? '').trim();
+      const reasonForLeaving = current ? `${current}\n${legacy}` : legacy;
+      return { ...c, interviewNotes: { reasonForJoining: '', ...c.interviewNotes, reasonForLeaving } };
+    }),
+  };
+}
+
+/** Editable content of the resume. */
+export const resumeContentSchema = z.preprocess(migrateLegacyResume, resumeContentObject);
 
 /** PUT /api/resume: the whole document with the version it was based on (0 = not saved yet). */
-export const resumePutSchema = resumeContentSchema.extend({ version: z.number().int().nonnegative() });
+export const resumePutSchema = z.preprocess(
+  migrateLegacyResume,
+  resumeContentObject.extend({ version: z.number().int().nonnegative() }),
+);
 
 /** Stored / returned resume. */
-export const resumeSchema = resumeContentSchema.extend({
-  version: z.number().int().nonnegative(),
-  updatedAt: z.string(),
-});
+export const resumeSchema = z.preprocess(
+  migrateLegacyResume,
+  resumeContentObject.extend({
+    version: z.number().int().nonnegative(),
+    updatedAt: z.string(),
+  }),
+);
 
 export type Period = z.infer<typeof periodSchema>;
 export type Project = z.output<typeof projectSchema>;
 export type Career = z.output<typeof careerSchema>;
 export type ResumeContent = z.output<typeof resumeContentSchema>;
-export type ResumeContentInput = z.input<typeof resumeContentSchema>;
+export type ResumeContentInput = z.input<typeof resumeContentObject>;
 export type Resume = z.output<typeof resumeSchema>;
 
 export const EMPTY_RESUME_CONTENT: ResumeContent = resumeContentSchema.parse({});
@@ -69,4 +119,5 @@ export const emptyCareer = (from: string): Career => ({
   employees: '',
   employmentType: '',
   projects: [],
+  interviewNotes: { reasonForJoining: '', reasonForLeaving: '' },
 });
