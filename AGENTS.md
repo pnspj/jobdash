@@ -5,6 +5,7 @@ JobDash: a local-only, single-user web app for managing job applications. npm wo
 - `packages/shared`: zod schemas (the single source of types and validation), pure logic, sample data
 - `backend`: Hono API on DynamoDB Local (`routes/` → `services/` → `repositories/`)
 - `frontend`: Next.js App Router, TanStack Query, Tailwind CSS (`features/<feature>/`)
+  - `frontend/AGENTS.md` is written by `next dev` (Next.js docs pointer); commit it as is, including updates after upgrading Next.js
 
 Specs and agreed decisions: [docs/design.md](docs/design.md). Setup: [README.md](README.md).
 
