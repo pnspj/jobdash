@@ -25,9 +25,10 @@
 2. [ ] （任意）参照されなくなった古いコミット（履歴書き換え前のもの）の削除を GitHub Support に依頼する
    - 書き換え前のコミットは SHA を指定すれば閲覧できるため。内容は作者メールアドレスと未署名状態のみ
 3. [ ] リポジトリを public に切り替える
-4. [ ] `main` のルールセットを設定する
-   - PR 必須（直接プッシュ禁止）、ステータスチェック必須（CI の `Lint, typecheck, test, build` と `Secret scan (gitleaks)`）
-   - 署名付きコミット必須、強制プッシュ・削除の禁止、線形履歴
+4. [ ] `main` のルールセットを設定する: `gh api -X POST repos/pnspj/jobdash/rulesets --input .github/rulesets/main.json`
+   - PR 必須（直接プッシュ禁止、承認数 0、マージは squash のみ）、ステータスチェック必須（`Lint, typecheck, test, build`・`Secret scan (gitleaks)`・`Dependency review`・`Analyze (javascript-typescript)`）
+   - 署名付きコミット必須、強制プッシュ・削除の禁止、線形履歴、バイパスなし
+   - GitHub の画面でルールを変えたら `.github/rulesets/main.json` も合わせて更新する
 5. [ ] Secret scanning と Push protection を有効化する
 6. [ ] Private vulnerability reporting を有効化する（SECURITY.md の報告先）
 7. [ ] Actions: 外部からのフォーク PR のワークフローは承認制にする
