@@ -57,7 +57,10 @@ describe('sample data', () => {
     );
     const urls = JSON.stringify(sample).match(/https?:\/\/[^"\s]+/g) ?? [];
     expect(urls.length).toBeGreaterThan(0);
-    for (const url of urls) expect(new URL(url).hostname.endsWith('example.com')).toBe(true);
+    for (const url of urls) {
+      const { hostname } = new URL(url);
+      expect(hostname === 'example.com' || hostname.endsWith('.example.com'), url).toBe(true);
+    }
   });
 
   test('distribution matches the requirements', () => {
