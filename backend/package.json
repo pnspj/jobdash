@@ -14,17 +14,17 @@
   },
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1168.0",
-    "@aws-sdk/lib-dynamodb": "^3.1168.0",
-    "@hono/node-server": "^2.1.8",
+    "@aws-sdk/client-dynamodb": "^3.1172.0",
+    "@aws-sdk/lib-dynamodb": "^3.1172.0",
+    "@hono/node-server": "^2.1.9",
     "@hono/zod-validator": "^0.9.1",
     "@jobdash/shared": "^0.1.0",
-    "hono": "^4.13.18"
+    "hono": "^4.13.19"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   }
 }
