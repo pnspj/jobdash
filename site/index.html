@@ -270,7 +270,7 @@
             はそれを、あなたの PC の中だけで扱います。
           </p>
 
-          <div class="flow" role="img" aria-label="ブラウザ、API、データベースがすべて自分のPCの中にあり、外部のクラウドやAIへの通信はない">
+          <div class="flow" role="img" aria-label="ブラウザ、API、データファイルがすべて自分のPCの中にあり、外部のクラウドやAIへの通信はない">
             <div class="flow-machine">
               <p class="flow-title">あなたの PC</p>
               <div class="flow-row">
@@ -278,7 +278,7 @@
                 <span class="flow-arrow" aria-hidden="true">⇄</span>
                 <div class="flow-box">API<small>127.0.0.1:8787</small></div>
                 <span class="flow-arrow" aria-hidden="true">⇄</span>
-                <div class="flow-box">DynamoDB Local<small>Docker / 127.0.0.1:8000</small></div>
+                <div class="flow-box">データファイル<small>data/jobdash.json</small></div>
               </div>
             </div>
             <div class="flow-outside">
@@ -361,7 +361,6 @@
               <ul>
                 <li>Git</li>
                 <li>Node.js 24 以上</li>
-                <li>Docker（Docker Desktop など）</li>
               </ul>
               <p class="note">macOS と Linux で動きます。Windows では WSL の上で使ってください。</p>
             </div>
@@ -374,7 +373,7 @@
               <p>
                 「起動しました」と表示されたら、ブラウザで
                 <a href="http://localhost:3000">http://localhost:3000</a> を開きます。終了するときは Ctrl+C
-                を押します。データは Docker の volume に残り、次に起動したときもそのまま使えます。
+                を押します。データは <code>data/jobdash.json</code> に残り、次に起動したときもそのまま使えます。
               </p>
               <p class="note">
                 最初の画面で「サンプルを見る」を選ぶと、架空の 30 社のデータで機能を試せます。試し終わったら「データ管理」から全データを削除できます。
@@ -407,8 +406,8 @@
           <details>
             <summary>データはどこに保存されますか？</summary>
             <p>
-              Docker の volume の中の DynamoDB Local に保存されます。<code>docker compose down -v</code> などで
-              volume を削除するとデータも消えるので、ときどき JSON でバックアップを取ってください。
+              リポジトリの中の <code>data/jobdash.json</code> 1 ファイルに保存されます（バックアップと同じ JSON
+              形式）。起動するたびに <code>data/backups/</code> へ日ごとのコピーも残します。リポジトリのフォルダを消すとデータも消えるので、ときどき別の場所にバックアップを取ってください。
             </p>
           </details>
 
@@ -416,7 +415,7 @@
             <summary>本当に外部と通信しないのですか？</summary>
             <p>
               <code>npm start</code> で起動したアプリは、外部と通信しません。インストール時の
-              <code>npm install</code> と Docker イメージの取得は、もちろんネットワークを使います。
+              <code>npm install</code> は、もちろんネットワークを使います。
             </p>
             <p>
               開発モード（<code>npm run dev</code>）では、Next.js
@@ -432,7 +431,7 @@
           <details>
             <summary>自分で機能を足したり、改造したりできますか？</summary>
             <p>
-              できます。Next.js・Hono・DynamoDB Local・zod で作られた TypeScript のモノレポです。Claude Code
+              できます。Next.js・Hono・zod で作られた TypeScript のモノレポです。Claude Code
               などの AI コーディングエージェント向けに、開発ルールをまとめた <code>AGENTS.md</code> も用意しています。
             </p>
           </details>

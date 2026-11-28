@@ -1,8 +1,8 @@
 import type { Agent, Company } from '@jobdash/shared';
 import { beforeEach, expect, test } from 'vitest';
-import { call, clearTable } from './helpers';
+import { call, clearData } from './helpers';
 
-beforeEach(clearTable);
+beforeEach(clearData);
 
 test('delete all data requires explicit confirmation', async () => {
   const { body: agent } = await call<Agent>('POST', '/api/agents', { name: '○○エージェント', shortName: 'MA' });

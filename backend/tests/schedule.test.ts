@@ -1,13 +1,13 @@
 import type { Company } from '@jobdash/shared';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { call, clearTable } from './helpers';
+import { call, clearData } from './helpers';
 
 const BASE = '/api/companies';
 const company = { companyName: 'A社', phase: '一次面接', action: '要日程調整' };
 const slotA = { start: '2026-11-04T17:00', end: '2026-11-04T18:00' };
 const slotB = { start: '2026-11-05T10:00', end: '2026-11-05T11:00' };
 
-beforeEach(clearTable);
+beforeEach(clearData);
 
 async function create(extra: Record<string, unknown> = {}) {
   return (await call<Company>('POST', BASE, { ...company, ...extra })).body;

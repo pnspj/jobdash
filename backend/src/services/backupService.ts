@@ -1,25 +1,19 @@
 import { type Backup, SCHEMA_VERSION } from '@jobdash/shared';
-import { batchDelete, batchPut, queryByPrefix } from '../db/operations';
 import { BadRequestError } from '../errors';
-import { agentRepository, companyRepository, todoRepository } from '../repositories';
-import { resumeRepository } from '../repositories/resumeRepository';
-
-/** Only a saved resume (version > 0) is exported. */
-async function exportResume(): Promise<{ resume?: Awaited<ReturnType<typeof resumeRepository.get>> }> {
-  const resume = await resumeRepository.get();
-  return resume.version > 0 ? { resume } : {};
-}
+import { readData, replaceData } from '../store/dataStore';
 
 export const backupService = {
+  /** Only a saved resume is exported. */
   async export(): Promise<Backup> {
+    const { companies, agents, todos, resume } = await readData();
     return {
       app: 'jobdash',
       schemaVersion: SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
-      companies: await companyRepository.list(),
-      agents: await agentRepository.list(),
-      todos: await todoRepository.list(),
-      ...(await exportResume()),
+      companies,
+      agents,
+      todos,
+      ...(resume ? { resume } : {}),
     };
   },
 
@@ -37,14 +31,12 @@ export const backupService = {
         `存在しないエージェントを参照しているデータがあります: ${dangling.map((d) => d.name).join('、')}`,
       );
     }
-    const existing = await queryByPrefix('');
-    await batchDelete(existing as { PK: string; SK: string }[]);
-    await batchPut([
-      ...backup.agents.map(agentRepository.toItem),
-      ...backup.companies.map(companyRepository.toItem),
-      ...todos.map(todoRepository.toItem),
-      ...(backup.resume ? [resumeRepository.toItem(backup.resume)] : []),
-    ]);
+    await replaceData({
+      companies: backup.companies,
+      agents: backup.agents,
+      todos,
+      ...(backup.resume ? { resume: backup.resume } : {}),
+    });
     return {
       companies: backup.companies.length,
       agents: backup.agents.length,

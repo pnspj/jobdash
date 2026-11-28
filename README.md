@@ -17,12 +17,12 @@
 
 ## 構成
 
-| 構成 | 技術                                                               | ポート |
-| ---- | ------------------------------------------------------------------ | ------ |
-| DB   | DynamoDB Local (Docker)                                            | 8000   |
-| API  | Hono + @hono/node-server (`backend/`)                              | 8787   |
-| Web  | Next.js (App Router) + Tailwind CSS + TanStack Query (`frontend/`) | 3000   |
-| 共通 | zod スキーマ・型・選択肢定義・サンプルデータ (`packages/shared/`)  | -      |
+| 構成   | 技術                                                               | ポート |
+| ------ | ------------------------------------------------------------------ | ------ |
+| データ | JSON ファイル（`data/jobdash.json`）                               | -      |
+| API    | Hono + @hono/node-server (`backend/`)                              | 8787   |
+| Web    | Next.js (App Router) + Tailwind CSS + TanStack Query (`frontend/`) | 3000   |
+| 共通   | zod スキーマ・型・選択肢定義・サンプルデータ (`packages/shared/`)  | -      |
 
 ## ドキュメント
 
@@ -36,7 +36,7 @@
 
 ## セットアップと起動
 
-必要なもの: Node.js 24 以上、Docker（Docker Desktop など。Windows は WSL 上で使う）
+必要なもの: Node.js 24 以上（Windows は WSL 上で使う）
 
 npm workspaces によるモノレポです。以下のコマンドは**リポジトリのルートで**実行してください。
 
@@ -45,7 +45,7 @@ npm install                 # 初回のみ（全 workspace）
 npm start                   # → http://localhost:3000
 ```
 
-`npm start` は DynamoDB Local（Docker）を起動し、フロントエンドをビルドしてから、API とフロントエンドを本番モードで起動します。Ctrl+C で API・フロントエンド・DynamoDB Local をまとめて停止します（データは Docker の volume に残ります）。API は起動時に `JobHuntingTable` が無ければ作成します。
+`npm start` はフロントエンドをビルドしてから、API とフロントエンドを本番モードで起動します。Ctrl+C で両方をまとめて停止します。データの保存先は「[データファイル](#データファイル)」を参照してください。
 
 初めて開くと、ダッシュボードにチュートリアルが表示されます。「サンプルを見る」を選ぶと、サンプルデータで操作を試せます。
 
@@ -54,21 +54,28 @@ npm start                   # → http://localhost:3000
 `npm run dev` で、同じ構成を開発モード（ファイル変更の自動反映あり）で起動できます。個別に起動する場合は次のとおりです。
 
 ```bash
-docker compose up -d        # DynamoDB Local
 npm run dev:backend         # API
 npm run dev:frontend        # 別ターミナルでフロントエンド
 ```
 
-`dev:backend` / `dev:frontend` はルート用のスクリプトです。`frontend/` などの中では `npm run dev` で起動します。テーブルだけを作成したい場合は `npm run init-table -w backend` を実行します。
+`dev:backend` / `dev:frontend` はルート用のスクリプトです。`frontend/` などの中では `npm run dev` で起動します。
 
 ### 環境変数（任意）
 
-- backend: `DYNAMODB_ENDPOINT` (default `http://localhost:8000`), `TABLE_NAME` (default `JobHuntingTable`), `PORT` (default `8787`), `FRONTEND_ORIGIN` (default `http://localhost:3000`), `ALLOWED_HOSTS`（許可する `Host` をカンマ区切りで。既定は `localhost,127.0.0.1,[::1]`）
+- backend: `JOBDASH_DATA_DIR`（データファイルを置くフォルダ。相対パスはリポジトリのルートから。既定は `data`）, `PORT` (default `8787`), `FRONTEND_ORIGIN` (default `http://localhost:3000`), `ALLOWED_HOSTS`（許可する `Host` をカンマ区切りで。既定は `localhost,127.0.0.1,[::1]`）
 - frontend: `NEXT_PUBLIC_API_BASE_URL` (default `http://localhost:8787`。変更する場合は `.env.example` を `.env.local` にコピーして編集)
 
-### WSL で Docker Desktop を使う場合
+## データファイル
 
-WSL 内の `docker` コマンドが Docker に接続できないときは、Docker Desktop の **Settings → Resources → WSL Integration** で使用中のディストリビューションを有効にしてください。
+すべてのデータは `data/jobdash.json` の 1 ファイルに保存されます（`.gitignore` 済み。場所は「データ管理」画面にも表示されます）。
+
+- 初回起動時に空のファイルを作ります。事前の準備は不要です。
+- 形式はバックアップ（下記）と同じです。バックアップの JSON を `data/jobdash.json` として置けば、そのまま使えます。
+- API は起動時にファイルを読み込み、以後はメモリ上のデータを使います。保存のたびにファイル全体を書き直します（一時ファイルに書いてから置き換えるので、書き込み中に止まっても壊れません）。
+- **ファイルを直接編集するときは、JobDash を停止してから編集してください。** 起動中に編集しても、次の保存で上書きされます。
+- 起動時にファイルの内容を検証し、壊れている場合は起動せずに理由を表示します（ファイルは上書きしません）。
+- 起動するたびに `data/backups/jobdash-YYYY-MM-DD.json` へ日ごとのコピーを残します（直近 10 日分）。
+- データの形が変わったときは、読み込み時に新しい形へ変換します（次の保存で新しい形で書き直されます）。
 
 ## データ管理
 
@@ -83,16 +90,6 @@ WSL 内の `docker` コマンドが Docker に接続できないときは、Dock
   npm run sample:generate -w @jobdash/shared     # 生成スクリプトから JSON を作り直す
   ```
 
-- **データ移行**: スキーマを変えたときは `backend/scripts/` の移行スクリプトを使います。既定は変更内容の表示（dry run）のみで、`--apply` を付けると `backups/` に JSON を書き出してから適用します。
-
-  ```bash
-  npm run migrate:v3 -w backend               # dry run
-  npm run migrate:v3 -w backend -- --apply    # 適用
-  ```
-
-  - v2: 次回アクション日時の統合、「辞退/不通過」の分割
-  - v3: 自由入力のエージェントをエージェント（`agentId`）に移行
-
 ### CSV インポート / エクスポート
 
 - **エクスポート**: 企業一覧の「CSVエクスポート」。UTF-8 (BOM 付き) で全項目を出力します。
@@ -106,7 +103,7 @@ WSL 内の `docker` コマンドが Docker に接続できないときは、Dock
 ## テスト・開発
 
 ```bash
-npm test                    # 全 workspace（backend は DynamoDB Local が必要）
+npm test                    # 全 workspace
 npm run typecheck           # 全 workspace の型チェック
 npm run lint                # Biome（Lint とフォーマットのチェック）
 npm run format              # Biome で自動整形・自動修正
@@ -114,7 +111,7 @@ npm run sample:check        # サンプル JSON が生成スクリプトの出�
 ```
 
 - `packages/shared`: スキーマ、並び順、ダッシュボード・連絡用テキスト・集計・職務経歴書出力のロジック、サンプルデータの単体テスト
-- `backend`: API の結合テスト。DynamoDB Local 上のテスト用テーブル `JobHuntingTable_test` を使う（本番データには触れない）
+- `backend`: API とデータファイルの結合テスト。テストファイルごとに一時フォルダのデータファイルを使う（`data/` には触れない）
 - `frontend`: CSV 変換、カレンダーの表示ロジックなどの単体テスト
 
 コミット時には、ステージしたファイルを Biome で自動チェックします（`.githooks/pre-commit`）。`npm install` 時に `prepare` スクリプトが `git config core.hooksPath .githooks` を設定します。チェックで止まったら `npm run format` で整形し、内容を確認してからステージし直してください。
@@ -125,7 +122,7 @@ CI（GitHub Actions）では、上記に加えてフロントエンドのビル�
 
 認証のないローカル専用アプリです。外部から触れないよう、次のようにしています（報告先は [SECURITY.md](SECURITY.md)）。
 
-- API・フロントエンド（dev / start）・DynamoDB Local は `127.0.0.1` だけで待ち受けます。
+- API・フロントエンド（dev / start）は `127.0.0.1` だけで待ち受けます。
 - API は `Host` が `localhost` / `127.0.0.1` 以外のリクエストを拒否します（DNS リバインディング対策）。許可するホストは `ALLOWED_HOSTS` で変更できます。
 - URL 項目は `http(s)://` のみ受け付けます。CSV エクスポートでは数式として解釈される値（`=` `+` `-` `@` で始まる値）を無害化します。
 - リクエストボディは 5MB までです。

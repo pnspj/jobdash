@@ -4,5 +4,7 @@ dist/
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+# Local data (backend/src/store/dataStore.ts)
+data/
 backups/
 .DS_Store

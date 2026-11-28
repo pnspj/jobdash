@@ -1,10 +1,10 @@
 import type { Agent, Backup, Todo } from '@jobdash/shared';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { call, clearTable } from './helpers';
+import { call, clearData } from './helpers';
 
 const BASE = '/api/todos';
 
-beforeEach(clearTable);
+beforeEach(clearData);
 
 async function agent() {
   return (await call<Agent>('POST', '/api/agents', { name: '○○エージェント', shortName: 'MA' })).body;

@@ -1,15 +1,14 @@
 #!/usr/bin/env node
-// Start JobDash with one command: DynamoDB Local (Docker), the API and the frontend.
+// Start JobDash with one command: the API and the frontend.
 //   npm start      production mode (builds the frontend first)
 //   npm run dev    development mode (watch / hot reload)
-// Ctrl+C stops the API, the frontend and the DynamoDB Local container. Data stays in the Docker volume.
+// Ctrl+C stops both. Data is stored in data/jobdash.json (see backend/src/store/dataStore.ts).
 
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import net from 'node:net';
 import readline from 'node:readline';
 
 const dev = process.argv.includes('--dev');
-const DB_PORT = 8000;
 const API_PORT = 8787;
 const WEB_PORT = 3000;
 const APP_URL = `http://localhost:${WEB_PORT}`;
@@ -43,28 +42,6 @@ async function waitForPort(port, timeoutMs) {
     await new Promise((r) => setTimeout(r, 500));
   }
   return false;
-}
-
-function checkDocker() {
-  const version = spawnSync('docker', ['compose', 'version'], { stdio: 'ignore' });
-  if (version.error || version.status !== 0) {
-    fail('docker compose が見つかりません。Docker（Docker Desktop など）をインストールしてください。');
-    return false;
-  }
-  const info = spawnSync('docker', ['info'], { stdio: 'ignore' });
-  if (info.status !== 0) {
-    fail('Docker に接続できません。Docker Desktop を起動してから、もう一度実行してください。');
-    fail(
-      'WSL の場合は Docker Desktop の Settings → Resources → WSL Integration で、使用中のディストリビューションを有効にしてください。',
-    );
-    return false;
-  }
-  return true;
-}
-
-function stopDatabase() {
-  log('DynamoDB Local を停止しています（データは残ります）...');
-  spawnSync('docker', ['compose', 'stop'], { stdio: 'inherit' });
 }
 
 /** Run an npm script with each output line prefixed by a label. Resolves with the exit code. */
@@ -115,7 +92,6 @@ async function shutdown(exitCode) {
       // Already exited
     }
   }
-  stopDatabase();
   process.exit(exitCode);
 }
 
@@ -126,7 +102,7 @@ for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
       // A single Ctrl+C arrives twice: from the terminal and forwarded by npm. Ignore that duplicate.
       if (Date.now() - firstSignalAt < 1000) return;
       // A later Ctrl+C: give up waiting
-      fail('強制終了しました。DynamoDB Local が動いたままの場合は `docker compose stop` で停止してください。');
+      fail('強制終了しました。');
       process.exit(130);
     }
     firstSignalAt = Date.now();
@@ -142,17 +118,6 @@ async function main() {
       fail(`ポート ${port} はすでに使われています。JobDash を別のターミナルで起動していないか確認してください。`);
       process.exit(1);
     }
-  }
-  if (!checkDocker()) process.exit(1);
-
-  log('DynamoDB Local を起動しています...');
-  if (spawnSync('docker', ['compose', 'up', '-d'], { stdio: 'inherit' }).status !== 0) {
-    fail('DynamoDB Local を起動できませんでした。');
-    process.exit(1);
-  }
-  if (!(await waitForPort(DB_PORT, 60_000))) {
-    fail(`DynamoDB Local（ポート ${DB_PORT}）が応答しません。`);
-    return shutdown(1);
   }
 
   if (!dev) {

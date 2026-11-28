@@ -24,9 +24,3 @@ updates:
     groups:
       actions:
         patterns: ["*"]
-
-  # The DynamoDB Local image in docker-compose.yml
-  - package-ecosystem: docker-compose
-    directory: /
-    schedule:
-      interval: monthly

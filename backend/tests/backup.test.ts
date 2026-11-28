@@ -1,6 +1,6 @@
 import type { Agent, Backup, Company } from '@jobdash/shared';
 import { beforeEach, expect, test } from 'vitest';
-import { call, clearTable } from './helpers';
+import { call, clearData } from './helpers';
 
 const company = {
   companyName: 'A社',
@@ -9,7 +9,7 @@ const company = {
   nextActionAt: '2026-11-10',
 };
 
-beforeEach(clearTable);
+beforeEach(clearData);
 
 test('export then restore replaces all data with the backup', async () => {
   const { body: agent } = await call<Agent>('POST', '/api/agents', { name: '△△エージェント', shortName: 'SA' });

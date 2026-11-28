@@ -1,6 +1,4 @@
 import type { Todo, TodoInputParsed, TodoPatchParsed } from '@jobdash/shared';
-import { itemKey } from '../db/keys';
-import { batchDelete } from '../db/operations';
 import { BadRequestError } from '../errors';
 import { agentRepository, todoRepository } from '../repositories';
 
@@ -59,9 +57,5 @@ export const todoService = {
   delete: (id: string) => todoRepository.delete(id),
 
   /** Delete every to-do of an agent (used when the agent is deleted). Returns the number deleted. */
-  async deleteByAgent(agentId: string): Promise<number> {
-    const todos = await this.list({ agentId });
-    await batchDelete(todos.map((t) => itemKey('TODO', t.id)));
-    return todos.length;
-  },
+  deleteByAgent: (agentId: string) => todoRepository.deleteWhere((t) => t.agentId === agentId),
 };
