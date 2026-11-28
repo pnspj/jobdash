@@ -1,12 +1,9 @@
 import { createApp } from '../src/app';
-import { batchDelete, queryByPrefix } from '../src/db/operations';
+import { emptyData, replaceData } from '../src/store/dataStore';
 
 export const app = createApp({ log: false });
 
-export async function clearTable() {
-  const items = await queryByPrefix('');
-  await batchDelete(items as { PK: string; SK: string }[]);
-}
+export const clearData = () => replaceData(emptyData());
 
 export async function call<T = unknown>(method: string, path: string, body?: unknown) {
   const res = await app.request(path, {

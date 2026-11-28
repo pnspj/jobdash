@@ -1,28 +1,27 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { batchDelete, queryByPrefix } from '../db/operations';
+import { dataFile, emptyData, updateData } from '../store/dataStore';
 import { zValidator } from '../validation';
 
 /** Guard against accidental calls: the caller must state the intent explicitly. */
 const confirmQuery = z.object({ confirm: z.literal('DELETE_ALL', '?confirm=DELETE_ALL が必要です') });
 
 export const dataRoute = new Hono()
-  // Delete EVERY item of the user (companies, agents, ...)
+  // Where the data is stored (shown on the settings page)
+  .get('/', (c) => c.json({ file: dataFile() }))
+
+  // Delete ALL data (companies, agents, ...)
   .delete('/', zValidator('query', confirmQuery), async (c) => {
-    const items = await queryByPrefix('');
-    const counts: Record<string, number> = {};
-    for (const item of items) {
-      const type = String(item.type ?? 'UNKNOWN').toLowerCase();
-      counts[type] = (counts[type] ?? 0) + 1;
-    }
-    await batchDelete(items as { PK: string; SK: string }[]);
-    return c.json({
-      deleted: {
-        companies: counts.company ?? 0,
-        agents: counts.agent ?? 0,
-        todos: counts.todo ?? 0,
-        resume: counts.resume ?? 0,
-        total: items.length,
-      },
+    const deleted = await updateData((draft) => {
+      const counts = {
+        companies: draft.companies.length,
+        agents: draft.agents.length,
+        todos: draft.todos.length,
+        resume: draft.resume ? 1 : 0,
+      };
+      Object.assign(draft, emptyData());
+      delete draft.resume;
+      return { ...counts, total: counts.companies + counts.agents + counts.todos + counts.resume };
     });
+    return c.json({ deleted });
   });

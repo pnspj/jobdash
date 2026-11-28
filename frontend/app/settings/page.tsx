@@ -4,8 +4,9 @@ import { sampleBackup } from '@jobdash/shared/sample';
 import { type ChangeEvent, useState } from 'react';
 import { PAGE_ICONS } from '@/components/layout/nav';
 import PageTitle from '@/components/layout/PageTitle';
+import CopyButton from '@/components/ui/CopyButton';
 import { dangerButton, inputBaseClass, primaryButton, secondaryButton, sectionClass } from '@/components/ui/styles';
-import { backupApi, useDeleteAllData, useRestoreBackup } from '@/features/backup/api';
+import { backupApi, useDataLocation, useDeleteAllData, useRestoreBackup } from '@/features/backup/api';
 import { errorMessage } from '@/lib/apiClient';
 
 const DELETE_CONFIRM_WORD = '削除';
@@ -29,6 +30,7 @@ const Failure = ({ children }: { children: React.ReactNode }) => (
 export default function SettingsPage() {
   const restore = useRestoreBackup();
   const deleteAll = useDeleteAllData();
+  const dataLocation = useDataLocation();
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [restoreSource, setRestoreSource] = useState<'file' | 'sample' | null>(null);
@@ -81,6 +83,22 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageTitle icon={PAGE_ICONS.settings}>データ管理</PageTitle>
+
+      <section className={sectionClass}>
+        <h2 className="mb-1 text-lg font-semibold">データファイル</h2>
+        <p className="mb-3 text-sm text-slate-500">
+          すべてのデータは次のJSONファイルに保存されます（バックアップと同じ形式）。起動するたびに、同じフォルダの
+          backups に日ごとのコピーを残します（直近10日分）。ファイルを直接編集するときは、JobDash
+          を停止してから編集してください。
+        </p>
+        {dataLocation.data && (
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="break-all rounded bg-slate-100 px-2 py-1 text-sm">{dataLocation.data.file}</code>
+            <CopyButton text={dataLocation.data.file} />
+          </div>
+        )}
+        {dataLocation.error && <Failure>{errorMessage(dataLocation.error, '保存場所を取得できませんでした')}</Failure>}
+      </section>
 
       <section className={sectionClass}>
         <h2 className="mb-1 text-lg font-semibold">バックアップ</h2>

@@ -3,7 +3,7 @@
 ## Scope
 
 JobDash is a **local-only** personal application without authentication.
-It is designed to run on your own machine: the API and DynamoDB Local listen on `127.0.0.1` only,
+It is designed to run on your own machine: the API and the frontend listen on `127.0.0.1` only,
 and the API rejects requests whose `Host` is not a local name.
 Do not expose it to a network or the internet.
 

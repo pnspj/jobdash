@@ -1,10 +1,10 @@
+import { writeFile } from 'node:fs/promises';
 import type { Backup, Resume } from '@jobdash/shared';
 import { beforeEach, expect, test } from 'vitest';
-import { itemKey } from '../src/db/keys';
-import { batchPut } from '../src/db/operations';
-import { call, clearTable } from './helpers';
+import { dataFile, reloadData } from '../src/store/dataStore';
+import { call, clearData } from './helpers';
 
-beforeEach(clearTable);
+beforeEach(clearData);
 
 const content = {
   fullName: '序部 大介',
@@ -64,10 +64,13 @@ test('resume is included in backups and removed by delete-all', async () => {
 });
 
 test('a resume saved with the legacy resume-wide reasonForChange is upgraded on read', async () => {
-  await batchPut([
-    {
-      ...itemKey('RESUME', 'main'),
-      type: 'RESUME',
+  const legacy = {
+    app: 'jobdash',
+    schemaVersion: 3,
+    exportedAt: '2026-11-01T00:00:00.000Z',
+    companies: [],
+    agents: [],
+    resume: {
       ...content,
       skills: '',
       selfPr: '',
@@ -75,7 +78,9 @@ test('a resume saved with the legacy resume-wide reasonForChange is upgraded on 
       version: 4,
       updatedAt: '2026-11-01T00:00:00.000Z',
     },
-  ]);
+  };
+  await writeFile(dataFile(), JSON.stringify(legacy));
+  reloadData();
   const { body } = await call<Resume>('GET', '/api/resume');
   expect(body.version).toBe(4);
   expect(body.interviewNotes).toEqual({ strengths: '強み', weaknesses: '弱み' });

@@ -1,6 +1,6 @@
 import type { Agent, Company } from '@jobdash/shared';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { call, clearTable } from './helpers';
+import { call, clearData } from './helpers';
 
 const BASE = '/api/companies';
 
@@ -14,7 +14,7 @@ const valid = {
   details: 'メモ\n2行目',
 };
 
-beforeEach(clearTable);
+beforeEach(clearData);
 
 describe('companies API', () => {
   test('create, get and list', async () => {

@@ -5,15 +5,14 @@
  *   npm run seed:sample -w backend -- --yes
  */
 import { sampleBackup } from '@jobdash/shared/sample';
-import { TABLE_NAME } from '../src/db/client';
-import { ensureTable } from '../src/db/init-table';
 import { backupService } from '../src/services/backupService';
+import { dataFile, initDataStore } from '../src/store/dataStore';
 
 if (!process.argv.includes('--yes')) {
-  console.error(`This replaces ALL data in table "${TABLE_NAME}" with the sample. Re-run with --yes to proceed.`);
+  console.error(`This replaces ALL data in ${dataFile()} with the sample. Re-run with --yes to proceed.`);
   process.exit(1);
 }
 
-await ensureTable();
+await initDataStore();
 const restored = await backupService.restore(sampleBackup());
-console.log(`Loaded sample into ${TABLE_NAME}: ${restored.companies} companies, ${restored.agents} agents.`);
+console.log(`Loaded sample into ${dataFile()}: ${restored.companies} companies, ${restored.agents} agents.`);
